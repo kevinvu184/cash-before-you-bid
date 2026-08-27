@@ -1,6 +1,7 @@
 import type { UseCalculatorResult } from '../hooks/useCalculator'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { CheckboxField, NumberField, SelectField } from './Field'
+import { ShareLink } from './ShareLink'
 
 const ROUTE_OPTIONS: ReadonlyArray<{ value: DepositRoute; label: string }> = [
   { value: 'scheme', label: 'Australian Government 5% Deposit Scheme (no LMI)' },
@@ -161,9 +162,11 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
         />
       </details>
 
+      <ShareLink />
+
       <p className="panel-foot">
-        Inputs are remembered in this browser only. Rules as at 25 Aug 2026; indicative only, not
-        advice.
+        Your numbers live in this page's address — share the link to share them. Rules as at 25 Aug
+        2026; indicative only, not advice.
       </p>
     </aside>
   )
