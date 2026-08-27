@@ -1,9 +1,12 @@
 .app {
-  max-width: 48rem;
+  max-width: 64rem;
   margin: 0 auto;
-  padding: 2.5rem 1rem;
+  padding: 2.5rem 1rem 4rem;
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.app-header {
   text-align: center;
 }
 
@@ -18,25 +21,230 @@
   opacity: 0.75;
 }
 
-.app-content {
+.inputs {
   margin-top: 2rem;
 }
 
-.app-content code {
-  padding: 0.15em 0.35em;
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.field input,
+.field select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  min-height: 44px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.check-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.check input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.share {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.5rem 0 1rem;
+}
+
+/* 44x44 minimum touch target. */
+.copy-link {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-h);
+  background: rgba(128, 128, 128, 0.14);
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 1.25rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) {
+  .copy-link:hover {
+    background: rgba(128, 128, 128, 0.24);
+  }
+}
+
+.share-status {
+  font-size: 0.9rem;
+}
+
+.share-fallback {
+  font: inherit;
+  font-size: 0.85rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  flex: 1 1 16rem;
+  min-height: 44px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.results {
+  margin-top: 1.5rem;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 1rem;
+}
+
+.tile {
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.tile h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+.tile-total {
+  grid-column: 1 / -1;
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.tile-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-h);
+  margin-top: 0.25rem;
+}
+
+.tile-sub {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin-top: 0.25rem;
+}
+
+.flags {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flag {
+  border-left: 4px solid;
   border-radius: 4px;
-  background-color: rgba(128, 128, 128, 0.18);
-  font-size: 0.95em;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.flag-warn {
+  border-color: #d97706;
+}
+
+.flag-note {
+  border-color: #2563eb;
+}
+
+.flag-ok {
+  border-color: #059669;
+}
+
+/* Tables must not force horizontal scroll on the page at 360px. */
+.table-scroll {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.breakdown {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.breakdown th,
+.breakdown td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  vertical-align: top;
+}
+
+.breakdown .amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown .how {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.breakdown .emphasis td {
+  font-weight: 700;
+  color: var(--text-h);
 }
 
 @media (min-width: 640px) {
   .app {
-    padding: 4rem 1.5rem;
+    padding: 4rem 1.5rem 5rem;
     padding-left: max(1.5rem, env(safe-area-inset-left));
     padding-right: max(1.5rem, env(safe-area-inset-right));
   }
 
-  .app-content {
+  .inputs {
     margin-top: 2.5rem;
   }
 }
