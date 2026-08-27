@@ -28,7 +28,6 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
-  vi.unstubAllGlobals()
 })
 
 describe('loading state from the URL', () => {
@@ -138,30 +137,6 @@ describe('history behaviour', () => {
     await new Promise((resolve) => setTimeout(resolve, URL_DEBOUNCE_MS + 100))
     expect(window.location.search).toBe('')
     expect(input('price').value).toBe('750000')
-  })
-})
-
-describe('copy link', () => {
-  it('copies the current URL and confirms', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    vi.stubGlobal('navigator', { ...window.navigator, clipboard: { writeText } })
-    window.history.replaceState(null, '', '/?route=lmi')
-    renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
-    await waitFor(() => expect(screen.getByText('Đã sao chép liên kết')).toBeTruthy())
-    expect(writeText).toHaveBeenCalledWith(window.location.href)
-    expect(writeText.mock.calls[0][0]).toContain('?route=lmi')
-  })
-
-  it('falls back to selectable text when the clipboard is unavailable', async () => {
-    vi.stubGlobal('navigator', { ...window.navigator, clipboard: undefined })
-    renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
-    await waitFor(() =>
-      expect(screen.getByText('Sao chép không thành công — hãy chọn liên kết bên dưới')).toBeTruthy(),
-    )
-    const fallback = screen.getByLabelText('Liên kết chia sẻ') as HTMLInputElement
-    expect(fallback.value).toBe(window.location.href)
   })
 })
 

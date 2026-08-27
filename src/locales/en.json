@@ -58,12 +58,6 @@
     "nolmi": "20% avoids LMI without a guarantor",
     "lmi": "Under 20%; LMI charged"
   },
-  "share": {
-    "copy": "Copy link",
-    "copied": "Link copied",
-    "failed": "Copy failed — select the link below",
-    "fallbackLabel": "Shareable link"
-  },
   "results": {
     "flagsLabel": "Warnings and notes"
   },
