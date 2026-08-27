@@ -81,7 +81,7 @@ describe('parseLocaleNumber', () => {
     expect(parseLocaleNumber('0.05', 'en')).toBe(0.05)
   })
 
-  it('accepts the other locale`s decimal separator when unambiguous', () => {
+  it("accepts the other locale's decimal separator when unambiguous", () => {
     expect(parseLocaleNumber('1.234,5', 'en')).toBe(1234.5)
     expect(parseLocaleNumber('1,234.5', 'vi')).toBe(1234.5)
     expect(parseLocaleNumber('6,2', 'en')).toBe(6.2)

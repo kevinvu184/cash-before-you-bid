@@ -94,9 +94,9 @@ describe('writing state to the URL', () => {
     renderApp()
     fireEvent.change(select('route'), { target: { value: 'htb' } })
     // Route change resets the deposit to the route default (2% for HTB).
-    expect(window.location.search).toBe('?dep=2&route=htb')
+    expect(window.location.search).toBe('?route=htb')
     fireEvent.click(input('newhome'))
-    expect(window.location.search).toBe('?dep=2&newhome=1&route=htb')
+    expect(window.location.search).toBe('?newhome=1&route=htb')
   })
 })
 
@@ -105,10 +105,10 @@ describe('history behaviour', () => {
     renderApp()
     fireEvent.change(select('route'), { target: { value: 'htb' } })
     fireEvent.change(select('region'), { target: { value: 'regional' } })
-    expect(window.location.search).toBe('?dep=2&region=regional&route=htb')
+    expect(window.location.search).toBe('?region=regional&route=htb')
 
     window.history.back()
-    await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
+    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
     expect(select('region').value).toBe('metro')
     expect(select('route').value).toBe('htb')
 
@@ -118,7 +118,7 @@ describe('history behaviour', () => {
     expect(input('dep').value).toBe('5')
 
     window.history.forward()
-    await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
+    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
     expect(select('route').value).toBe('htb')
     expect(input('dep').value).toBe('2')
   })
@@ -126,7 +126,7 @@ describe('history behaviour', () => {
   it('discards a pending debounced write when navigating back before it flushes', async () => {
     renderApp()
     fireEvent.change(select('route'), { target: { value: 'htb' } })
-    expect(window.location.search).toBe('?dep=2&route=htb')
+    expect(window.location.search).toBe('?route=htb')
 
     // Start a debounced write, then navigate back before the flush.
     fireEvent.change(input('price'), { target: { value: '900000' } })

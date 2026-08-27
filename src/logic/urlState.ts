@@ -1,7 +1,7 @@
 import { DEFAULT_INPUTS } from '../data/defaults'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
-import { clampDepositPct } from './deposit'
+import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
 
 // The URL query string is the persistence layer for everything the user can
 // change. Param names reuse the original page's element ids so links stay
@@ -72,7 +72,9 @@ export function parseParams(searchParams: URLSearchParams): AppState {
   const inputs: AppState = {
     price: readNumber(searchParams, 'price', d.price, 0, PRICE_MAX),
     route,
-    depositPct: readNumber(searchParams, 'dep', d.depositPct, 0, PCT_MAX),
+    // The deposit's default follows the route (2% for HTB, 20% for no-LMI),
+    // matching what changing the route in the UI resets it to.
+    depositPct: readNumber(searchParams, 'dep', defaultDepositPctForRoute(route), 0, PCT_MAX),
     region: readEnum(searchParams, 'region', REGIONS, d.region),
     firstHomeBuyer: readBoolean(searchParams, 'fhb', d.firstHomeBuyer),
     ownerOccupier: readBoolean(searchParams, 'ppr', d.ownerOccupier),
@@ -110,7 +112,7 @@ export function serialiseParams(state: AppState): URLSearchParams {
   num('bufm', state.bufferMonths, d.bufferMonths)
   bool('caplmi', state.capitaliseLmi, d.capitaliseLmi)
   num('conv', state.conveyancing, d.conveyancing)
-  num('dep', state.depositPct, d.depositPct)
+  num('dep', state.depositPct, defaultDepositPctForRoute(state.route))
   bool('fhb', state.firstHomeBuyer, d.firstHomeBuyer)
   bool('foreign', state.foreignPurchaser, d.foreignPurchaser)
   num('ins', state.buildingInsurance, d.buildingInsurance)

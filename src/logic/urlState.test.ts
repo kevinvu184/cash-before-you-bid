@@ -9,7 +9,7 @@ describe('serialiseParams', () => {
   })
 
   it('only includes params that differ from their default', () => {
-    const state: AppState = { ...DEFAULT_APP_STATE, price: 900_000, route: 'lmi' }
+    const state: AppState = { ...DEFAULT_APP_STATE, price: 900_000, route: 'lmi', depositPct: 10 }
     expect(serialiseParams(state).toString()).toBe('price=900000&route=lmi')
   })
 
@@ -23,7 +23,7 @@ describe('serialiseParams', () => {
       bufferMonths: 6,
     }
     expect(serialiseParams(state).toString()).toBe(
-      'bufm=6&dep=2&price=620000&region=regional&route=htb',
+      'bufm=6&price=620000&region=regional&route=htb',
     )
   })
 
@@ -140,6 +140,22 @@ describe('parseParams', () => {
       ...DEFAULT_APP_STATE,
       price: 800_000,
     })
+  })
+
+  it('defaults the deposit to the route default when dep is omitted', () => {
+    expect(parse('').depositPct).toBe(5)
+    expect(parse('route=htb').depositPct).toBe(2)
+    expect(parse('route=nolmi').depositPct).toBe(20)
+    expect(parse('route=lmi').depositPct).toBe(10)
+  })
+
+  it('omits dep from the canonical URL when it equals the route default', () => {
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, route: 'htb', depositPct: 2 }).toString()).toBe(
+      'route=htb',
+    )
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, route: 'htb', depositPct: 8 }).toString()).toBe(
+      'dep=8&route=htb',
+    )
   })
 
   it('clamps a deposit below the route minimum', () => {
