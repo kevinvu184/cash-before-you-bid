@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import i18n from './i18n'
 import { URL_DEBOUNCE_MS } from './hooks/useUrlState'
 
 function renderApp() {
@@ -17,8 +18,11 @@ function renderApp() {
 const input = (id: string) => document.getElementById(id) as HTMLInputElement
 const select = (id: string) => document.getElementById(id) as HTMLSelectElement
 
-beforeEach(() => {
+beforeEach(async () => {
   window.history.replaceState(null, '', '/')
+  // The i18n instance is a singleton; put it back on the default language so
+  // tests are order-independent.
+  await i18n.changeLanguage('vi')
 })
 
 afterEach(() => {
@@ -40,8 +44,8 @@ describe('loading state from the URL', () => {
     expect(select('route').value).toBe('lmi')
     expect(select('region').value).toBe('regional')
     expect(input('caplmi').checked).toBe(true)
-    // Derived output reflects the URL state on first render.
-    expect(screen.getByText('12% of $820,000')).toBeTruthy()
+    // Derived output reflects the URL state on first render (vi locale).
+    expect(screen.getAllByText(/12% của 820\.000/).length).toBeGreaterThan(0)
   })
 
   it('falls back to defaults for invalid params and rewrites the URL cleaned', async () => {
@@ -143,8 +147,8 @@ describe('copy link', () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: { writeText } })
     window.history.replaceState(null, '', '/?route=lmi')
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Copy link to these numbers' }))
-    await waitFor(() => expect(screen.getByText('Link copied')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết các số liệu này' }))
+    await waitFor(() => expect(screen.getByText('Đã sao chép liên kết')).toBeTruthy())
     expect(writeText).toHaveBeenCalledWith(window.location.href)
     expect(writeText.mock.calls[0][0]).toContain('?route=lmi')
   })
@@ -152,11 +156,56 @@ describe('copy link', () => {
   it('falls back to selectable text when the clipboard is unavailable', async () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: undefined })
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Copy link to these numbers' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết các số liệu này' }))
     await waitFor(() =>
-      expect(screen.getByText('Copy failed — select the link below')).toBeTruthy(),
+      expect(screen.getByText('Sao chép không thành công — hãy chọn liên kết bên dưới')).toBeTruthy(),
     )
-    const fallback = screen.getByLabelText('Shareable link') as HTMLInputElement
+    const fallback = screen.getByLabelText('Liên kết chia sẻ') as HTMLInputElement
     expect(fallback.value).toBe(window.location.href)
+  })
+})
+
+describe('localisation', () => {
+  it('renders Vietnamese with ?lang=vi', async () => {
+    window.history.replaceState(null, '', '/?lang=vi')
+    renderApp()
+    expect(screen.getAllByText('Tổng tiền mặt trước khi trả giá').length).toBeGreaterThan(0)
+    expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy()
+    await waitFor(() => expect(document.documentElement.lang).toBe('vi'))
+    // ?lang=vi is the default, so the canonical URL omits it.
+    await waitFor(() => expect(window.location.search).toBe(''))
+  })
+
+  it('renders English with ?lang=en', async () => {
+    window.history.replaceState(null, '', '/?lang=en')
+    renderApp()
+    await waitFor(() =>
+      expect(screen.getAllByText('Total cash before you bid').length).toBeGreaterThan(0),
+    )
+    expect(screen.getByText('Deposit route')).toBeTruthy()
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
+    expect(window.location.search).toBe('?lang=en')
+  })
+
+  it('switching language updates ?lang= in the URL and <html lang>', async () => {
+    renderApp()
+    expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+    expect(window.location.search).toBe('?lang=en')
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
+    await waitFor(() => expect(screen.getByText('Deposit route')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếng Việt' }))
+    expect(window.location.search).toBe('')
+    await waitFor(() => expect(document.documentElement.lang).toBe('vi'))
+    await waitFor(() => expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy())
+  })
+
+  it('keeps calculator params when the language changes', () => {
+    window.history.replaceState(null, '', '/?price=820000&route=lmi')
+    renderApp()
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+    expect(window.location.search).toBe('?lang=en&price=820000&route=lmi')
   })
 })

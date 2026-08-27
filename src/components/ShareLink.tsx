@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCopyLink } from '../hooks/useCopyLink'
 
 /**
@@ -6,16 +7,17 @@ import { useCopyLink } from '../hooks/useCopyLink'
  * outcome announced in a mono status line.
  */
 export function ShareLink() {
+  const { t } = useTranslation()
   const { copy, status, fallbackUrl } = useCopyLink()
 
   return (
     <div className="share">
       <button type="button" className="copy-link" onClick={() => void copy()}>
-        Copy link to these numbers
+        {t('share.copy')}
       </button>
       <span className="share-status" role="status" aria-live="polite">
-        {status === 'copied' && 'Link copied'}
-        {status === 'failed' && 'Copy failed — select the link below'}
+        {status === 'copied' && t('share.copied')}
+        {status === 'failed' && t('share.failed')}
       </span>
       {fallbackUrl && (
         <input
@@ -23,7 +25,7 @@ export function ShareLink() {
           type="text"
           readOnly
           value={fallbackUrl}
-          aria-label="Shareable link"
+          aria-label={t('share.fallbackLabel')}
           onFocus={(event) => event.target.select()}
         />
       )}

@@ -25,16 +25,3 @@ export function governmentEquityShare(route: DepositRoute, newHome: boolean): nu
   if (route !== 'htb') return 0
   return newHome ? HTB_EQUITY_NEW : HTB_EQUITY_EXISTING
 }
-
-export function depositHint(route: DepositRoute): string {
-  switch (route) {
-    case 'scheme':
-      return 'Minimum 5% under the scheme'
-    case 'htb':
-      return 'Minimum 2% under Help to Buy'
-    case 'nolmi':
-      return '20% avoids LMI without a guarantor'
-    case 'lmi':
-      return 'Under 20%; LMI charged'
-  }
-}

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   clampDepositPct,
   defaultDepositPctForRoute,
-  depositHint,
   governmentEquityShare,
   regionPriceCap,
 } from './deposit'
@@ -50,14 +49,5 @@ describe('governmentEquityShare', () => {
   it('is zero on every other route', () => {
     expect(governmentEquityShare('scheme', true)).toBe(0)
     expect(governmentEquityShare('lmi', false)).toBe(0)
-  })
-})
-
-describe('depositHint', () => {
-  it('matches the original hint text per route', () => {
-    expect(depositHint('scheme')).toBe('Minimum 5% under the scheme')
-    expect(depositHint('htb')).toBe('Minimum 2% under Help to Buy')
-    expect(depositHint('nolmi')).toBe('20% avoids LMI without a guarantor')
-    expect(depositHint('lmi')).toBe('Under 20%; LMI charged')
   })
 })

@@ -1,5 +1,8 @@
+import { useTranslation } from 'react-i18next'
+import { formatAud } from '../logic/format'
+
 interface StickyTotalProps {
-  total: string
+  total: number
   shown: boolean
 }
 
@@ -11,10 +14,11 @@ interface StickyTotalProps {
  * where the stat row is already beside the inputs.
  */
 export function StickyTotal({ total, shown }: StickyTotalProps) {
+  const { t, i18n } = useTranslation()
   return (
     <div className={shown ? 'sticky-total shown' : 'sticky-total'} aria-hidden="true">
-      <span className="sticky-total-label">Total cash before you bid</span>
-      <span className="sticky-total-value">{total}</span>
+      <span className="sticky-total-label">{t('stats.totalLabel')}</span>
+      <span className="sticky-total-value">{formatAud(total, i18n.language)}</span>
     </div>
   )
 }

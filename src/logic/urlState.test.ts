@@ -1,23 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_INPUTS } from '../data/defaults'
-import type { CalculatorInputs } from '../types/calculator'
-import { parseParams, serialiseParams } from './urlState'
+import { DEFAULT_APP_STATE, parseParams, serialiseParams, type AppState } from './urlState'
 
 const parse = (query: string) => parseParams(new URLSearchParams(query))
 
 describe('serialiseParams', () => {
   it('serialises the default state to an empty query string', () => {
-    expect(serialiseParams(DEFAULT_INPUTS).toString()).toBe('')
+    expect(serialiseParams(DEFAULT_APP_STATE).toString()).toBe('')
   })
 
   it('only includes params that differ from their default', () => {
-    const state: CalculatorInputs = { ...DEFAULT_INPUTS, price: 900_000, route: 'lmi' }
+    const state: AppState = { ...DEFAULT_APP_STATE, price: 900_000, route: 'lmi' }
     expect(serialiseParams(state).toString()).toBe('price=900000&route=lmi')
   })
 
   it('sorts keys alphabetically so equal states produce identical URLs', () => {
-    const state: CalculatorInputs = {
-      ...DEFAULT_INPUTS,
+    const state: AppState = {
+      ...DEFAULT_APP_STATE,
       route: 'htb',
       depositPct: 2,
       region: 'regional',
@@ -29,9 +27,14 @@ describe('serialiseParams', () => {
     )
   })
 
+  it('serialises English explicitly and omits the default Vietnamese', () => {
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, lang: 'en' }).toString()).toBe('lang=en')
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, lang: 'vi' }).toString()).toBe('')
+  })
+
   it('writes booleans as 1/0', () => {
-    const state: CalculatorInputs = {
-      ...DEFAULT_INPUTS,
+    const state: AppState = {
+      ...DEFAULT_APP_STATE,
       firstHomeBuyer: false,
       capitaliseLmi: true,
     }
@@ -39,7 +42,7 @@ describe('serialiseParams', () => {
   })
 
   it('keeps a fully non-default state well under the 2000-character URL limit', () => {
-    const state: CalculatorInputs = {
+    const state: AppState = {
       price: 12_345_678,
       route: 'lmi',
       depositPct: 12.5,
@@ -58,6 +61,7 @@ describe('serialiseParams', () => {
       movingCosts: 8000,
       bufferMonths: 12,
       capitaliseLmi: true,
+      lang: 'en',
     }
     expect(serialiseParams(state).toString().length).toBeLessThan(300)
   })
@@ -65,13 +69,13 @@ describe('serialiseParams', () => {
 
 describe('parseParams', () => {
   it('returns the defaults for an empty query string', () => {
-    expect(parse('')).toEqual(DEFAULT_INPUTS)
+    expect(parse('')).toEqual(DEFAULT_APP_STATE)
   })
 
   it('reads every param', () => {
     const parsed = parse(
       'adj=900&bp=600&bufm=6&caplmi=1&conv=1800&dep=12&fhb=0&foreign=1&ins=1600' +
-        '&lender=350&move=4500&newhome=1&otp=50000&ppr=0&price=820000&rate=5.9' +
+        '&lang=en&lender=350&move=4500&newhome=1&otp=50000&ppr=0&price=820000&rate=5.9' +
         '&region=regional&route=lmi',
     )
     expect(parsed).toEqual({
@@ -93,14 +97,15 @@ describe('parseParams', () => {
       movingCosts: 4500,
       bufferMonths: 6,
       capitaliseLmi: true,
+      lang: 'en',
     })
   })
 
   it('falls back to the default for non-numeric numbers', () => {
-    expect(parse('price=abc').price).toBe(DEFAULT_INPUTS.price)
-    expect(parse('rate=NaN').interestRatePct).toBe(DEFAULT_INPUTS.interestRatePct)
-    expect(parse('price=Infinity').price).toBe(DEFAULT_INPUTS.price)
-    expect(parse('price=').price).toBe(DEFAULT_INPUTS.price)
+    expect(parse('price=abc').price).toBe(DEFAULT_APP_STATE.price)
+    expect(parse('rate=NaN').interestRatePct).toBe(DEFAULT_APP_STATE.interestRatePct)
+    expect(parse('price=Infinity').price).toBe(DEFAULT_APP_STATE.price)
+    expect(parse('price=').price).toBe(DEFAULT_APP_STATE.price)
   })
 
   it('clamps out-of-range numbers to the allowed range', () => {
@@ -112,20 +117,27 @@ describe('parseParams', () => {
   })
 
   it('falls back to the default for unknown enum values', () => {
-    expect(parse('route=jetski').route).toBe(DEFAULT_INPUTS.route)
-    expect(parse('region=moon').region).toBe(DEFAULT_INPUTS.region)
+    expect(parse('route=jetski').route).toBe(DEFAULT_APP_STATE.route)
+    expect(parse('region=moon').region).toBe(DEFAULT_APP_STATE.region)
   })
 
   it('treats anything but 1/0 as the boolean default', () => {
     expect(parse('fhb=0').firstHomeBuyer).toBe(false)
     expect(parse('caplmi=1').capitaliseLmi).toBe(true)
-    expect(parse('fhb=true').firstHomeBuyer).toBe(DEFAULT_INPUTS.firstHomeBuyer)
-    expect(parse('caplmi=yes').capitaliseLmi).toBe(DEFAULT_INPUTS.capitaliseLmi)
+    expect(parse('fhb=true').firstHomeBuyer).toBe(DEFAULT_APP_STATE.firstHomeBuyer)
+    expect(parse('caplmi=yes').capitaliseLmi).toBe(DEFAULT_APP_STATE.capitaliseLmi)
+  })
+
+  it('reads the language and falls back to Vietnamese', () => {
+    expect(parse('').lang).toBe('vi')
+    expect(parse('lang=en').lang).toBe('en')
+    expect(parse('lang=vi').lang).toBe('vi')
+    expect(parse('lang=fr').lang).toBe('vi')
   })
 
   it('ignores unknown keys', () => {
     expect(parse('utm_source=share&junk=1&price=800000')).toEqual({
-      ...DEFAULT_INPUTS,
+      ...DEFAULT_APP_STATE,
       price: 800_000,
     })
   })
@@ -138,12 +150,12 @@ describe('parseParams', () => {
 })
 
 describe('round-trip', () => {
-  const states: Array<[string, CalculatorInputs]> = [
-    ['defaults', DEFAULT_INPUTS],
-    ['non-default numbers', { ...DEFAULT_INPUTS, price: 1_050_000, interestRatePct: 5.85 }],
+  const states: Array<[string, AppState]> = [
+    ['defaults', DEFAULT_APP_STATE],
+    ['non-default numbers', { ...DEFAULT_APP_STATE, price: 1_050_000, interestRatePct: 5.85 }],
     [
       'htb route',
-      { ...DEFAULT_INPUTS, route: 'htb', depositPct: 2, newHome: true, region: 'regional' },
+      { ...DEFAULT_APP_STATE, route: 'htb', depositPct: 2, newHome: true, region: 'regional' },
     ],
     [
       'everything flipped',
@@ -166,6 +178,7 @@ describe('round-trip', () => {
         movingCosts: 6000,
         bufferMonths: 12,
         capitaliseLmi: true,
+        lang: 'en',
       },
     ],
   ]

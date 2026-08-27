@@ -1,4 +1,4 @@
-import { formatMoney } from './format'
+import type { DutyHowCode, OffThePlanHow } from '../types/calculator'
 
 // Victorian land transfer duty, general rates.
 export function generalDuty(dutiableValue: number): number {
@@ -27,10 +27,18 @@ export interface StampDutyInput {
   ownerOccupier: boolean
 }
 
+// The working is data — a code plus the numbers that go into it — so the UI
+// can render it in the active language. Display text never originates here.
+export interface StampDutyHow {
+  code: DutyHowCode
+  params: Readonly<Record<string, number>>
+  offThePlan: OffThePlanHow | null
+}
+
 export interface StampDutyResult {
   dutiableValue: number
   duty: number
-  how: string
+  how: StampDutyHow
 }
 
 export function stampDuty(input: StampDutyInput): StampDutyResult {
@@ -42,24 +50,25 @@ export function stampDuty(input: StampDutyInput): StampDutyResult {
       ? pprDuty(dutiableValue)
       : generalDuty(dutiableValue)
   let duty = base
-  let how: string
+  let code: DutyHowCode
+  let params: Record<string, number> = { dutiableValue }
   if (firstHomeBuyer && ownerOccupier) {
     if (dutiableValue <= 600_000) {
       duty = 0
-      how = `First home buyer exemption: dutiable value ${formatMoney(dutiableValue)} ≤ $600,000 → $0`
+      code = 'dutyFhbExempt'
     } else if (dutiableValue <= 750_000) {
       duty = (base * (dutiableValue - 600_000)) / 150_000
-      how = `General duty ${formatMoney(base)} × (${formatMoney(dutiableValue)} − $600,000) ÷ $150,000`
+      code = 'dutyFhbConcession'
+      params = { base, dutiableValue }
     } else {
-      how = `Above $750,000: no first home concession. $2,870 + 6% × (${formatMoney(dutiableValue)} − $130,000)`
+      code = 'dutyFhbAboveCap'
     }
   } else if (ownerOccupier && dutiableValue <= 550_000) {
-    how = `PPR concession rate on ${formatMoney(dutiableValue)}`
+    code = 'dutyPpr'
   } else {
-    how = `General rate on ${formatMoney(dutiableValue)}`
+    code = 'dutyGeneral'
   }
-  if (otp > 0) {
-    how = `Off-the-plan: ${formatMoney(price)} − ${formatMoney(otp)} construction = dutiable ${formatMoney(dutiableValue)}. ${how}`
-  }
-  return { dutiableValue, duty, how }
+  const offThePlan: OffThePlanHow | null =
+    otp > 0 ? { price, construction: otp, dutiableValue } : null
+  return { dutiableValue, duty, how: { code, params, offThePlan } }
 }

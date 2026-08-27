@@ -1,162 +1,159 @@
+import { useTranslation } from 'react-i18next'
 import type { UseCalculatorResult } from '../hooks/useCalculator'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { CheckboxField, NumberField, SelectField } from './Field'
 import { ShareLink } from './ShareLink'
 
-const ROUTE_OPTIONS: ReadonlyArray<{ value: DepositRoute; label: string }> = [
-  { value: 'scheme', label: 'Australian Government 5% Deposit Scheme (no LMI)' },
-  { value: 'lmi', label: 'Pay LMI (deposit under 20%)' },
-  { value: 'nolmi', label: '20%+ deposit or family guarantor (no LMI)' },
-  { value: 'htb', label: 'Help to Buy (2% deposit, government equity)' },
-]
+const ROUTE_KEYS: Record<DepositRoute, string> = {
+  scheme: 'routes.scheme',
+  lmi: 'routes.lmi',
+  nolmi: 'routes.nolmi',
+  htb: 'routes.htb',
+}
 
-const REGION_OPTIONS: ReadonlyArray<{ value: Region; label: string }> = [
-  { value: 'metro', label: 'Melbourne or Geelong (scheme cap $950k)' },
-  { value: 'regional', label: 'Rest of Victoria (scheme cap $650k)' },
-]
+const REGION_KEYS: Record<Region, string> = {
+  metro: 'regions.metro',
+  regional: 'regions.regional',
+}
+
+const HINT_KEYS: Record<DepositRoute, string> = {
+  scheme: 'hints.scheme',
+  lmi: 'hints.lmi',
+  nolmi: 'hints.nolmi',
+  htb: 'hints.htb',
+}
+
+const ROUTE_ORDER: readonly DepositRoute[] = ['scheme', 'lmi', 'nolmi', 'htb']
+const REGION_ORDER: readonly Region[] = ['metro', 'regional']
 
 interface InputsPanelProps {
   inputs: CalculatorInputs
-  depositHint: string
   setField: UseCalculatorResult['setField']
   setRoute: (route: DepositRoute) => void
 }
 
-export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsPanelProps) {
+export function InputsPanel({ inputs, setField, setRoute }: InputsPanelProps) {
+  const { t } = useTranslation()
+
+  const routeOptions = ROUTE_ORDER.map((value) => ({ value, label: t(ROUTE_KEYS[value]) }))
+  const regionOptions = REGION_ORDER.map((value) => ({ value, label: t(REGION_KEYS[value]) }))
+
   return (
-    <aside className="panel" aria-label="Inputs">
-      <h2 className="section-mark">01 — Your numbers</h2>
+    <aside className="panel" aria-label={t('inputs.label')}>
+      <h2 className="section-mark">{t('inputs.heading')}</h2>
 
       <NumberField
         id="price"
-        label="Purchase price ($)"
+        label={t('inputs.price')}
         value={inputs.price}
-        step={5000}
-        min={50000}
         onChange={(next) => setField('price', next)}
       />
       <SelectField
         id="route"
-        label="Deposit route"
+        label={t('inputs.route')}
         value={inputs.route}
-        options={ROUTE_OPTIONS}
+        options={routeOptions}
         onChange={setRoute}
       />
       <NumberField
         id="dep"
-        label="Your deposit (%)"
+        label={t('inputs.deposit')}
         value={inputs.depositPct}
-        hint={depositHint}
-        step={0.5}
-        min={0}
-        max={100}
+        hint={t(HINT_KEYS[inputs.route])}
         onChange={(next) => setField('depositPct', next)}
       />
       <SelectField
         id="region"
-        label="Where in Victoria"
+        label={t('inputs.region')}
         value={inputs.region}
-        options={REGION_OPTIONS}
+        options={regionOptions}
         onChange={(next) => setField('region', next)}
       />
       <CheckboxField
         id="fhb"
-        label="Eligible first home buyer (never owned, will live in it 12 months)"
+        label={t('inputs.fhb')}
         checked={inputs.firstHomeBuyer}
         onChange={(next) => setField('firstHomeBuyer', next)}
       />
       <CheckboxField
         id="ppr"
-        label="Buying to live in (principal place of residence)"
+        label={t('inputs.ppr')}
         checked={inputs.ownerOccupier}
         onChange={(next) => setField('ownerOccupier', next)}
       />
       <CheckboxField
         id="newhome"
-        label="New home (never occupied) — First Home Owner Grant $10,000 if ≤ $750k"
+        label={t('inputs.newHome')}
         checked={inputs.newHome}
         onChange={(next) => setField('newHome', next)}
       />
       <NumberField
         id="otp"
-        label="Off-the-plan: construction cost still to be built at contract ($)"
+        label={t('inputs.otp')}
         value={inputs.offThePlanConstruction}
-        hint="Strata apartments/townhouses only; reduces dutiable value. 0 for established homes."
-        step={10000}
-        min={0}
+        hint={t('inputs.otpHint')}
         onChange={(next) => setField('offThePlanConstruction', next)}
       />
       <CheckboxField
         id="foreign"
-        label="Not a citizen or permanent resident (foreign purchaser duty +8%)"
+        label={t('inputs.foreign')}
         checked={inputs.foreignPurchaser}
         onChange={(next) => setField('foreignPurchaser', next)}
       />
       <NumberField
         id="rate"
-        label="Interest rate (% p.a.)"
+        label={t('inputs.rate')}
         value={inputs.interestRatePct}
-        step={0.05}
-        min={1}
-        max={15}
         onChange={(next) => setField('interestRatePct', next)}
       />
 
       <details className="assumptions">
-        <summary>Cost assumptions (edit if you have quotes)</summary>
+        <summary>{t('inputs.assumptions')}</summary>
         <NumberField
           id="conv"
-          label="Conveyancing incl. disbursements ($)"
+          label={t('inputs.conveyancing')}
           value={inputs.conveyancing}
-          step={50}
           onChange={(next) => setField('conveyancing', next)}
         />
         <NumberField
           id="bp"
-          label="Building and pest inspection ($)"
+          label={t('inputs.buildingAndPest')}
           value={inputs.buildingAndPest}
-          step={50}
           onChange={(next) => setField('buildingAndPest', next)}
         />
         <NumberField
           id="lender"
-          label="Lender fees: settlement + valuation ($)"
+          label={t('inputs.lenderFees')}
           value={inputs.lenderFees}
-          step={50}
           onChange={(next) => setField('lenderFees', next)}
         />
         <NumberField
           id="adj"
-          label="Settlement adjustments to vendor ($)"
+          label={t('inputs.settlementAdjustments')}
           value={inputs.settlementAdjustments}
-          step={50}
           onChange={(next) => setField('settlementAdjustments', next)}
         />
         <NumberField
           id="ins"
-          label="Building insurance, first year ($)"
+          label={t('inputs.buildingInsurance')}
           value={inputs.buildingInsurance}
-          step={50}
           onChange={(next) => setField('buildingInsurance', next)}
         />
         <NumberField
           id="move"
-          label="Moving and set-up ($)"
+          label={t('inputs.moving')}
           value={inputs.movingCosts}
-          step={250}
           onChange={(next) => setField('movingCosts', next)}
         />
         <NumberField
           id="bufm"
-          label="Buffer (months of repayments)"
+          label={t('inputs.bufferMonths')}
           value={inputs.bufferMonths}
-          step={1}
-          min={0}
           onChange={(next) => setField('bufferMonths', next)}
         />
         <CheckboxField
           id="caplmi"
-          label="Capitalise LMI into the loan (pay nothing upfront)"
+          label={t('inputs.capitaliseLmi')}
           checked={inputs.capitaliseLmi}
           onChange={(next) => setField('capitaliseLmi', next)}
         />
@@ -164,10 +161,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
 
       <ShareLink />
 
-      <p className="panel-foot">
-        Your numbers live in this page's address — share the link to share them. Rules as at 25 Aug
-        2026; indicative only, not advice.
-      </p>
+      <p className="panel-foot">{t('inputs.foot')}</p>
     </aside>
   )
 }
