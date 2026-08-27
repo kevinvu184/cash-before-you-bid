@@ -126,6 +126,7 @@ describe('calculate — LMI route', () => {
     )
     expect(r.totals.totalCash).toBeCloseTo(125_119.15243189625, 6)
     expect(r.tiles.loan).toEqual({ value: '$712,391', sub: 'LVR 94.99%' })
+    expect(r.totals.lvrPct).toBeCloseTo(94.9854, 4)
   })
 
   it('applies LMI when the scheme price cap is exceeded', () => {
@@ -231,6 +232,19 @@ describe('calculate — edge behaviours preserved from the original', () => {
     expect(r.totals.buffer).toBe(0)
     expect(r.rows[13].how).toBe('No buffer')
     expect(r.totals.totalCash).toBeCloseTo(88_529.64, 6)
+  })
+
+  it('handles a cleared (zero) price like the original', () => {
+    const r = calculate(inputs({ price: 0 }))
+    expect(r.totals.deposit).toBe(0)
+    expect(r.totals.loan).toBe(0)
+    expect(r.totals.lvrPct).toBe(0)
+    expect(r.totals.purchaseCosts).toBeCloseTo(5001.3, 6)
+    expect(r.totals.buffer).toBe(1000)
+    expect(r.totals.totalCash).toBeCloseTo(10_001.3, 6)
+    expect(r.tiles.costs.sub).toBe('')
+    // The original renders exactly this for a zero price; preserved on purpose.
+    expect(r.tiles.loan).toEqual({ value: '$0', sub: 'LVR NaN%' })
   })
 
   it('handles a zero interest rate without dividing by zero', () => {

@@ -216,7 +216,10 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
       deposit,
       purchaseCosts: costs,
       loan: loanFinal,
-      lvrPct: lvr,
+      // Reported against the final loan so it stays consistent with `loan`
+      // when LMI is capitalised; the pre-capitalisation `lvr` above is what
+      // prices the LMI and drives the flags, matching the original.
+      lvrPct: price > 0 ? (loanFinal / price) * 100 : 0,
       monthlyRepayment: rep,
       assessedRepayment: repAssessed,
       buffer,

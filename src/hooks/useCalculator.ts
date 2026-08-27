@@ -5,13 +5,17 @@ import { clampDepositPct, defaultDepositPctForRoute } from '../logic/deposit'
 import { deserializeInputs, serializeInputs } from '../logic/storage'
 import type { CalculationResult, CalculatorInputs, DepositRoute } from '../types/calculator'
 
+// Changing route must also reset the deposit to the route default, so route is
+// only settable through the dedicated setRoute action.
+type SettableField = Exclude<keyof CalculatorInputs, 'route'>
+
 type SetAction = {
-  [K in keyof CalculatorInputs]: { type: 'set'; field: K; value: CalculatorInputs[K] }
-}[keyof CalculatorInputs]
+  [K in SettableField]: { type: 'set'; field: K; value: CalculatorInputs[K] }
+}[SettableField]
 
 type Action = SetAction | { type: 'setRoute'; route: DepositRoute }
 
-function withField<K extends keyof CalculatorInputs>(
+function withField<K extends SettableField>(
   state: CalculatorInputs,
   field: K,
   value: CalculatorInputs[K],
@@ -42,7 +46,7 @@ function readStoredInputs(): CalculatorInputs {
 export interface UseCalculatorResult {
   inputs: CalculatorInputs
   result: CalculationResult
-  setField: <K extends keyof CalculatorInputs>(field: K, value: CalculatorInputs[K]) => void
+  setField: <K extends SettableField>(field: K, value: CalculatorInputs[K]) => void
   setRoute: (route: DepositRoute) => void
 }
 
@@ -58,7 +62,7 @@ export function useCalculator(): UseCalculatorResult {
   }, [inputs])
 
   const setField = useCallback(
-    <K extends keyof CalculatorInputs>(field: K, value: CalculatorInputs[K]) =>
+    <K extends SettableField>(field: K, value: CalculatorInputs[K]) =>
       dispatch({ type: 'set', field, value } as SetAction),
     [],
   )
