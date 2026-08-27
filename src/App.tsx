@@ -305,26 +305,28 @@ function App() {
           </ul>
         )}
 
-        <table className="breakdown">
-          <thead>
-            <tr>
-              <th scope="col">Item</th>
-              <th scope="col" className="amount">
-                Amount
-              </th>
-              <th scope="col">How it is worked out</th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.rows.map((row) => (
-              <tr key={row.label} className={row.emphasis ? 'emphasis' : undefined}>
-                <td>{row.label}</td>
-                <td className="amount">{row.formatted}</td>
-                <td className="how">{row.how}</td>
+        <div className="table-scroll">
+          <table className="breakdown">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col" className="amount">
+                  Amount
+                </th>
+                <th scope="col">How it is worked out</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {result.rows.map((row) => (
+                <tr key={row.label} className={row.emphasis ? 'emphasis' : undefined}>
+                  <td>{row.label}</td>
+                  <td className="amount">{row.formatted}</td>
+                  <td className="how">{row.how}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   )

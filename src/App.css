@@ -1,7 +1,9 @@
 .app {
   max-width: 64rem;
   margin: 0 auto;
-  padding: 3rem 1.5rem 5rem;
+  padding: 2.5rem 1rem 4rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
 }
 
 .app-header {
@@ -9,7 +11,7 @@
 }
 
 .app-header h1 {
-  font-size: 2.5rem;
+  font-size: clamp(1.875rem, 4vw + 1rem, 2.5rem);
   line-height: 1.1;
   margin-bottom: 0.5rem;
 }
@@ -20,12 +22,12 @@
 }
 
 .inputs {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
 
 .field-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
   gap: 1rem 1.5rem;
   margin-bottom: 1.25rem;
 }
@@ -51,6 +53,7 @@
   border-radius: 6px;
   padding: 0.45rem 0.6rem;
   min-height: 44px;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -72,6 +75,7 @@
   gap: 0.5rem;
   min-height: 44px;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .check input {
@@ -99,10 +103,13 @@
   min-width: 44px;
   padding: 0 1.25rem;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
-.copy-link:hover {
-  background: rgba(128, 128, 128, 0.24);
+@media (hover: hover) {
+  .copy-link:hover {
+    background: rgba(128, 128, 128, 0.24);
+  }
 }
 
 .share-status {
@@ -119,6 +126,7 @@
   padding: 0.4rem 0.6rem;
   flex: 1 1 16rem;
   min-height: 44px;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -128,7 +136,7 @@
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
   gap: 1rem;
 }
 
@@ -192,9 +200,15 @@
   border-color: #059669;
 }
 
+/* Tables must not force horizontal scroll on the page at 360px. */
+.table-scroll {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
 .breakdown {
   width: 100%;
-  margin-top: 1.5rem;
+  min-width: 34rem;
   border-collapse: collapse;
   font-size: 0.95rem;
 }
@@ -221,4 +235,16 @@
 .breakdown .emphasis td {
   font-weight: 700;
   color: var(--text-h);
+}
+
+@media (min-width: 640px) {
+  .app {
+    padding: 4rem 1.5rem 5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+
+  .inputs {
+    margin-top: 2.5rem;
+  }
 }
