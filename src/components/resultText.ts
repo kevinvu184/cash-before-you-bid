@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { APP_CURRENCY } from '../logic/currencyConfig'
-import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../logic/format'
+import { formatMoney, formatNumber, formatPercent } from '../logic/format'
 import type { Flag, RowCode, RowHow } from '../types/calculator'
 
 // The calculator emits codes and numbers; these maps turn them into text for
@@ -17,9 +17,14 @@ export function approxMoney(amount: number, t: TFunction, locale: string): strin
   return t('money.approx', { amount: formatMoney(amount, APP_CURRENCY, locale) })
 }
 
-/** A table row amount: rounded and "~"-prefixed, minus sign preserved. */
+/**
+ * A table row amount: rounded and "~"-prefixed, with the typographic minus
+ * ahead of the prefix ("−~10.000 AUD") — the sign applies to the whole
+ * approximate amount, not the other way around.
+ */
 export function approxRowAmount(amount: number, t: TFunction, locale: string): string {
-  return t('money.approx', { amount: formatRowAmount(amount, APP_CURRENCY, locale) })
+  const approxAbs = approxMoney(Math.abs(amount), t, locale)
+  return (amount < 0 ? '−' : '') + approxAbs
 }
 
 /** An exact figure (user input or statutory constant): never rounded. */

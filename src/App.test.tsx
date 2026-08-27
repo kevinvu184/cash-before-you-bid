@@ -176,6 +176,15 @@ describe('rounded estimates', () => {
     )
   })
 
+  it('renders negative rows with the minus ahead of the approx prefix', () => {
+    // The First Home Owner Grant row is -10,000 with a new home at the
+    // default price; the sign applies to the whole approximate amount.
+    window.history.replaceState(null, '', '/?newhome=1')
+    renderApp()
+    const cells = Array.from(document.querySelectorAll('td.n')).map((c) => c.textContent)
+    expect(cells).toContain('\u2212~10.000\u00a0AUD')
+  })
+
   it('shows the estimate disclaimer with the currency rounding unit', () => {
     renderApp()
     const note = document.querySelector('.estimate-note')
