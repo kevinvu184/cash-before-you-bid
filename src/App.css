@@ -1,12 +1,14 @@
 .app {
   max-width: 48rem;
   margin: 0 auto;
-  padding: 4rem 1.5rem;
+  padding: 2.5rem 1rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
   text-align: center;
 }
 
 .app-header h1 {
-  font-size: 2.5rem;
+  font-size: clamp(1.875rem, 4vw + 1rem, 2.5rem);
   line-height: 1.1;
   margin-bottom: 0.5rem;
 }
@@ -17,7 +19,7 @@
 }
 
 .app-content {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
 
 .app-content code {
@@ -25,4 +27,16 @@
   border-radius: 4px;
   background-color: rgba(128, 128, 128, 0.18);
   font-size: 0.95em;
+}
+
+@media (min-width: 640px) {
+  .app {
+    padding: 4rem 1.5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+
+  .app-content {
+    margin-top: 2.5rem;
+  }
 }
