@@ -1,9 +1,15 @@
 /* Ledger — design-system tokens and component classes. The one stylesheet: every color, font, spacing, radius and border comes from here. Editorial, printed-report voice: ink on warm cream, hairline rules, one rust accent, mono metadata. */
-/* Vendored from the Ledger design system, unchanged except for the font load:
-   upstream carries an @import for Libre Franklin + Source Code Pro, which is
-   served from index.html as a preconnected <link> instead so it does not block
-   this stylesheet on a phone connection. Same families, same Vietnamese subset,
-   same display=swap. */
+/* Vendored from the Ledger design system. Two deviations, both marked inline:
+
+   1. The font load. Upstream carries an @import for Libre Franklin + Source
+      Code Pro; it is served from index.html as a preconnected <link> instead so
+      it does not block this stylesheet on a phone connection. Same families,
+      same Vietnamese subset, same display=swap.
+   2. `:focus` is scoped to `:not(:focus-visible)` so browsers without
+      :focus-visible support keep a focus indicator.
+
+   Both are worth pushing back upstream. Everything else is byte-for-byte, so
+   keep new rules in App.css or index.css rather than editing here. */
 
 :root {
   /* — ink and paper — */
@@ -123,7 +129,7 @@ figcaption {
   text-transform: uppercase; margin-top: var(--space-2); color: var(--color-text-muted);
 }
 .text-muted { color: var(--color-text-muted); }
-:focus { outline: none; }
+:focus:not(:focus-visible) { outline: none; } /* deviation: upstream clears the outline on plain :focus, which leaves a browser without :focus-visible support with no focus indicator at all. Scoping it this way makes the whole rule invalid — and so ignored — in those browsers, keeping the native outline. */
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 ::selection { background: var(--color-accent-tint); }
 [data-theme="dark"] ::selection { background: var(--color-grey-2); }

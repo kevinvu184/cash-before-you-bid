@@ -23,6 +23,10 @@ export function NumberField({ id, label, value, onChange, hint }: NumberFieldPro
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
+      {/* autoComplete is off by choice, not by omission: these are one-off
+          figures for a calculation, and no autocomplete token describes a
+          purchase price or an interest rate. Offering to fill a saved value
+          into one would be wrong every time. */}
       <input
         id={id}
         type="text"

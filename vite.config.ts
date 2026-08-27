@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
-    setupFiles: ['./src/test/setup.ts'],
+    // Stubs the browser APIs jsdom omits; a no-op under the node environment.
+    setupFiles: ['./src/test-setup.ts'],
   },
 })

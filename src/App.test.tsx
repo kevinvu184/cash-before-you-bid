@@ -147,7 +147,7 @@ describe('copy link', () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: { writeText } })
     window.history.replaceState(null, '', '/?route=lmi')
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết các số liệu này' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
     await waitFor(() => expect(screen.getByText('Đã sao chép liên kết')).toBeTruthy())
     expect(writeText).toHaveBeenCalledWith(window.location.href)
     expect(writeText.mock.calls[0][0]).toContain('?route=lmi')
@@ -156,7 +156,7 @@ describe('copy link', () => {
   it('falls back to selectable text when the clipboard is unavailable', async () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: undefined })
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết các số liệu này' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
     await waitFor(() =>
       expect(screen.getByText('Sao chép không thành công — hãy chọn liên kết bên dưới')).toBeTruthy(),
     )

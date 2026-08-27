@@ -46,6 +46,21 @@ a {
   touch-action: manipulation;
 }
 
+/* Ledger states its hovers unconditionally, and on touch a :hover can stick to
+   whatever was tapped last. Of its hover rules only these two reach elements on
+   this page — the Copy link button and the sources link — so both are returned
+   to their resting appearance where there is no hover-capable pointer. */
+@media (hover: none) {
+  a:hover {
+    color: var(--color-accent);
+  }
+
+  .btn-secondary:hover {
+    background: transparent;
+    border-color: var(--color-hairline-strong);
+  }
+}
+
 img,
 svg,
 video {

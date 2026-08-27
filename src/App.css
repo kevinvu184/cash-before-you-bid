@@ -323,6 +323,42 @@
   color: var(--color-text-muted);
 }
 
+/* ── copy link ──────────────────────────────────────────────────────────── */
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding-top: 16px;
+}
+
+.share .btn {
+  min-height: 44px;
+}
+
+.share-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.share-fallback {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px 8px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
 /* ── flags ──────────────────────────────────────────────────────────────── */
 
 .flags {
@@ -715,62 +751,4 @@ p.small a {
     border: 1px solid var(--color-hairline);
     border-radius: var(--radius-md);
   }
-}
-
-/* ── share (copy link) ──────────────────────────────────────────────────── */
-
-.share {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-hairline);
-}
-
-.copy-link {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.4;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  background: var(--color-bg);
-  border: 1px solid var(--color-hairline-strong);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.copy-link:focus-visible {
-  outline: none;
-  border-color: var(--color-accent);
-}
-
-@media (hover: hover) {
-  .copy-link:hover {
-    border-color: var(--color-grey-4);
-  }
-}
-
-.share-status {
-  display: block;
-  min-height: 18px;
-  margin-top: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--color-text-muted);
-}
-
-.share-fallback {
-  width: 100%;
-  padding: 10px 12px;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-hairline-strong);
-  border-radius: var(--radius-sm);
 }

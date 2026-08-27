@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import type { UseCalculatorResult } from '../hooks/useCalculator'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
+import { CopyLink } from './CopyLink'
 import { CheckboxField, NumberField, SelectField } from './Field'
-import { ShareLink } from './ShareLink'
 
 const ROUTE_KEYS: Record<DepositRoute, string> = {
   scheme: 'routes.scheme',
@@ -159,7 +159,7 @@ export function InputsPanel({ inputs, setField, setRoute }: InputsPanelProps) {
         />
       </details>
 
-      <ShareLink />
+      <CopyLink />
 
       <p className="panel-foot">{t('inputs.foot')}</p>
     </aside>

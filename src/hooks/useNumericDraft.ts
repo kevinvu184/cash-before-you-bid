@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { formatNumberInput, parseLocaleNumber } from '../logic/format'
 
-// An empty or unparseable field means "no figure" rather than zero; the
-// calculator treats a non-finite input as zero, exactly like the original's
-// `+value || 0`.
-const parseDraft = (raw: string, locale: string): number =>
-  parseLocaleNumber(raw, locale) ?? Number.NaN
+// A cleared or unparseable field reads as 0, mirroring the original page's
+// `+value || 0`. It has to be a real number rather than NaN because the query
+// string is the persistence layer, and `?price=NaN` would not survive a round
+// trip. Parsing is locale-lenient — a vi user types `1.234,5`.
+const parseDraft = (raw: string, locale: string): number => parseLocaleNumber(raw, locale) ?? 0
 
 export interface NumericDraft {
   draft: string
@@ -15,15 +15,15 @@ export interface NumericDraft {
 /**
  * Keeps the raw keystrokes a number field is holding, so a half-typed figure
  * survives a round trip through state: `6.` would otherwise come back as `6`
- * and eat the decimal point before `6.2` could be finished. Values are typed
- * and shown with the locale's decimal separator (vi: `6,2`) and parsed
- * leniently by parseLocaleNumber; state always stores a plain dot-decimal
- * number.
+ * and eat the decimal point before `6.2` could be finished. An emptied field
+ * stays empty rather than showing the `0` it counts as, and a typo stays
+ * visible so it can be corrected.
  *
- * When the calculator rewrites a value we just sent — the deposit route
- * minimums do this — the field follows it, which is how the original page
- * behaved when it wrote the clamped deposit back into the input. A locale
- * switch reformats the draft the same way.
+ * The draft only stands while it still means `value`. Once the calculator
+ * reports something else — the deposit route minimums rewrite the deposit, and
+ * the back button rewrites everything — `value` wins, reformatted with the
+ * locale's decimal separator (vi shows `6,2`); state always stores plain
+ * dot-decimal numbers.
  */
 export function useNumericDraft(
   value: number,
@@ -31,24 +31,14 @@ export function useNumericDraft(
   locale: string,
 ): NumericDraft {
   const [draft, setDraft] = useState(() => formatNumberInput(value, locale))
-  const [sent, setSent] = useState(value)
-  const [lastLocale, setLastLocale] = useState(locale)
-
-  if (locale !== lastLocale) {
-    setLastLocale(locale)
-    setDraft(formatNumberInput(value, locale))
-    setSent(value)
-  } else if (!Object.is(value, sent)) {
-    setSent(value)
-    if (!Object.is(parseDraft(draft, locale), value)) setDraft(formatNumberInput(value, locale))
-  }
 
   const onDraftChange = (raw: string) => {
     setDraft(raw)
-    const next = parseDraft(raw, locale)
-    setSent(next)
-    onChange(next)
+    onChange(parseDraft(raw, locale))
   }
 
-  return { draft, onDraftChange }
+  return {
+    draft: parseDraft(draft, locale) === value ? draft : formatNumberInput(value, locale),
+    onDraftChange,
+  }
 }

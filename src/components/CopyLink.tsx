@@ -2,17 +2,17 @@ import { useTranslation } from 'react-i18next'
 import { useCopyLink } from '../hooks/useCopyLink'
 
 /**
- * The calculator state lives entirely in the URL, so sharing is copying the
- * address. Built from Ledger primitives: a hairline-framed button with the
- * outcome announced in a mono status line.
+ * The whole state of the calculator lives in the query string, so the current
+ * URL is the shareable artefact. A hairline-outlined button, not the accent
+ * one: on this page the accent is spent on links and focus only.
  */
-export function ShareLink() {
+export function CopyLink() {
   const { t } = useTranslation()
   const { copy, status, fallbackUrl } = useCopyLink()
 
   return (
     <div className="share">
-      <button type="button" className="copy-link" onClick={() => void copy()}>
+      <button type="button" className="btn btn-secondary" onClick={() => void copy()}>
         {t('share.copy')}
       </button>
       <span className="share-status" role="status" aria-live="polite">
@@ -26,7 +26,7 @@ export function ShareLink() {
           readOnly
           value={fallbackUrl}
           aria-label={t('share.fallbackLabel')}
-          onFocus={(event) => event.target.select()}
+          onFocus={(e) => e.target.select()}
         />
       )}
     </div>

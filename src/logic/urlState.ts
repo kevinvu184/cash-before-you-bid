@@ -25,12 +25,15 @@ export const DEFAULT_APP_STATE: AppState = { ...DEFAULT_INPUTS, lang: DEFAULT_LA
 const ROUTES: readonly DepositRoute[] = ['scheme', 'lmi', 'nolmi', 'htb']
 const REGIONS: readonly Region[] = ['metro', 'regional']
 
-// Allowed ranges; values outside them are clamped on read.
-const PRICE_MAX = 100_000_000
-const COST_MAX = 1_000_000
-const RATE_MAX = 25
-const PCT_MAX = 100
-const BUFFER_MONTHS_MAX = 24
+// Allowed ranges; values outside them are clamped on read. Exported because
+// the inputs panel takes its min/max from here too: a field that accepts a
+// figure this codec would clamp shows the user their number snapping to
+// something else a moment after they typed it.
+export const PRICE_MAX = 100_000_000
+export const COST_MAX = 1_000_000
+export const RATE_MAX = 25
+export const PCT_MAX = 100
+export const BUFFER_MONTHS_MAX = 24
 
 function readNumber(
   params: URLSearchParams,

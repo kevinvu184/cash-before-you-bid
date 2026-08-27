@@ -46,7 +46,7 @@
     "moving": "Chi phí chuyển nhà và ổn định chỗ ở (AUD)",
     "bufferMonths": "Khoản dự phòng (số tháng trả nợ)",
     "capitaliseLmi": "Cộng LMI vào khoản vay (không trả trước)",
-    "foot": "Số liệu của bạn nằm ngay trong địa chỉ trang này — chia sẻ liên kết là chia sẻ số liệu. Quy định tính đến 25/08/2026; chỉ mang tính tham khảo, không phải tư vấn."
+    "foot": "Số liệu của bạn nằm ngay trên thanh địa chỉ, nên một liên kết sẽ tái hiện đúng trang này. Quy định tính đến 25/08/2026; chỉ mang tính tham khảo, không phải tư vấn."
   },
   "routes": {
     "scheme": "Chương trình đặt cọc 5% của Chính phủ Úc (không LMI)",
@@ -65,7 +65,7 @@
     "lmi": "Dưới 20%; phải trả LMI"
   },
   "share": {
-    "copy": "Sao chép liên kết các số liệu này",
+    "copy": "Sao chép liên kết",
     "copied": "Đã sao chép liên kết",
     "failed": "Sao chép không thành công — hãy chọn liên kết bên dưới",
     "fallbackLabel": "Liên kết chia sẻ"

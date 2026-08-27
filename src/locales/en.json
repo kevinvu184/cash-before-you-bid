@@ -40,7 +40,7 @@
     "moving": "Moving and set-up ($)",
     "bufferMonths": "Buffer (months of repayments)",
     "capitaliseLmi": "Capitalise LMI into the loan (pay nothing upfront)",
-    "foot": "Your numbers live in this page's address — share the link to share them. Rules as at 25 Aug 2026; indicative only, not advice."
+    "foot": "Your numbers live in the address bar, so a link reproduces this exact view. Rules as at 25 Aug 2026; indicative only, not advice."
   },
   "routes": {
     "scheme": "Australian Government 5% Deposit Scheme (no LMI)",
@@ -59,7 +59,7 @@
     "lmi": "Under 20%; LMI charged"
   },
   "share": {
-    "copy": "Copy link to these numbers",
+    "copy": "Copy link",
     "copied": "Link copied",
     "failed": "Copy failed — select the link below",
     "fallbackLabel": "Shareable link"
