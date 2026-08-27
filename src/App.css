@@ -43,6 +43,7 @@
   padding: 0 10px;
   font-family: var(--font-mono);
   font-size: 12px;
+  line-height: 1.4;
   letter-spacing: 0.08em;
   color: var(--color-text-muted);
   background: none;
@@ -555,7 +556,8 @@
   padding-top: 24px;
   font-size: 20px;
   font-weight: 600;
-  line-height: 1.25;
+  /* Room for Vietnamese stacked diacritics (ệ, ổ, ữ). */
+  line-height: 1.4;
   letter-spacing: -0.01em;
   border-top: 1px solid var(--color-hairline);
 }
@@ -576,6 +578,15 @@ ul.small li {
 
 p.small {
   color: var(--color-text-muted);
+}
+
+/* Inline prose link: the padding/negative-margin pair grows the tap target to
+   44px without moving the text in the line box. */
+p.small a {
+  display: inline-block;
+  padding: 11px 4px;
+  margin: -11px -4px;
+  touch-action: manipulation;
 }
 
 /* ── 820px: the stat row goes horizontal, the table shows its working ───── */
@@ -721,6 +732,7 @@ p.small {
   padding: 10px 14px;
   font-family: var(--font-mono);
   font-size: 12px;
+  line-height: 1.4;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-text);
