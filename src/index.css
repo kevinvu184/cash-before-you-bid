@@ -45,7 +45,6 @@ p {
 
 code {
   font-family: var(--mono);
-  max-width: 100%;
   overflow-wrap: break-word;
 }
 
