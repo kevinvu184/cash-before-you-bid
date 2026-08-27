@@ -64,12 +64,6 @@
     "nolmi": "Đặt cọc 20% giúp tránh LMI mà không cần người bảo lãnh",
     "lmi": "Dưới 20%; phải trả LMI"
   },
-  "share": {
-    "copy": "Sao chép liên kết",
-    "copied": "Đã sao chép liên kết",
-    "failed": "Sao chép không thành công — hãy chọn liên kết bên dưới",
-    "fallbackLabel": "Liên kết chia sẻ"
-  },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú"
   },
