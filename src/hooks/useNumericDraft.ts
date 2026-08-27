@@ -18,27 +18,21 @@ export interface NumericDraft {
 /**
  * Keeps the raw keystrokes a number field is holding, so a half-typed figure
  * survives a round trip through state: `6.` would otherwise come back as `6`
- * and eat the decimal point before `6.2` could be finished.
+ * and eat the decimal point before `6.2` could be finished. An emptied field
+ * stays empty rather than showing the `0` it counts as.
  *
- * When the calculator rewrites a value we just sent — the deposit route
- * minimums do this — the field follows it, which is how the original page
- * behaved when it wrote the clamped deposit back into the input.
+ * The draft only stands while it still means `value`. Once the calculator
+ * reports something else — the deposit route minimums rewrite the deposit, and
+ * the back button rewrites everything — `value` wins, which is how the original
+ * page behaved when it wrote a clamped figure back into the input.
  */
 export function useNumericDraft(value: number, onChange: (next: number) => void): NumericDraft {
   const [draft, setDraft] = useState(() => toDraft(value))
-  const [sent, setSent] = useState(value)
-
-  if (!Object.is(value, sent)) {
-    setSent(value)
-    if (!Object.is(parseDraft(draft), value)) setDraft(toDraft(value))
-  }
 
   const onDraftChange = (raw: string) => {
     setDraft(raw)
-    const next = parseDraft(raw)
-    setSent(next)
-    onChange(next)
+    onChange(parseDraft(raw))
   }
 
-  return { draft, onDraftChange }
+  return { draft: parseDraft(draft) === value ? draft : toDraft(value), onDraftChange }
 }
