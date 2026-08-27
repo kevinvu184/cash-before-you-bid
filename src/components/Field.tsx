@@ -11,7 +11,18 @@ interface NumberFieldProps {
   max?: number
 }
 
-export function NumberField({ id, label, value, onChange, hint, step, min, max }: NumberFieldProps) {
+// No figure on this page is negative, so 0 is the floor unless a field sets a
+// higher one. The ceilings come from the URL codec's own limits.
+export function NumberField({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  step,
+  min = 0,
+  max,
+}: NumberFieldProps) {
   const { draft, onDraftChange } = useNumericDraft(value, onChange)
   const hintId = hint ? `${id}-hint` : undefined
 

@@ -1,4 +1,10 @@
 import type { UseCalculatorResult } from '../hooks/useCalculator'
+import {
+  BUFFER_MONTHS_MAX,
+  COST_MAX,
+  PCT_MAX,
+  PRICE_MAX,
+} from '../logic/urlState'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { CopyLink } from './CopyLink'
 import { CheckboxField, NumberField, SelectField } from './Field'
@@ -33,6 +39,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
         value={inputs.price}
         step={5000}
         min={50000}
+        max={PRICE_MAX}
         onChange={(next) => setField('price', next)}
       />
       <SelectField
@@ -49,7 +56,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
         hint={depositHint}
         step={0.5}
         min={0}
-        max={100}
+        max={PCT_MAX}
         onChange={(next) => setField('depositPct', next)}
       />
       <SelectField
@@ -84,6 +91,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
         hint="Strata apartments/townhouses only; reduces dutiable value. 0 for established homes."
         step={10000}
         min={0}
+        max={PRICE_MAX}
         onChange={(next) => setField('offThePlanConstruction', next)}
       />
       <CheckboxField
@@ -109,6 +117,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Conveyancing incl. disbursements ($)"
           value={inputs.conveyancing}
           step={50}
+          max={COST_MAX}
           onChange={(next) => setField('conveyancing', next)}
         />
         <NumberField
@@ -116,6 +125,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Building and pest inspection ($)"
           value={inputs.buildingAndPest}
           step={50}
+          max={COST_MAX}
           onChange={(next) => setField('buildingAndPest', next)}
         />
         <NumberField
@@ -123,6 +133,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Lender fees: settlement + valuation ($)"
           value={inputs.lenderFees}
           step={50}
+          max={COST_MAX}
           onChange={(next) => setField('lenderFees', next)}
         />
         <NumberField
@@ -130,6 +141,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Settlement adjustments to vendor ($)"
           value={inputs.settlementAdjustments}
           step={50}
+          max={COST_MAX}
           onChange={(next) => setField('settlementAdjustments', next)}
         />
         <NumberField
@@ -137,6 +149,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Building insurance, first year ($)"
           value={inputs.buildingInsurance}
           step={50}
+          max={COST_MAX}
           onChange={(next) => setField('buildingInsurance', next)}
         />
         <NumberField
@@ -144,6 +157,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Moving and set-up ($)"
           value={inputs.movingCosts}
           step={250}
+          max={COST_MAX}
           onChange={(next) => setField('movingCosts', next)}
         />
         <NumberField
@@ -151,7 +165,7 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
           label="Buffer (months of repayments)"
           value={inputs.bufferMonths}
           step={1}
-          min={0}
+          max={BUFFER_MONTHS_MAX}
           onChange={(next) => setField('bufferMonths', next)}
         />
         <CheckboxField

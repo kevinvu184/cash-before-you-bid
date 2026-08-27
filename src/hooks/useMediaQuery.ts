@@ -6,8 +6,15 @@ export function useMediaQuery(query: string): boolean {
   const subscribe = useCallback(
     (onChange: () => void) => {
       const mql = window.matchMedia(query)
-      mql.addEventListener('change', onChange)
-      return () => mql.removeEventListener('change', onChange)
+      // Safari only grew the EventTarget interface on MediaQueryList in 14;
+      // before that there is just the deprecated addListener pair, and calling
+      // addEventListener throws rather than degrading.
+      if (typeof mql.addEventListener === 'function') {
+        mql.addEventListener('change', onChange)
+        return () => mql.removeEventListener('change', onChange)
+      }
+      mql.addListener(onChange)
+      return () => mql.removeListener(onChange)
     },
     [query],
   )
