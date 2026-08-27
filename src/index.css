@@ -1,51 +1,64 @@
+/* App-level base, layered on top of src/styles/ledger.css.
+   Ledger ships tokens for light and an explicit [data-theme="dark"] inversion,
+   but no automatic dark mode. The original page followed the operating system
+   and let :root[data-theme] override it, so the dark tokens are mirrored into a
+   prefers-color-scheme block that :root[data-theme="light"] opts out of. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #1f1b13;
+    --color-surface: #282318;
+    --color-text: #ece4d1;
+    --color-text-muted: #a89f8b;
+    --color-grey-1: #332d20;
+    --color-grey-2: #4a4433;
+    --color-grey-3: #6e6754;
+    --color-grey-4: #9a917c;
+    --color-grey-5: #c6bda7;
+    --color-hairline: #3a3425;
+    --color-hairline-strong: #514a36;
+    --color-accent: #cd8a52;
+    --color-accent-strong: #dda06d;
+    --color-accent-tint: #33281c;
+    --color-success: #8ba37c;
+    --color-warning: #c2a05e;
+    --color-error: #c07b6d;
+  }
+}
+
 :root {
-  --text: #3f3d46;
-  --text-h: #08060d;
-  --bg: #fff;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 16px/145% var(--sans);
   color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  /* Oldstyle figures off — every figure on this page is tabular. */
+  font-variant-numeric: tabular-nums;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (min-width: 1024px) {
-    font-size: 18px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-  }
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-height: 100dvh;
 }
 
-h1,
-h2 {
-  font-weight: 600;
-  color: var(--text-h);
-  margin: 0;
+button,
+a {
+  touch-action: manipulation;
 }
 
-p {
-  margin: 0;
-}
+/* Ledger states its hovers unconditionally, and on touch a :hover can stick to
+   whatever was tapped last. Of its hover rules only these two reach elements on
+   this page — the Copy link button and the sources link — so both are returned
+   to their resting appearance where there is no hover-capable pointer. */
+@media (hover: none) {
+  a:hover {
+    color: var(--color-accent);
+  }
 
-code {
-  font-family: var(--mono);
-  overflow-wrap: break-word;
+  .btn-secondary:hover {
+    background: transparent;
+    border-color: var(--color-hairline-strong);
+  }
 }
 
 img,
@@ -55,12 +68,11 @@ video {
   height: auto;
 }
 
-button,
-a {
-  touch-action: manipulation;
-}
-
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

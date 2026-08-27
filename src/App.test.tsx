@@ -35,10 +35,10 @@ describe('loading state from the URL', () => {
     )
     renderApp()
     expect(input('Purchase price ($)').value).toBe('820000')
-    expect(input('Deposit (%)').value).toBe('12')
+    expect(input('Your deposit (%)').value).toBe('12')
     expect(select('Deposit route').value).toBe('lmi')
-    expect(select('Region').value).toBe('regional')
-    expect(input('Capitalise LMI into the loan').checked).toBe(true)
+    expect(select('Where in Victoria').value).toBe('regional')
+    expect(input('Capitalise LMI into the loan (pay nothing upfront)').checked).toBe(true)
     // Derived output reflects the URL state on first render.
     expect(screen.getByText('12% of $820,000')).toBeTruthy()
   })
@@ -90,7 +90,7 @@ describe('writing state to the URL', () => {
     fireEvent.change(select('Deposit route'), { target: { value: 'htb' } })
     // Route change resets the deposit to the route default (2% for HTB).
     expect(window.location.search).toBe('?dep=2&route=htb')
-    fireEvent.click(input('New home'))
+    fireEvent.click(input('New home (never occupied) — First Home Owner Grant $10,000 if ≤ $750k'))
     expect(window.location.search).toBe('?dep=2&newhome=1&route=htb')
   })
 })
@@ -99,23 +99,23 @@ describe('history behaviour', () => {
   it('steps back and forward through discrete choices and re-renders', async () => {
     renderApp()
     fireEvent.change(select('Deposit route'), { target: { value: 'htb' } })
-    fireEvent.change(select('Region'), { target: { value: 'regional' } })
+    fireEvent.change(select('Where in Victoria'), { target: { value: 'regional' } })
     expect(window.location.search).toBe('?dep=2&region=regional&route=htb')
 
     window.history.back()
     await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
-    expect(select('Region').value).toBe('metro')
+    expect(select('Where in Victoria').value).toBe('metro')
     expect(select('Deposit route').value).toBe('htb')
 
     window.history.back()
     await waitFor(() => expect(window.location.search).toBe(''))
     expect(select('Deposit route').value).toBe('scheme')
-    expect(input('Deposit (%)').value).toBe('5')
+    expect(input('Your deposit (%)').value).toBe('5')
 
     window.history.forward()
     await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
     expect(select('Deposit route').value).toBe('htb')
-    expect(input('Deposit (%)').value).toBe('2')
+    expect(input('Your deposit (%)').value).toBe('2')
   })
 
   it('discards a pending debounced write when navigating back before it flushes', async () => {
