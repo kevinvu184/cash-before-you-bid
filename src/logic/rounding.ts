@@ -6,7 +6,11 @@ import { CURRENCY_ROUNDING, type CurrencyCode } from './currencyConfig'
  * Display-only — calculations always run on full precision.
  */
 export function roundToUnit(amount: number, unit: number): number {
-  if (amount < 0) return -roundToUnit(-amount, unit)
+  if (amount < 0) {
+    const rounded = -roundToUnit(-amount, unit)
+    // Never return -0: Intl renders it with a minus sign ("-A$0").
+    return rounded === 0 ? 0 : rounded
+  }
   return Math.round(amount / unit) * unit
 }
 

@@ -35,6 +35,9 @@ describe('formatMoney', () => {
     // Whole amounts never gain a fake-exact ".00".
     expect(formatMoney(750000, 'AUD', 'en', { round: false })).toBe('A$750,000')
     expect(formatMoney(100, 'AUD', 'en', { round: false })).toBe('A$100')
+    // More precision than the currency's minor units survives exact mode:
+    // parseLocaleNumber accepts it, so display must not silently round it.
+    expect(formatMoney(1234.5678, 'AUD', 'en', { round: false })).toBe('A$1,234.5678')
   })
 
   it('rounds VND to its own unit with no fraction digits', () => {

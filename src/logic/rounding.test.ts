@@ -15,7 +15,9 @@ describe('roundToUnit', () => {
 
   it('rounds negative amounts symmetrically', () => {
     expect(roundToUnit(-150, 100)).toBe(-200)
-    expect(roundToUnit(-49, 100)).toBe(-0)
+    // toBe uses Object.is, so this also asserts the result is not -0, which
+    // Intl would render as "-A$0".
+    expect(roundToUnit(-49, 100)).toBe(0)
     expect(roundToUnit(-1234.56, 100)).toBe(-1200)
   })
 

@@ -38,10 +38,11 @@ export function formatMoney(
         minimumFractionDigits: CURRENCY_ROUNDING[currency].fractionDigits,
         maximumFractionDigits: CURRENCY_ROUNDING[currency].fractionDigits,
       }
-    : // Leaving maximum unset keeps Intl's own minor-unit count for the
-      // currency (2 for AUD, 0 for VND); minimum 0 drops the ".00" on whole
-      // amounts so an exact figure never gains digits the user did not type.
-      { minimumFractionDigits: 0 }
+    : // Exact mode must not alter the value: minimum 0 drops the ".00" on
+      // whole amounts, and the maximum matches formatNumberInput's 10 digits
+      // so a figure with more precision than the currency's minor units
+      // (parseLocaleNumber accepts any) is not silently rounded.
+      { minimumFractionDigits: 0, maximumFractionDigits: 10 }
   const withSymbol = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
