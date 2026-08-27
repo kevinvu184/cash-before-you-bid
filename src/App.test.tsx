@@ -5,6 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import i18n from './i18n'
 import { URL_DEBOUNCE_MS } from './hooks/useUrlState'
+import { calculate } from './logic/calculate'
+import { APP_CURRENCY } from './logic/currencyConfig'
+import { formatMoney } from './logic/format'
+import { roundForDisplay } from './logic/rounding'
+import { parseParams } from './logic/urlState'
 
 function renderApp() {
   return render(
@@ -162,6 +167,45 @@ describe('copy link', () => {
     )
     const fallback = screen.getByLabelText('Liên kết chia sẻ') as HTMLInputElement
     expect(fallback.value).toBe(window.location.href)
+  })
+})
+
+describe('rounded estimates', () => {
+  it('keeps the full-precision price in the URL after the user enters 1234.56', () => {
+    vi.useFakeTimers()
+    renderApp()
+    fireEvent.change(input('price'), { target: { value: '1234.56' } })
+    act(() => {
+      vi.advanceTimersByTime(URL_DEBOUNCE_MS)
+    })
+    // Rounding is display-only: the URL and the input keep what was typed.
+    expect(window.location.search).toBe('?price=1234.56')
+    expect(input('price').value).toBe('1234.56')
+  })
+
+  it('rounds the displayed total from the exact total, not the sum of rounded parts', () => {
+    window.history.replaceState(null, '', '/?dep=12&price=820500&route=lmi')
+    renderApp()
+    const state = parseParams(new URLSearchParams(window.location.search))
+    const { total } = calculate(state).tiles
+    const sumOfRoundedParts =
+      roundForDisplay(total.deposit, APP_CURRENCY) +
+      roundForDisplay(total.costs, APP_CURRENCY) +
+      roundForDisplay(total.moving, APP_CURRENCY) +
+      roundForDisplay(total.buffer, APP_CURRENCY)
+    // These inputs are chosen so the two roundings actually diverge; the
+    // display must follow the exact total.
+    expect(roundForDisplay(total.value, APP_CURRENCY)).not.toBe(sumOfRoundedParts)
+    expect(document.getElementById('tTotal')?.textContent).toBe(
+      `~${formatMoney(total.value, APP_CURRENCY, 'vi')}`,
+    )
+  })
+
+  it('shows the estimate disclaimer with the currency rounding unit', () => {
+    renderApp()
+    const note = document.querySelector('.estimate-note')
+    expect(note?.textContent).toContain('làm tròn đến 100 AUD gần nhất')
+    expect(note?.textContent).toContain('không khớp với tổng do làm tròn')
   })
 })
 

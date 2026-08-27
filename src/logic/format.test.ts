@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  formatAud,
+  formatMoney,
   formatNumber,
   formatNumberInput,
   formatPercent,
@@ -8,25 +8,45 @@ import {
   parseLocaleNumber,
 } from './format'
 
-describe('formatAud', () => {
-  it('rounds to whole dollars and marks the currency as Australian in en', () => {
-    expect(formatAud(102621.16439248709, 'en')).toBe('A$102,621')
-    expect(formatAud(40070, 'en')).toBe('A$40,070')
-    expect(formatAud(4363.841464162364, 'en')).toBe('A$4,364')
-    expect(formatAud(0, 'en')).toBe('A$0')
+describe('formatMoney', () => {
+  it('rounds AUD to the display unit and marks the currency as Australian in en', () => {
+    expect(formatMoney(102621.16439248709, 'AUD', 'en')).toBe('A$102,600')
+    expect(formatMoney(40070, 'AUD', 'en')).toBe('A$40,100')
+    expect(formatMoney(4363.841464162364, 'AUD', 'en')).toBe('A$4,400')
+    expect(formatMoney(0, 'AUD', 'en')).toBe('A$0')
+  })
+
+  it('rounds 1234.56 AUD to 1,200 with no cents in en', () => {
+    const formatted = formatMoney(1234.56, 'AUD', 'en')
+    expect(formatted).toContain('1,200')
+    expect(formatted).not.toMatch(/\.\d/)
   })
 
   it('uses Vietnamese digit grouping with the AUD code in vi', () => {
     // Intl's vi symbol is "AU$", which reads ambiguously next to đồng
     // amounts, so the ISO code is used instead.
-    expect(formatAud(1234.5, 'vi')).toBe('1.235\u00a0AUD')
-    expect(formatAud(750000, 'vi')).toBe('750.000\u00a0AUD')
-    expect(formatAud(0, 'vi')).toBe('0\u00a0AUD')
+    expect(formatMoney(1234.56, 'AUD', 'vi')).toBe('1.200\u00a0AUD')
+    expect(formatMoney(750000, 'AUD', 'vi')).toBe('750.000\u00a0AUD')
+    expect(formatMoney(0, 'AUD', 'vi')).toBe('0\u00a0AUD')
   })
 
-  it('never shows đồng in either locale', () => {
+  it('shows the exact value with minor units when rounding is off', () => {
+    expect(formatMoney(1234.56, 'AUD', 'en', { round: false })).toBe('A$1,234.56')
+    // Whole amounts never gain a fake-exact ".00".
+    expect(formatMoney(750000, 'AUD', 'en', { round: false })).toBe('A$750,000')
+    expect(formatMoney(100, 'AUD', 'en', { round: false })).toBe('A$100')
+  })
+
+  it('rounds VND to its own unit with no fraction digits', () => {
+    const formatted = formatMoney(1234567, 'VND', 'vi')
+    expect(formatted).toContain('1.200.000')
+    // vi's decimal separator is ","; VND has no minor units to show.
+    expect(formatted).not.toMatch(/,\d/)
+  })
+
+  it('never shows đồng for AUD in either locale', () => {
     for (const locale of ['en', 'vi']) {
-      const formatted = formatAud(1234.5, locale)
+      const formatted = formatMoney(1234.5, 'AUD', locale)
       expect(formatted.includes('AUD') || formatted.includes('A$')).toBe(true)
       expect(formatted).not.toContain('₫')
       expect(formatted).not.toContain('VND')
@@ -36,9 +56,9 @@ describe('formatAud', () => {
 
 describe('formatRowAmount', () => {
   it('renders negatives as a typographic minus before the absolute value', () => {
-    expect(formatRowAmount(-10000, 'en')).toBe('−A$10,000')
-    expect(formatRowAmount(37500, 'en')).toBe('A$37,500')
-    expect(formatRowAmount(-10000, 'vi')).toBe('−10.000\u00a0AUD')
+    expect(formatRowAmount(-10000, 'AUD', 'en')).toBe('−A$10,000')
+    expect(formatRowAmount(37500, 'AUD', 'en')).toBe('A$37,500')
+    expect(formatRowAmount(-10000, 'AUD', 'vi')).toBe('−10.000\u00a0AUD')
   })
 })
 

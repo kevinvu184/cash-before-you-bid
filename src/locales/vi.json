@@ -73,6 +73,11 @@
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú"
   },
+  "money": {
+    "approx": "~{{amount}}",
+    "disclaimer": "Các con số là ước tính, được làm tròn đến {{unit}} gần nhất.",
+    "roundingNote": "Các khoản cộng lại có thể không khớp với tổng do làm tròn."
+  },
   "flagKinds": {
     "warn": "CẢNH BÁO",
     "note": "GHI CHÚ",

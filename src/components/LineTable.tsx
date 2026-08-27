@@ -1,9 +1,8 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '../hooks/useMediaQuery'
-import { formatRowAmount } from '../logic/format'
 import type { RowCode, TableRow } from '../types/calculator'
-import { howText, rowLabel } from './resultText'
+import { approxRowAmount, howText, rowLabel } from './resultText'
 
 interface LineTableProps {
   rows: TableRow[]
@@ -48,7 +47,7 @@ export function LineTable({ rows }: LineTableProps) {
           wide ? (
             <tr key={row.code} className={row.emphasis ? 'total' : undefined}>
               <td>{rowLabel(row.code, t)}</td>
-              <td className="n">{formatRowAmount(row.amount, i18n.language)}</td>
+              <td className="n">{approxRowAmount(row.amount, t, i18n.language)}</td>
               <td className="m">{howText(row.how, t, i18n.language)}</td>
             </tr>
           ) : (
@@ -101,7 +100,7 @@ function MobileRow({ row, open, onToggle }: MobileRowProps) {
             rowLabel(row.code, t)
           )}
         </td>
-        <td className="n">{formatRowAmount(row.amount, i18n.language)}</td>
+        <td className="n">{approxRowAmount(row.amount, t, i18n.language)}</td>
       </tr>
       {/* Always rendered, hidden by CSS when collapsed, so aria-controls always
           resolves. Never `.total`: the ink rule belongs to the row above, and

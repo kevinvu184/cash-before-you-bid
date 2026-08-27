@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import './App.css'
+import { EstimateDisclaimer } from './components/EstimateDisclaimer'
 import { FlagList } from './components/FlagList'
 import { InputsPanel } from './components/InputsPanel'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
@@ -62,6 +63,7 @@ function App() {
             <FlagList flags={result.flags} />
             <StatRow tiles={result.tiles} />
             <LineTable rows={result.rows} />
+            <EstimateDisclaimer />
             <RulesNotes />
           </main>
         </div>
