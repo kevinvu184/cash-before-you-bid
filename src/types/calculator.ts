@@ -25,22 +25,105 @@ export interface CalculatorInputs {
 
 export type FlagKind = 'warn' | 'note' | 'ok'
 
+// Logic emits codes and numeric params, never display text; the UI maps each
+// code to a translation and formats the params for the active locale.
+export type FlagCode =
+  | 'schemeNotNeeded'
+  | 'schemeCapExceeded'
+  | 'schemeResidency'
+  | 'schemeOwnerOccupier'
+  | 'htbCapExceeded'
+  | 'htbCitizenship'
+  | 'htbDetails'
+  | 'guarantorGap'
+  | 'fhogPriceCap'
+  | 'genuineSavings'
+  | 'serviceability'
+
 export interface Flag {
   kind: FlagKind
-  message: string
+  code: FlagCode
+  params?: Readonly<Record<string, number>>
 }
 
+export type DutyHowCode =
+  | 'dutyFhbExempt'
+  | 'dutyFhbConcession'
+  | 'dutyFhbAboveCap'
+  | 'dutyPpr'
+  | 'dutyGeneral'
+
+export type HowCode =
+  | DutyHowCode
+  | 'foreignDuty'
+  | 'transferFee'
+  | 'mortgageFeeLoan'
+  | 'mortgageFeeNoLoan'
+  | 'pexaBoth'
+  | 'pexaTransferOnly'
+  | 'lmiHtb'
+  | 'lmiScheme'
+  | 'lmiLvrUnder80'
+  | 'lmiGuarantor'
+  | 'lmiCharged'
+  | 'lmiChargedCapitalised'
+  | 'yourFigure'
+  | 'settlementAdjustments'
+  | 'buildingInsurance'
+  | 'grant'
+  | 'deposit'
+  | 'costsSubtotal'
+  | 'buffer'
+  | 'noBuffer'
+  | 'total'
+
+// The off-the-plan concession prefixes the stamp-duty working; carried as
+// data so the UI can render the prefix and the working as one sentence.
+export interface OffThePlanHow {
+  price: number
+  construction: number
+  dutiableValue: number
+}
+
+export interface RowHow {
+  code: HowCode
+  params?: Readonly<Record<string, number>>
+  offThePlan?: OffThePlanHow | null
+}
+
+export type RowCode =
+  | 'deposit'
+  | 'stampDuty'
+  | 'foreignDuty'
+  | 'transferFee'
+  | 'mortgageFee'
+  | 'pexaFees'
+  | 'lmi'
+  | 'conveyancing'
+  | 'buildingAndPest'
+  | 'lenderFees'
+  | 'settlementAdjustments'
+  | 'buildingInsurance'
+  | 'grant'
+  | 'costsSubtotal'
+  | 'moving'
+  | 'buffer'
+  | 'total'
+
 export interface TableRow {
-  label: string
+  code: RowCode
   amount: number
-  formatted: string
-  how: string
+  how: RowHow | null
   emphasis: boolean
 }
 
-export interface Tile {
-  value: string
-  sub: string
+export interface CalculationTiles {
+  total: { value: number; deposit: number; costs: number; moving: number; buffer: number }
+  deposit: { value: number; pct: number; price: number }
+  // pctOfPrice is null when there is no price to take a share of.
+  costs: { value: number; pctOfPrice: number | null }
+  loan: { value: number; lvrPct: number; governmentEquity: number }
+  repayment: { value: number; ratePct: number; assessedRatePct: number; assessedValue: number }
 }
 
 export interface CalculationTotals {
@@ -62,15 +145,8 @@ export interface CalculationTotals {
 
 export interface CalculationResult {
   appliedDepositPct: number
-  depositHint: string
   flags: Flag[]
-  tiles: {
-    total: Tile
-    deposit: Tile
-    costs: Tile
-    loan: Tile
-    repayment: Tile
-  }
+  tiles: CalculationTiles
   rows: TableRow[]
   totals: CalculationTotals
 }

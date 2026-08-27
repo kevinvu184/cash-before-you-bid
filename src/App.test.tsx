@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { BrowserRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import i18n from './i18n'
 import { URL_DEBOUNCE_MS } from './hooks/useUrlState'
 
 function renderApp() {
@@ -13,11 +14,15 @@ function renderApp() {
   )
 }
 
-const input = (label: string) => screen.getByLabelText(label) as HTMLInputElement
-const select = (label: string) => screen.getByLabelText(label) as HTMLSelectElement
+// Fields are found by id: labels are translated, ids are stable.
+const input = (id: string) => document.getElementById(id) as HTMLInputElement
+const select = (id: string) => document.getElementById(id) as HTMLSelectElement
 
-beforeEach(() => {
+beforeEach(async () => {
   window.history.replaceState(null, '', '/')
+  // The i18n instance is a singleton; put it back on the default language so
+  // tests are order-independent.
+  await i18n.changeLanguage('vi')
 })
 
 afterEach(() => {
@@ -34,20 +39,20 @@ describe('loading state from the URL', () => {
       '/?caplmi=1&dep=12&price=820000&region=regional&route=lmi',
     )
     renderApp()
-    expect(input('Purchase price ($)').value).toBe('820000')
-    expect(input('Your deposit (%)').value).toBe('12')
-    expect(select('Deposit route').value).toBe('lmi')
-    expect(select('Where in Victoria').value).toBe('regional')
-    expect(input('Capitalise LMI into the loan (pay nothing upfront)').checked).toBe(true)
-    // Derived output reflects the URL state on first render.
-    expect(screen.getByText('12% of $820,000')).toBeTruthy()
+    expect(input('price').value).toBe('820000')
+    expect(input('dep').value).toBe('12')
+    expect(select('route').value).toBe('lmi')
+    expect(select('region').value).toBe('regional')
+    expect(input('caplmi').checked).toBe(true)
+    // Derived output reflects the URL state on first render (vi locale).
+    expect(screen.getAllByText(/12% của 820\.000/).length).toBeGreaterThan(0)
   })
 
   it('falls back to defaults for invalid params and rewrites the URL cleaned', async () => {
     window.history.replaceState(null, '', '/?price=abc&junk=1&route=lmi')
     renderApp()
-    expect(input('Purchase price ($)').value).toBe('750000')
-    expect(select('Deposit route').value).toBe('lmi')
+    expect(input('price').value).toBe('750000')
+    expect(select('route').value).toBe('lmi')
     await waitFor(() => expect(window.location.search).toBe('?route=lmi'))
   })
 })
@@ -56,9 +61,9 @@ describe('writing state to the URL', () => {
   it('debounces number input changes into the query string with replace', () => {
     vi.useFakeTimers()
     renderApp()
-    fireEvent.change(input('Purchase price ($)'), { target: { value: '900000' } })
+    fireEvent.change(input('price'), { target: { value: '900000' } })
     // The input reflects the change immediately, the URL only after ~300ms.
-    expect(input('Purchase price ($)').value).toBe('900000')
+    expect(input('price').value).toBe('900000')
     expect(window.location.search).toBe('')
     act(() => {
       vi.advanceTimersByTime(299)
@@ -74,7 +79,7 @@ describe('writing state to the URL', () => {
     vi.useFakeTimers()
     renderApp()
     for (const value of ['9', '90', '900', '9000', '90000', '900000']) {
-      fireEvent.change(input('Purchase price ($)'), { target: { value } })
+      fireEvent.change(input('price'), { target: { value } })
       act(() => {
         vi.advanceTimersByTime(100)
       })
@@ -87,52 +92,52 @@ describe('writing state to the URL', () => {
 
   it('updates the query string immediately for discrete choices', () => {
     renderApp()
-    fireEvent.change(select('Deposit route'), { target: { value: 'htb' } })
+    fireEvent.change(select('route'), { target: { value: 'htb' } })
     // Route change resets the deposit to the route default (2% for HTB).
-    expect(window.location.search).toBe('?dep=2&route=htb')
-    fireEvent.click(input('New home (never occupied) — First Home Owner Grant $10,000 if ≤ $750k'))
-    expect(window.location.search).toBe('?dep=2&newhome=1&route=htb')
+    expect(window.location.search).toBe('?route=htb')
+    fireEvent.click(input('newhome'))
+    expect(window.location.search).toBe('?newhome=1&route=htb')
   })
 })
 
 describe('history behaviour', () => {
   it('steps back and forward through discrete choices and re-renders', async () => {
     renderApp()
-    fireEvent.change(select('Deposit route'), { target: { value: 'htb' } })
-    fireEvent.change(select('Where in Victoria'), { target: { value: 'regional' } })
-    expect(window.location.search).toBe('?dep=2&region=regional&route=htb')
+    fireEvent.change(select('route'), { target: { value: 'htb' } })
+    fireEvent.change(select('region'), { target: { value: 'regional' } })
+    expect(window.location.search).toBe('?region=regional&route=htb')
 
     window.history.back()
-    await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
-    expect(select('Where in Victoria').value).toBe('metro')
-    expect(select('Deposit route').value).toBe('htb')
+    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
+    expect(select('region').value).toBe('metro')
+    expect(select('route').value).toBe('htb')
 
     window.history.back()
     await waitFor(() => expect(window.location.search).toBe(''))
-    expect(select('Deposit route').value).toBe('scheme')
-    expect(input('Your deposit (%)').value).toBe('5')
+    expect(select('route').value).toBe('scheme')
+    expect(input('dep').value).toBe('5')
 
     window.history.forward()
-    await waitFor(() => expect(window.location.search).toBe('?dep=2&route=htb'))
-    expect(select('Deposit route').value).toBe('htb')
-    expect(input('Your deposit (%)').value).toBe('2')
+    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
+    expect(select('route').value).toBe('htb')
+    expect(input('dep').value).toBe('2')
   })
 
   it('discards a pending debounced write when navigating back before it flushes', async () => {
     renderApp()
-    fireEvent.change(select('Deposit route'), { target: { value: 'htb' } })
-    expect(window.location.search).toBe('?dep=2&route=htb')
+    fireEvent.change(select('route'), { target: { value: 'htb' } })
+    expect(window.location.search).toBe('?route=htb')
 
     // Start a debounced write, then navigate back before the flush.
-    fireEvent.change(input('Purchase price ($)'), { target: { value: '900000' } })
+    fireEvent.change(input('price'), { target: { value: '900000' } })
     window.history.back()
     await waitFor(() => expect(window.location.search).toBe(''))
-    expect(input('Purchase price ($)').value).toBe('750000')
+    expect(input('price').value).toBe('750000')
 
     // The stale write must not fire once the debounce window passes.
     await new Promise((resolve) => setTimeout(resolve, URL_DEBOUNCE_MS + 100))
     expect(window.location.search).toBe('')
-    expect(input('Purchase price ($)').value).toBe('750000')
+    expect(input('price').value).toBe('750000')
   })
 })
 
@@ -142,8 +147,8 @@ describe('copy link', () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: { writeText } })
     window.history.replaceState(null, '', '/?route=lmi')
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
-    await waitFor(() => expect(screen.getByText('Link copied')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
+    await waitFor(() => expect(screen.getByText('Đã sao chép liên kết')).toBeTruthy())
     expect(writeText).toHaveBeenCalledWith(window.location.href)
     expect(writeText.mock.calls[0][0]).toContain('?route=lmi')
   })
@@ -151,11 +156,64 @@ describe('copy link', () => {
   it('falls back to selectable text when the clipboard is unavailable', async () => {
     vi.stubGlobal('navigator', { ...window.navigator, clipboard: undefined })
     renderApp()
-    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sao chép liên kết' }))
     await waitFor(() =>
-      expect(screen.getByText('Copy failed — select the link below')).toBeTruthy(),
+      expect(screen.getByText('Sao chép không thành công — hãy chọn liên kết bên dưới')).toBeTruthy(),
     )
-    const fallback = screen.getByLabelText('Shareable link') as HTMLInputElement
+    const fallback = screen.getByLabelText('Liên kết chia sẻ') as HTMLInputElement
     expect(fallback.value).toBe(window.location.href)
+  })
+})
+
+describe('localisation', () => {
+  it('renders Vietnamese with ?lang=vi', async () => {
+    window.history.replaceState(null, '', '/?lang=vi')
+    renderApp()
+    expect(screen.getAllByText('Tổng tiền mặt trước khi trả giá').length).toBeGreaterThan(0)
+    expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy()
+    await waitFor(() => expect(document.documentElement.lang).toBe('vi'))
+    // ?lang=vi is the default, so the canonical URL omits it.
+    await waitFor(() => expect(window.location.search).toBe(''))
+  })
+
+  it('renders English with ?lang=en', async () => {
+    window.history.replaceState(null, '', '/?lang=en')
+    renderApp()
+    await waitFor(() =>
+      expect(screen.getAllByText('Total cash before you bid').length).toBeGreaterThan(0),
+    )
+    expect(screen.getByText('Deposit route')).toBeTruthy()
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
+    expect(window.location.search).toBe('?lang=en')
+  })
+
+  it('switching language updates ?lang= in the URL and <html lang>', async () => {
+    renderApp()
+    expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+    expect(window.location.search).toBe('?lang=en')
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
+    await waitFor(() => expect(screen.getByText('Deposit route')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếng Việt' }))
+    expect(window.location.search).toBe('')
+    await waitFor(() => expect(document.documentElement.lang).toBe('vi'))
+    await waitFor(() => expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy())
+  })
+
+  it('does not push a history entry when the active language is re-tapped', () => {
+    renderApp()
+    const before = window.history.length
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếng Việt' }))
+    expect(window.history.length).toBe(before)
+    expect(window.location.search).toBe('')
+  })
+
+  it('keeps calculator params when the language changes', () => {
+    window.history.replaceState(null, '', '/?price=820000&route=lmi')
+    renderApp()
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+    expect(window.location.search).toBe('?lang=en&price=820000&route=lmi')
   })
 })

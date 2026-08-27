@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCopyLink } from '../hooks/useCopyLink'
 
 /**
@@ -6,16 +7,17 @@ import { useCopyLink } from '../hooks/useCopyLink'
  * one: on this page the accent is spent on links and focus only.
  */
 export function CopyLink() {
+  const { t } = useTranslation()
   const { copy, status, fallbackUrl } = useCopyLink()
 
   return (
     <div className="share">
       <button type="button" className="btn btn-secondary" onClick={() => void copy()}>
-        Copy link
+        {t('share.copy')}
       </button>
       <span className="share-status" role="status" aria-live="polite">
-        {status === 'copied' && 'Link copied'}
-        {status === 'failed' && 'Copy failed — select the link below'}
+        {status === 'copied' && t('share.copied')}
+        {status === 'failed' && t('share.failed')}
       </span>
       {fallbackUrl && (
         <input
@@ -23,7 +25,7 @@ export function CopyLink() {
           type="text"
           readOnly
           value={fallbackUrl}
-          aria-label="Shareable link"
+          aria-label={t('share.fallbackLabel')}
           onFocus={(e) => e.target.select()}
         />
       )}

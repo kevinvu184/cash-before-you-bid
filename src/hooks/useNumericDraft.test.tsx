@@ -7,10 +7,14 @@ afterEach(cleanup)
 
 // Stands in for the calculator: whatever the field sends becomes the next
 // value, unless `transform` rewrites it the way the deposit minimums do.
-function renderField(initial: number, transform: (n: number) => number = (n) => n) {
+function renderField(
+  initial: number,
+  transform: (n: number) => number = (n) => n,
+  locale = 'en',
+) {
   const onChange = vi.fn()
   const view = renderHook(
-    ({ value }) => useNumericDraft(value, onChange),
+    ({ value }) => useNumericDraft(value, onChange, locale),
     { initialProps: { value: initial } },
   )
   const type = (raw: string) => {
@@ -56,6 +60,17 @@ describe('useNumericDraft', () => {
     // History moves the URL out from under the pending draft.
     view.rerender({ value: 750000 })
     expect(draft()).toBe('750000')
+  })
+
+  it('parses vi-style separators and reformats with the vi decimal comma', () => {
+    const { type, draft, onChange } = renderField(750000, (n) => n, 'vi')
+    type('1.234,5')
+    expect(onChange).toHaveBeenLastCalledWith(1234.5)
+    expect(draft()).toBe('1.234,5')
+    // The calculator rewriting the value reformats with the locale separator.
+    const clamped = renderField(6.2, () => 5, 'vi')
+    clamped.type('3')
+    expect(clamped.draft()).toBe('5')
   })
 
   it('does not disturb a draft that still means the same number', () => {

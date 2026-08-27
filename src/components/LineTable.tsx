@@ -1,8 +1,9 @@
 import { Fragment, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '../hooks/useMediaQuery'
-import type { TableRow } from '../types/calculator'
-
-const slug = (label: string): string => label.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+import { formatRowAmount } from '../logic/format'
+import type { RowCode, TableRow } from '../types/calculator'
+import { howText, rowLabel } from './resultText'
 
 interface LineTableProps {
   rows: TableRow[]
@@ -11,18 +12,19 @@ interface LineTableProps {
 /**
  * Three columns from 820px. On a phone the working — "How it was worked out" —
  * would either force a horizontal scroll or shrink the figures, so it moves
- * behind a per-row disclosure instead. Row labels are unique, so they key both
+ * behind a per-row disclosure instead. Row codes are unique, so they key both
  * the rows and which disclosures are open, which keeps a row open across a
  * recalculation.
  */
 export function LineTable({ rows }: LineTableProps) {
+  const { t, i18n } = useTranslation()
   const wide = useMediaQuery('(min-width: 820px)')
-  const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set())
+  const [open, setOpen] = useState<ReadonlySet<RowCode>>(() => new Set())
 
-  const toggle = (label: string) =>
+  const toggle = (code: RowCode) =>
     setOpen((current) => {
       const next = new Set(current)
-      if (!next.delete(label)) next.add(label)
+      if (!next.delete(code)) next.add(code)
       return next
     })
 
@@ -30,13 +32,13 @@ export function LineTable({ rows }: LineTableProps) {
     <table className="lines">
       <thead>
         <tr>
-          <th scope="col">Line</th>
+          <th scope="col">{t('table.line')}</th>
           <th scope="col" className="n">
-            $
+            {t('table.amount')}
           </th>
           {wide ? (
             <th scope="col" className="m">
-              How it was worked out
+              {t('table.how')}
             </th>
           ) : null}
         </tr>
@@ -44,17 +46,17 @@ export function LineTable({ rows }: LineTableProps) {
       <tbody>
         {rows.map((row) =>
           wide ? (
-            <tr key={row.label} className={row.emphasis ? 'total' : undefined}>
-              <td>{row.label}</td>
-              <td className="n">{row.formatted}</td>
-              <td className="m">{row.how}</td>
+            <tr key={row.code} className={row.emphasis ? 'total' : undefined}>
+              <td>{rowLabel(row.code, t)}</td>
+              <td className="n">{formatRowAmount(row.amount, i18n.language)}</td>
+              <td className="m">{howText(row.how, t, i18n.language)}</td>
             </tr>
           ) : (
             <MobileRow
-              key={row.label}
+              key={row.code}
               row={row}
-              open={open.has(row.label)}
-              onToggle={() => toggle(row.label)}
+              open={open.has(row.code)}
+              onToggle={() => toggle(row.code)}
             />
           ),
         )}
@@ -70,17 +72,19 @@ interface MobileRowProps {
 }
 
 function MobileRow({ row, open, onToggle }: MobileRowProps) {
-  const expanded = open && Boolean(row.how)
+  const { t, i18n } = useTranslation()
+  const how = howText(row.how, t, i18n.language)
+  const expanded = open && how !== ''
   const className = [row.emphasis ? 'total' : '', expanded ? 'expanded' : '']
     .filter(Boolean)
     .join(' ')
-  const formulaId = `how-${slug(row.label)}`
+  const formulaId = `how-${row.code}`
 
   return (
     <Fragment>
       <tr className={className || undefined}>
         <td>
-          {row.how ? (
+          {how !== '' ? (
             <button
               type="button"
               className="line-disclosure"
@@ -88,24 +92,24 @@ function MobileRow({ row, open, onToggle }: MobileRowProps) {
               aria-controls={formulaId}
               onClick={onToggle}
             >
-              <span>{row.label}</span>
+              <span>{rowLabel(row.code, t)}</span>
               <span className="line-disclosure-mark" aria-hidden="true">
                 {expanded ? '−' : '+'}
               </span>
             </button>
           ) : (
-            row.label
+            rowLabel(row.code, t)
           )}
         </td>
-        <td className="n">{row.formatted}</td>
+        <td className="n">{formatRowAmount(row.amount, i18n.language)}</td>
       </tr>
       {/* Always rendered, hidden by CSS when collapsed, so aria-controls always
           resolves. Never `.total`: the ink rule belongs to the row above, and
           the continuation carries that row's bottom hairline. */}
-      {row.how ? (
+      {how !== '' ? (
         <tr className={expanded ? 'formula shown' : 'formula'}>
           <td className="m" id={formulaId} colSpan={2}>
-            {row.how}
+            {how}
           </td>
         </tr>
       ) : null}

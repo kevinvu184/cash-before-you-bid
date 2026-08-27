@@ -1,4 +1,6 @@
-import type { CalculationResult } from '../types/calculator'
+import { useTranslation } from 'react-i18next'
+import { formatAud, formatPercent } from '../logic/format'
+import type { CalculationTiles } from '../types/calculator'
 
 interface StatProps {
   id: string
@@ -21,29 +23,68 @@ function Stat({ id, label, value, sub, emphasis }: StatProps) {
 }
 
 interface StatRowProps {
-  tiles: CalculationResult['tiles']
+  tiles: CalculationTiles
 }
 
 // A rule-divided list on a phone, a hairline-divided row from 820px. Ledger has
 // no stat component; these are list rows, not cards.
 export function StatRow({ tiles }: StatRowProps) {
+  const { t, i18n } = useTranslation()
+  const locale = i18n.language
+  const aud = (amount: number) => formatAud(amount, locale)
+  const pct = (value: number) => formatPercent(value, locale)
+
+  const loanSub =
+    tiles.loan.governmentEquity > 0
+      ? t('stats.loanSubWithEquity', {
+          lvr: pct(tiles.loan.lvrPct),
+          equity: aud(tiles.loan.governmentEquity),
+        })
+      : t('stats.loanSub', { lvr: pct(tiles.loan.lvrPct) })
+
   return (
     <div className="stats">
       <Stat
         id="tTotal"
-        label="Total cash before you bid"
-        value={tiles.total.value}
-        sub={tiles.total.sub}
+        label={t('stats.totalLabel')}
+        value={aud(tiles.total.value)}
+        sub={t('stats.totalSub', {
+          deposit: aud(tiles.total.deposit),
+          costs: aud(tiles.total.costs),
+          moving: aud(tiles.total.moving),
+          buffer: aud(tiles.total.buffer),
+        })}
         emphasis
       />
-      <Stat id="tDep" label="Deposit" value={tiles.deposit.value} sub={tiles.deposit.sub} />
-      <Stat id="tCosts" label="Purchase costs" value={tiles.costs.value} sub={tiles.costs.sub} />
-      <Stat id="tLoan" label="Loan" value={tiles.loan.value} sub={tiles.loan.sub} />
+      <Stat
+        id="tDep"
+        label={t('stats.depositLabel')}
+        value={aud(tiles.deposit.value)}
+        sub={t('stats.depositSub', {
+          pct: pct(tiles.deposit.pct),
+          price: aud(tiles.deposit.price),
+        })}
+      />
+      <Stat
+        id="tCosts"
+        label={t('stats.costsLabel')}
+        value={aud(tiles.costs.value)}
+        sub={
+          tiles.costs.pctOfPrice === null
+            ? ''
+            : t('stats.costsSub', { pct: pct(tiles.costs.pctOfPrice) })
+        }
+      />
+      <Stat id="tLoan" label={t('stats.loanLabel')} value={aud(tiles.loan.value)} sub={loanSub} />
       <Stat
         id="tRep"
-        label="Repayment / month"
-        value={tiles.repayment.value}
-        sub={tiles.repayment.sub}
+        label={t('stats.repaymentLabel')}
+        value={aud(tiles.repayment.value)}
+        sub={t('stats.repaymentSub', {
+          rate: pct(tiles.repayment.ratePct),
+          assessedRate: pct(tiles.repayment.assessedRatePct),
+          assessed: aud(tiles.repayment.assessedValue),
+        })}
       />
     </div>
   )

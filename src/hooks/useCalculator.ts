@@ -1,33 +1,36 @@
 import { useCallback } from 'react'
 import { calculate } from '../logic/calculate'
 import { clampDepositPct, defaultDepositPctForRoute } from '../logic/deposit'
-import { parseParams, serialiseParams } from '../logic/urlState'
-import type { CalculationResult, CalculatorInputs, DepositRoute } from '../types/calculator'
+import type { Lang } from '../logic/lang'
+import { parseParams, serialiseParams, type AppState } from '../logic/urlState'
+import type { CalculationResult, DepositRoute } from '../types/calculator'
 import { useUrlState, type UrlStateCodec } from './useUrlState'
 
 // Changing route must also reset the deposit to the route default, so route is
-// only settable through the dedicated setRoute action.
-type SettableField = Exclude<keyof CalculatorInputs, 'route'>
+// only settable through the dedicated setRoute action; the language has its
+// own action for the same reason (it is not a calculator input).
+type SettableField = Exclude<keyof AppState, 'route' | 'lang'>
 
-const codec: UrlStateCodec<CalculatorInputs> = {
+const codec: UrlStateCodec<AppState> = {
   parse: parseParams,
   serialise: serialiseParams,
 }
 
 export interface UseCalculatorResult {
-  inputs: CalculatorInputs
+  inputs: AppState
   result: CalculationResult
-  setField: <K extends SettableField>(field: K, value: CalculatorInputs[K]) => void
+  setField: <K extends SettableField>(field: K, value: AppState[K]) => void
   setRoute: (route: DepositRoute) => void
+  setLang: (lang: Lang) => void
 }
 
-// All shareable state lives in the URL query string; there is no copy in
-// component state or localStorage.
+// All shareable state lives in the URL query string — calculator inputs and
+// the UI language alike; there is no copy in component state or localStorage.
 export function useCalculator(): UseCalculatorResult {
   const { state: inputs, setState } = useUrlState(codec)
 
   const setField = useCallback(
-    <K extends SettableField>(field: K, value: CalculatorInputs[K]) => {
+    <K extends SettableField>(field: K, value: AppState[K]) => {
       const next = { ...inputs, [field]: value }
       next.depositPct = clampDepositPct(next.route, next.depositPct)
       // Numeric fields are continuous inputs (typing), so the URL update is
@@ -44,5 +47,10 @@ export function useCalculator(): UseCalculatorResult {
     [inputs, setState],
   )
 
-  return { inputs, result: calculate(inputs), setField, setRoute }
+  const setLang = useCallback(
+    (lang: Lang) => setState({ ...inputs, lang }, 'push'),
+    [inputs, setState],
+  )
+
+  return { inputs, result: calculate(inputs), setField, setRoute, setLang }
 }

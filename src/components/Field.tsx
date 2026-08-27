@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useNumericDraft } from '../hooks/useNumericDraft'
 
 interface NumberFieldProps {
@@ -6,24 +7,17 @@ interface NumberFieldProps {
   value: number
   onChange: (next: number) => void
   hint?: string
-  step?: number
-  min?: number
-  max?: number
 }
 
-// No figure on this page is negative, so 0 is the floor unless a field sets a
-// higher one. The ceilings come from the URL codec's own limits.
-export function NumberField({
-  id,
-  label,
-  value,
-  onChange,
-  hint,
-  step,
-  min = 0,
-  max,
-}: NumberFieldProps) {
-  const { draft, onDraftChange } = useNumericDraft(value, onChange)
+/**
+ * A text field with the decimal keypad, not `type="number"`: number inputs
+ * reject the locale's typed separators, and a vi user must be able to enter
+ * `1.234,5`. Parsing is locale-lenient (see parseLocaleNumber); state and the
+ * URL always hold plain dot-decimal numbers.
+ */
+export function NumberField({ id, label, value, onChange, hint }: NumberFieldProps) {
+  const { i18n } = useTranslation()
+  const { draft, onDraftChange } = useNumericDraft(value, onChange, i18n.language)
   const hintId = hint ? `${id}-hint` : undefined
 
   return (
@@ -35,13 +29,10 @@ export function NumberField({
           into one would be wrong every time. */}
       <input
         id={id}
-        type="number"
+        type="text"
         inputMode="decimal"
         autoComplete="off"
         value={draft}
-        step={step}
-        min={min}
-        max={max}
         aria-describedby={hintId}
         onChange={(event) => onDraftChange(event.target.value)}
       />
