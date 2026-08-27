@@ -202,6 +202,14 @@ describe('localisation', () => {
     await waitFor(() => expect(screen.getByText('Hình thức đặt cọc')).toBeTruthy())
   })
 
+  it('does not push a history entry when the active language is re-tapped', () => {
+    renderApp()
+    const before = window.history.length
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếng Việt' }))
+    expect(window.history.length).toBe(before)
+    expect(window.location.search).toBe('')
+  })
+
   it('keeps calculator params when the language changes', () => {
     window.history.replaceState(null, '', '/?price=820000&route=lmi')
     renderApp()

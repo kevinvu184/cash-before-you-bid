@@ -19,16 +19,28 @@ function App() {
   const headerGone = useScrolledPast(header)
 
   // The URL's ?lang= is the source of truth; i18next, <html lang> and the
-  // document title follow it.
+  // document metadata follow it. The metadata writes wait for changeLanguage
+  // to resolve, so they never render through the outgoing language's bundle.
   const lang = inputs.lang
   useEffect(() => {
-    if (i18n.language !== lang) void i18n.changeLanguage(lang)
-    document.documentElement.lang = lang
-    document.title = t('app.pageTitle')
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute('content', t('app.metaDescription'))
-  }, [i18n, lang, t])
+    let stale = false
+    const apply = () => {
+      if (stale) return
+      document.documentElement.lang = lang
+      document.title = i18n.t('app.pageTitle')
+      document
+        .querySelector('meta[name="description"]')
+        ?.setAttribute('content', i18n.t('app.metaDescription'))
+    }
+    if (i18n.language !== lang) {
+      void i18n.changeLanguage(lang).then(apply)
+    } else {
+      apply()
+    }
+    return () => {
+      stale = true
+    }
+  }, [i18n, lang])
 
   return (
     <>

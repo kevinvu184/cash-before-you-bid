@@ -14,6 +14,11 @@ interface LanguageSwitcherProps {
  */
 export function LanguageSwitcher({ lang, setLang }: LanguageSwitcherProps) {
   const { t } = useTranslation()
+  // Re-tapping the active language is a no-op: setLang pushes to history, and
+  // an identical entry would pollute the back button.
+  const choose = (next: Lang) => {
+    if (next !== lang) setLang(next)
+  }
   return (
     <div className="lang-switch" role="group" aria-label={t('switcher.label')}>
       <button
@@ -22,7 +27,7 @@ export function LanguageSwitcher({ lang, setLang }: LanguageSwitcherProps) {
         aria-pressed={lang === 'vi'}
         aria-label={t('switcher.viName')}
         lang="vi"
-        onClick={() => setLang('vi')}
+        onClick={() => choose('vi')}
       >
         {t('switcher.vi')}
       </button>
@@ -32,7 +37,7 @@ export function LanguageSwitcher({ lang, setLang }: LanguageSwitcherProps) {
         aria-pressed={lang === 'en'}
         aria-label={t('switcher.enName')}
         lang="en"
-        onClick={() => setLang('en')}
+        onClick={() => choose('en')}
       >
         {t('switcher.en')}
       </button>
