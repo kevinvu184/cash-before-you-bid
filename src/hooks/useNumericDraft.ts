@@ -2,9 +2,13 @@ import { useState } from 'react'
 
 const toDraft = (value: number): string => (Number.isFinite(value) ? String(value) : '')
 
-// An empty field means "no figure" rather than zero; the calculator treats a
-// non-finite input as zero, exactly like the original's `+value || 0`.
-const parseDraft = (raw: string): number => (raw.trim() === '' ? Number.NaN : Number(raw))
+// A cleared field reads as 0, mirroring the original page's `+value || 0`. It
+// has to be a real number rather than NaN because the query string is the
+// persistence layer, and `?price=NaN` would not survive a round trip.
+const parseDraft = (raw: string): number => {
+  const parsed = Number(raw)
+  return raw.trim() === '' || !Number.isFinite(parsed) ? 0 : parsed
+}
 
 export interface NumericDraft {
   draft: string

@@ -1,5 +1,6 @@
 import type { UseCalculatorResult } from '../hooks/useCalculator'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
+import { CopyLink } from './CopyLink'
 import { CheckboxField, NumberField, SelectField } from './Field'
 
 const ROUTE_OPTIONS: ReadonlyArray<{ value: DepositRoute; label: string }> = [
@@ -161,9 +162,11 @@ export function InputsPanel({ inputs, depositHint, setField, setRoute }: InputsP
         />
       </details>
 
+      <CopyLink />
+
       <p className="panel-foot">
-        Inputs are remembered in this browser only. Rules as at 25 Aug 2026; indicative only, not
-        advice.
+        Your numbers live in the address bar, so a link reproduces this exact view. Rules as at 25
+        Aug 2026; indicative only, not advice.
       </p>
     </aside>
   )

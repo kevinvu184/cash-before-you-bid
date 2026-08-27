@@ -1,7 +1,5 @@
 import type { CalculatorInputs } from '../types/calculator'
 
-export const STORAGE_KEY = 'cbyb'
-
 export const DEFAULT_INPUTS: CalculatorInputs = {
   price: 750_000,
   route: 'scheme',
