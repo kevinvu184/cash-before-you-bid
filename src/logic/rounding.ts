@@ -6,6 +6,9 @@ import { CURRENCY_ROUNDING, type CurrencyCode } from './currencyConfig'
  * Display-only — calculations always run on full precision.
  */
 export function roundToUnit(amount: number, unit: number): number {
+  // An invalid unit (0, negative, NaN, Infinity) would turn the division
+  // into NaN/Infinity; showing the amount unrounded beats corrupting it.
+  if (!Number.isFinite(unit) || unit <= 0) return amount
   if (amount < 0) {
     const rounded = -roundToUnit(-amount, unit)
     // Never return -0: Intl renders it with a minus sign ("-A$0").

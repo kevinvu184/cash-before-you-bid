@@ -25,6 +25,13 @@ describe('roundToUnit', () => {
     expect(roundToUnit(1200, 100)).toBe(1200)
     expect(roundToUnit(50, 10)).toBe(50)
   })
+
+  it('returns the amount unrounded for an invalid unit', () => {
+    expect(roundToUnit(1234.56, 0)).toBe(1234.56)
+    expect(roundToUnit(1234.56, -100)).toBe(1234.56)
+    expect(roundToUnit(1234.56, Number.NaN)).toBe(1234.56)
+    expect(roundToUnit(1234.56, Number.POSITIVE_INFINITY)).toBe(1234.56)
+  })
 })
 
 describe('roundForDisplay', () => {

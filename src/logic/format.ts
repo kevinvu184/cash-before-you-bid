@@ -39,10 +39,11 @@ export function formatMoney(
         maximumFractionDigits: CURRENCY_ROUNDING[currency].fractionDigits,
       }
     : // Exact mode must not alter the value: minimum 0 drops the ".00" on
-      // whole amounts, and the maximum matches formatNumberInput's 10 digits
-      // so a figure with more precision than the currency's minor units
-      // (parseLocaleNumber accepts any) is not silently rounded.
-      { minimumFractionDigits: 0, maximumFractionDigits: 10 }
+      // whole amounts, and Intl's maximum of 20 fraction digits keeps every
+      // digit a double can carry, so a figure with more precision than the
+      // currency's minor units (parseLocaleNumber accepts any) is never
+      // silently rounded.
+      { minimumFractionDigits: 0, maximumFractionDigits: 20 }
   const withSymbol = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
