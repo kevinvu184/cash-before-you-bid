@@ -49,7 +49,7 @@ characters, far below the 2000-character URL limit.
 | `lender`  | Lender fees              | number  | 0 – 1,000,000                   | `300`    |
 | `move`    | Moving and set-up        | number  | 0 – 1,000,000                   | `4000`   |
 | `newhome` | New home                 | boolean | `1` / `0`                       | `0`      |
-| `otp`     | Off-the-plan construction| number  | 0 – 100,000,000                 | `0`      |
+| `otp`     | Off-the-plan construction | number | 0 – 100,000,000                | `0`      |
 | `ppr`     | Owner-occupier           | boolean | `1` / `0`                       | `1`      |
 | `price`   | Purchase price           | number  | 0 – 100,000,000                 | `750000` |
 | `rate`    | Interest rate % p.a.     | number  | 0 – 25                          | `6.2`    |
