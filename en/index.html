@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en" data-doc-lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/cash-before-you-bid/favicon.svg" />
+    <link rel="apple-touch-icon" href="/cash-before-you-bid/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/cash-before-you-bid/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f1b13" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Before Bid" />
+    <!--
+      Ground colours before first paint. The stylesheet paints the page from
+      var(--color-bg) / var(--color-text), which nothing defines until React
+      mounts and useColorMode writes the active skin's tokens — so the script
+      below resolves the skin and mode from the same URL params the app reads
+      and sets those two variables synchronously, in <head>, before the body
+      paints. The :root block under it is the no-JS ground (the plain skin's
+      light tokens).
+
+      Trade-off: eight colour values live here as well as in the skins'
+      tokens.ts. src/skins/preloadedGround.test.ts parses this file and fails
+      if any of them drifts from the token objects, so the duplication cannot
+      rot silently. The alternative — generating a stylesheet from the tokens
+      at build time — would remove the duplication but put a Vite plugin
+      between the token objects and the page for the sake of four pairs.
+    -->
+    <style>
+      :root {
+        --color-bg: #ffffff;
+        --color-text: #000000;
+      }
+      html,
+      body {
+        background: var(--color-bg);
+        color: var(--color-text);
+      }
+    </style>
+    <!--
+      The document language, resolved before the body paints. <html lang> below
+      is the no-JS ground and matches DEFAULT_LANG, so under ?lang=en the page
+      declared Vietnamese until the effect in App.tsx ran — long enough for a
+      screen reader to pick a voice and start reading the masthead in the wrong
+      language. Resolved here from the same param the app reads, alongside the
+      skin and mode, so all three are settled in one pass.
+
+      src/skins/preloadedGround.test.ts holds LANGS and DEFAULT_LANG here to
+      src/logic/lang.ts, the same way it holds the colour table to the tokens.
+    -->
+    <script>
+      ;(function () {
+        var LANGS = ['en', 'vi']
+        var DEFAULT_LANG = 'vi'
+        var GROUND = {
+          default: {
+            light: ['#f7f3e8', '#201c15'],
+            dark: ['#1f1b13', '#ece4d1'],
+          },
+          plain: {
+            light: ['#ffffff', '#000000'],
+            dark: ['#000000', '#ffffff'],
+          },
+        }
+        var has = function (id) {
+          return Object.prototype.hasOwnProperty.call(GROUND, id)
+        }
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var rawSkin = params.get('skin')
+          var skin = rawSkin === null ? 'default' : has(rawSkin) ? rawSkin : 'plain'
+          var rawMode = params.get('mode')
+          var mode =
+            rawMode === 'light' || rawMode === 'dark'
+              ? rawMode
+              : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          var rawLang = params.get('lang')
+          // Without a ?lang= it is the document that decides, not the default:
+          // the build writes one document per locale and stamps each with its
+          // own data-doc-lang, so on /en/ the answer is English even though
+          // DEFAULT_LANG is Vietnamese. Falling back to DEFAULT_LANG here
+          // would overwrite the lang the served HTML already got right, which
+          // is the whole thing both this script and the prerender exist to
+          // fix. No attribute — the dev server, or a build with no prerender —
+          // and DEFAULT_LANG is still the answer.
+          var docLang = document.documentElement.getAttribute('data-doc-lang')
+          var fallbackLang = LANGS.indexOf(docLang) === -1 ? DEFAULT_LANG : docLang
+          var lang = LANGS.indexOf(rawLang) === -1 ? fallbackLang : rawLang
+          var ground = GROUND[skin][mode]
+          var root = document.documentElement
+          root.lang = lang
+          root.dataset.skin = skin
+          root.dataset.mode = mode
+          root.style.setProperty('color-scheme', mode)
+          root.style.setProperty('--color-bg', ground[0])
+          root.style.setProperty('--color-text', ground[1])
+        } catch (error) {
+          // Leaves the :root fallback above in place; the app still boots.
+        }
+      })()
+    </script>
+    <!--
+      The web fonts are served from this origin (src/fonts.css declares the
+      faces, public/fonts holds the files). Nothing here reaches a third party,
+      so there is no preconnect to make and no DNS lookup, TLS handshake and
+      stylesheet round trip standing between the browser and the first paint.
+
+      These two preloads are the body face for the default locale: latin covers
+      the digits and Latin letters every figure on the page is made of, and
+      vietnamese covers the diacritics the default copy is written in. They
+      start downloading in parallel with the module bundle rather than waiting
+      for the stylesheet to be parsed. The remaining faces — latin-ext, and the
+      monospace family used for the figures below the fold — are left to the
+      stylesheet; preloading everything would just make these two arrive later.
+    -->
+    <link
+      rel="preload"
+      href="/cash-before-you-bid/fonts/libre-franklin-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/cash-before-you-bid/fonts/libre-franklin-vietnamese.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <!--
+      Everything below is per-locale, and it is generated: src/prerender/head.ts
+      is the one statement of it, and scripts/prerender.mjs replaces this whole
+      block in each document it writes. What is checked in here is that same
+      generator's output for the default locale, so `npm run dev` and a build
+      that somehow skipped the prerender both serve something coherent rather
+      than nothing. src/prerender/head.test.ts regenerates it and fails if the
+      two have drifted.
+
+      Do not hand-edit between the markers. Change head.ts; the build prints
+      the regenerated block when this copy has fallen behind it.
+    -->
+    <!-- prerender:head:start -->
+    <title>Victoria Stamp Duty and Deposit Calculator — Cash Before You Bid</title>
+    <meta name="description" content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase." />
+    <link rel="canonical" href="https://kevinvu184.github.io/cash-before-you-bid/en/" />
+    <link rel="alternate" hreflang="en" href="https://kevinvu184.github.io/cash-before-you-bid/en/" />
+    <link rel="alternate" hreflang="vi" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <link rel="alternate" hreflang="x-default" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cash Before You Bid" />
+    <meta property="og:url" content="https://kevinvu184.github.io/cash-before-you-bid/en/" />
+    <meta property="og:title" content="Victoria Stamp Duty and Deposit Calculator — Cash Before You Bid" />
+    <meta property="og:description" content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase." />
+    <meta property="og:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="en_AU" />
+    <meta property="og:locale:alternate" content="vi_VN" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Victoria Stamp Duty and Deposit Calculator — Cash Before You Bid" />
+    <meta name="twitter:description" content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase." />
+    <meta name="twitter:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <!-- prerender:head:end -->
+    <script type="module" crossorigin src="/cash-before-you-bid/assets/index-CmmEgwbI.js"></script>
+    <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/rolldown-runtime-CbXtAM7H.js">
+    <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/scenarioStore-CGR-KK5l.js">
+    <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/index-Dp8-BvOo.css">
+    <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/default-v_EeewHB.css" />
+    <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/default-UEPH5mrR.js" />
+  </head>
+  <body>
+    <div id="root"><div class="page"><header class="masthead"><div class="masthead-top"><span class="eyebrow" data-field="eyebrow" data-importance="secondary">Victoria · first home buyers · calculator</span><div class="masthead-controls"><div class="choice-switch" role="group" aria-label="Language" data-field="language" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="false" aria-label="Tiếng Việt" lang="vi">VI</button><button type="button" class="choice-option" aria-pressed="true" aria-label="English" lang="en">EN</button></div><div class="choice-switch" role="group" aria-label="Colour mode" data-field="colorMode" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="true">System</button><button type="button" class="choice-option" aria-pressed="false">Light</button><button type="button" class="choice-option" aria-pressed="false">Dark</button></div><div class="choice-switch" role="group" aria-label="Appearance" data-field="skin" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="true">Ledger</button><button type="button" class="choice-option" aria-pressed="false">Plain</button></div></div></div><h1 data-field="title" data-importance="primary">Cash Before You Bid</h1><p class="lede" data-field="lede" data-importance="secondary">Deposit, stamp duty, government fees, LMI, inspections, moving and a repayment buffer — everything you need in the bank before you sign, with the maths shown line by line.</p></header><main><div class="columns"><section class="panel" aria-label="Inputs"><h2 class="section-mark" data-field="inputsHeading" data-importance="secondary">01 — Your numbers</h2><div class="field" data-field="price" data-importance="primary"><label for="price">Purchase price ($)</label><input id="price" type="text" inputMode="decimal" autoComplete="off" value="750000"/></div><div class="field price-slider" data-field="priceSlider" data-importance="primary"><label for="price-slider">Adjust the price</label><input id="price-slider" type="range" min="0" max="1500000" step="5000" aria-valuetext="A$750,000" aria-describedby="price-slider-cliffs" value="750000"/><div class="price-cliff-rail" aria-hidden="true"><span class="price-cliff" style="left:40%;--cliff-row:0">A$600,000</span><span class="price-cliff" style="left:50%;--cliff-row:1">A$750,000</span></div><ul class="price-cliff-notes" id="price-slider-cliffs" aria-label="First home buyer duty thresholds"><li><strong>Exemption ends.</strong> Up to A$600,000 an eligible first home buyer pays no land transfer duty at all. Past it the exemption is gone and duty phases in, rising far more steeply with price than it does anywhere else.</li><li><strong>Concession ends.</strong> Between A$600,000 and A$750,000 the duty is scaled by how far into the band the price sits, climbing from nothing to the full amount across it. From A$750,000 the concession is gone and the full duty applies.</li></ul></div><div class="field" data-field="route" data-importance="primary"><label for="route">Deposit route</label><select id="route"><option value="scheme" selected="">Australian Government 5% Deposit Scheme (no LMI)</option><option value="lmi">Pay LMI (deposit under 20%)</option><option value="nolmi">20%+ deposit or family guarantor (no LMI)</option><option value="htb">Help to Buy (2% deposit, government equity)</option></select></div><div class="field" data-field="depositPct" data-importance="primary"><label for="dep">Your deposit (%)</label><input id="dep" type="text" inputMode="decimal" autoComplete="off" aria-describedby="dep-hint" value="5"/><span class="field-hint" id="dep-hint">The contract sets the deposit you pay on the day, usually 10%. The scheme needs at least 5%.</span></div><div class="field" data-field="region" data-importance="secondary"><label for="region">Where in Victoria</label><select id="region"><option value="metro" selected="">Melbourne or Geelong (scheme cap $950k)</option><option value="regional">Rest of Victoria (scheme cap $650k)</option></select></div><label class="field field-inline" for="fhb" data-field="firstHomeBuyer" data-importance="secondary"><input id="fhb" type="checkbox" checked=""/><span>Eligible first home buyer (never owned, will live in it 12 months)</span></label><label class="field field-inline" for="ppr" data-field="ownerOccupier" data-importance="secondary"><input id="ppr" type="checkbox" checked=""/><span>Buying to live in (principal place of residence)</span></label><label class="field field-inline" for="newhome" data-field="newHome" data-importance="secondary"><input id="newhome" type="checkbox"/><span>New home (never occupied) — First Home Owner Grant $10,000 if ≤ $750k</span></label><div class="field" data-field="offThePlanConstruction" data-importance="secondary"><label for="otp">Off-the-plan: construction cost still to be built at contract ($)</label><input id="otp" type="text" inputMode="decimal" autoComplete="off" aria-describedby="otp-hint" value="0"/><span class="field-hint" id="otp-hint">Strata apartments/townhouses only; reduces dutiable value. 0 for established homes.</span></div><label class="field field-inline" for="foreign" data-field="foreignPurchaser" data-importance="secondary"><input id="foreign" type="checkbox"/><span>Not a citizen or permanent resident (foreign purchaser duty +8%)</span></label><div class="field" data-field="interestRatePct" data-importance="secondary"><label for="rate">Interest rate (% p.a.)</label><input id="rate" type="text" inputMode="decimal" autoComplete="off" value="6.2"/></div><div class="field" data-field="savings" data-importance="primary"><label for="save">Savings available ($)</label><input id="save" type="text" inputMode="decimal" autoComplete="off" aria-describedby="save-hint" value="0"/><span class="field-hint" id="save-hint">Cash you can actually reach: the deposit comes out of this on the day, and settlement out of what is left.</span></div><div class="field" data-field="preApprovedLoan" data-importance="primary"><label for="loan">Pre-approved loan amount ($) — optional</label><input id="loan" type="text" inputMode="decimal" autoComplete="off" aria-describedby="loan-hint" value=""/><span class="field-hint" id="loan-hint">Leave empty if you are not pre-approved yet; the finance check is then not run rather than failed.</span></div><details class="privacy"><summary>Your figures never leave your browser.</summary><ul class="small" data-field="inputsPrivacy" data-importance="primary"><li><strong>The sums run here.</strong> The whole calculation happens on this device, inside this page. There is no account, no sign-up, no tracking, no analytics and no lead capture — nothing you type is sent to us, to a broker, or to anyone else.</li><li><strong>A link you share carries your numbers.</strong> Your figures sit in the address bar so the page can be reloaded and shared, which means anyone you send the link to can read them — your savings and pre-approved loan included — and a chat app or browser sync may keep a copy.</li><li><strong>Saved scenarios stay on this device.</strong> Saving one keeps its numbers in this browser’s own storage, on this device only. They are never uploaded, and deleting one here deletes it everywhere.</li><li><strong>One thing is loaded from elsewhere, and only if you ask.</strong> Every file this page needs — its code, its styling, even its fonts — is served from this site&#x27;s own address, so no one else sees you arrive. The single exception is the exchange rate: switching the display to đồng fetches today&#x27;s rate from exchangerate-api.com — the request your browser will show is to open.er-api.com — and nothing is fetched before you do. That request carries none of your figures, no cookie, and not even the address of the page you are on. Nothing else is added without this statement changing first.</li></ul></details><details class="assumptions" data-field="assumptions" data-importance="secondary"><summary>Cost assumptions (edit if you have quotes)</summary><div class="field" data-field="conveyancing" data-importance="secondary"><label for="conv">Conveyancing incl. disbursements ($)</label><input id="conv" type="text" inputMode="decimal" autoComplete="off" value="1600"/></div><div class="field" data-field="buildingAndPest" data-importance="secondary"><label for="bp">Building and pest inspection ($)</label><input id="bp" type="text" inputMode="decimal" autoComplete="off" value="550"/></div><div class="field" data-field="propertiesConsidered" data-importance="secondary"><label for="bids">Properties you bid on before you win</label><input id="bids" type="text" inputMode="numeric" autoComplete="off" aria-describedby="bids-hint" value="1"/><span class="field-hint" id="bids-hint">Each attempt costs an inspection and a contract review, win or lose. Leave at 1 for this property alone.</span></div><div class="field" data-field="lenderFees" data-importance="secondary"><label for="lender">Lender fees: settlement + valuation ($)</label><input id="lender" type="text" inputMode="decimal" autoComplete="off" value="300"/></div><div class="field" data-field="settlementAdjustments" data-importance="secondary"><label for="adj">Settlement adjustments to vendor ($)</label><input id="adj" type="text" inputMode="decimal" autoComplete="off" value="800"/></div><div class="field" data-field="buildingInsurance" data-importance="secondary"><label for="ins">Building insurance, first year ($)</label><input id="ins" type="text" inputMode="decimal" autoComplete="off" value="1500"/></div><div class="field" data-field="movingCosts" data-importance="secondary"><label for="move">Moving and set-up ($)</label><input id="move" type="text" inputMode="decimal" autoComplete="off" value="4000"/></div><div class="field" data-field="bufferMonths" data-importance="secondary"><label for="bufm">Buffer (months of repayments)</label><input id="bufm" type="text" inputMode="decimal" autoComplete="off" value="3"/></div><label class="field field-inline" for="caplmi" data-field="capitaliseLmi" data-importance="secondary"><input id="caplmi" type="checkbox"/><span>Capitalise LMI into the loan (pay nothing upfront)</span></label></details><p class="panel-foot" data-field="panelFoot" data-importance="secondary">Your numbers live in the address bar, so a link reproduces this exact view. Rules as at 25 Aug 2026; indicative only, not advice.</p></section></div></main></div></div>
+    <!--
+      The prerendered shell inside #root is one locale, on the default skin, in
+      the default state (src/prerender/Shell.tsx). It is right for the URL that
+      asked for this document and wrong for any other, so this decides which it
+      is and drops it when it is wrong — here, immediately after the shell is
+      parsed and before the browser paints, rather than in <head> where #root
+      does not exist yet.
+
+      Dropping it costs nothing that was not already the case: an empty #root
+      is exactly what this page shipped before the prerender existed.
+
+      data-doc-lang is written by scripts/prerender.mjs. It is absent in
+      development and there is no shell there either, so this returns at once.
+    -->
+    <script>
+      ;(function () {
+        var root = document.documentElement
+        var docLang = root.getAttribute('data-doc-lang')
+        if (docLang === null) return
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var lang = params.get('lang')
+          if (lang !== 'en' && lang !== 'vi') {
+            // No ?lang= at all: the directory this document was served from is
+            // the request. The app reads the query string and nothing else, so
+            // a non-default locale has to be said there before the module
+            // bundle reads it.
+            if (docLang !== 'vi') {
+              params.set('lang', docLang)
+              window.history.replaceState(
+                window.history.state,
+                '',
+                window.location.pathname + '?' + params.toString() + window.location.hash,
+              )
+            }
+            lang = docLang
+          }
+          // The shell is one language, one skin, one colour mode and the
+          // default figures. A URL that asks for any of them differently gets
+          // the blank start it always got rather than a flash of the wrong
+          // page. ?mode= is in that list even though the ground colours above
+          // already honour it: the shell also paints the mode switch, and a
+          // build cannot know which of its three buttons to mark pressed. On
+          // ?mode=dark it says 'system', which a screen reader would read out
+          // as the answer until hydration corrects it. No ?mode= at all — the
+          // common case, following the operating system — is what the shell
+          // was rendered for and keeps its paint.
+          var stale = lang !== docLang || (params.get('skin') || 'default') !== 'default'
+          params.forEach(function (_value, key) {
+            if (key !== 'lang' && key !== 'skin') stale = true
+          })
+          if (stale) document.getElementById('root').replaceChildren()
+        } catch (error) {
+          // The shell stays put; React replaces it on mount either way.
+        }
+      })()
+    </script>
+  </body>
+</html>

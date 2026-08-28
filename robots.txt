@@ -1,0 +1,16 @@
+# robots.txt for https://kevinvu184.github.io/cash-before-you-bid/
+#
+# A crawler only reads robots.txt at the origin root, and this app is served
+# from a GitHub Pages project sub-path — so nothing will fetch this file at
+# https://kevinvu184.github.io/robots.txt, which belongs to the user page, not
+# to this repository. It ships regardless: it becomes the real robots.txt the
+# day this moves to a domain of its own, and it is where the sitemap is
+# announced for anything that is pointed at it directly.
+#
+# There is nothing to disallow. The app is one page, it calls no API, and every
+# state it can be in is a query string on that page.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://kevinvu184.github.io/cash-before-you-bid/sitemap.xml

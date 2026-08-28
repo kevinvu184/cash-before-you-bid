@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-doc-lang="vi">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/cash-before-you-bid/favicon.svg" />
@@ -77,7 +77,17 @@
                 ? 'dark'
                 : 'light'
           var rawLang = params.get('lang')
-          var lang = LANGS.indexOf(rawLang) === -1 ? DEFAULT_LANG : rawLang
+          // Without a ?lang= it is the document that decides, not the default:
+          // the build writes one document per locale and stamps each with its
+          // own data-doc-lang, so on /en/ the answer is English even though
+          // DEFAULT_LANG is Vietnamese. Falling back to DEFAULT_LANG here
+          // would overwrite the lang the served HTML already got right, which
+          // is the whole thing both this script and the prerender exist to
+          // fix. No attribute — the dev server, or a build with no prerender —
+          // and DEFAULT_LANG is still the answer.
+          var docLang = document.documentElement.getAttribute('data-doc-lang')
+          var fallbackLang = LANGS.indexOf(docLang) === -1 ? DEFAULT_LANG : docLang
+          var lang = LANGS.indexOf(rawLang) === -1 ? fallbackLang : rawLang
           var ground = GROUND[skin][mode]
           var root = document.documentElement
           root.lang = lang
@@ -119,17 +129,106 @@
       type="font/woff2"
       crossorigin
     />
-    <meta
-      name="description"
-      content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase."
-    />
-    <title>Cash Before You Bid</title>
-    <script type="module" crossorigin src="/cash-before-you-bid/assets/index-B2Oekf3x.js"></script>
+    <!--
+      Everything below is per-locale, and it is generated: src/prerender/head.ts
+      is the one statement of it, and scripts/prerender.mjs replaces this whole
+      block in each document it writes. What is checked in here is that same
+      generator's output for the default locale, so `npm run dev` and a build
+      that somehow skipped the prerender both serve something coherent rather
+      than nothing. src/prerender/head.test.ts regenerates it and fails if the
+      two have drifted.
+
+      Do not hand-edit between the markers. Change head.ts; the build prints
+      the regenerated block when this copy has fallen behind it.
+    -->
+    <!-- prerender:head:start -->
+    <title>Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid</title>
+    <meta name="description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <link rel="canonical" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <link rel="alternate" hreflang="en" href="https://kevinvu184.github.io/cash-before-you-bid/en/" />
+    <link rel="alternate" hreflang="vi" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <link rel="alternate" hreflang="x-default" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cash Before You Bid" />
+    <meta property="og:url" content="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <meta property="og:title" content="Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid" />
+    <meta property="og:description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <meta property="og:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale:alternate" content="en_AU" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid" />
+    <meta name="twitter:description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <meta name="twitter:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <!-- prerender:head:end -->
+    <script type="module" crossorigin src="/cash-before-you-bid/assets/index-CmmEgwbI.js"></script>
     <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/rolldown-runtime-CbXtAM7H.js">
     <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/scenarioStore-CGR-KK5l.js">
     <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/index-Dp8-BvOo.css">
+    <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/default-v_EeewHB.css" />
+    <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/default-UEPH5mrR.js" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="page"><div class="translation-notice" role="note" data-field="translationNotice" data-importance="secondary"><p class="translation-notice-text">Bản dịch tiếng Việt do AI (Claude) tạo và chưa được người bản ngữ kiểm tra.</p><button type="button" class="translation-notice-dismiss" aria-label="Đóng thông báo này"><span aria-hidden="true">×</span></button></div><header class="masthead"><div class="masthead-top"><span class="eyebrow" data-field="eyebrow" data-importance="secondary">Victoria · người mua nhà lần đầu · công cụ tính</span><div class="masthead-controls"><div class="choice-switch" role="group" aria-label="Ngôn ngữ" data-field="language" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="true" aria-label="Tiếng Việt" lang="vi">VI</button><button type="button" class="choice-option" aria-pressed="false" aria-label="English" lang="en">EN</button></div><div class="choice-switch" role="group" aria-label="Chế độ màu" data-field="colorMode" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="true">Hệ thống</button><button type="button" class="choice-option" aria-pressed="false">Sáng</button><button type="button" class="choice-option" aria-pressed="false">Tối</button></div><div class="choice-switch" role="group" aria-label="Giao diện" data-field="skin" data-importance="secondary"><button type="button" class="choice-option" aria-pressed="true">Ledger</button><button type="button" class="choice-option" aria-pressed="false">Đơn giản</button></div></div></div><h1 data-field="title" data-importance="primary">Cash Before You Bid</h1><p class="lede" data-field="lede" data-importance="secondary">Tiền đặt cọc, thuế trước bạ (stamp duty), phí nhà nước, LMI, phí kiểm tra nhà, chuyển nhà và khoản dự phòng trả nợ — tất cả số tiền bạn cần có trong tài khoản trước khi ký hợp đồng, với cách tính hiển thị theo từng dòng.</p></header><main><div class="columns"><section class="panel" aria-label="Dữ liệu nhập"><h2 class="section-mark" data-field="inputsHeading" data-importance="secondary">01 — Số liệu của bạn</h2><div class="field" data-field="price" data-importance="primary"><label for="price">Giá mua (AUD)</label><input id="price" type="text" inputMode="decimal" autoComplete="off" value="750000"/></div><div class="field price-slider" data-field="priceSlider" data-importance="primary"><label for="price-slider">Điều chỉnh giá</label><input id="price-slider" type="range" min="0" max="1500000" step="5000" aria-valuetext="750.000 AUD" aria-describedby="price-slider-cliffs" value="750000"/><div class="price-cliff-rail" aria-hidden="true"><span class="price-cliff" style="left:40%;--cliff-row:0">600.000 AUD</span><span class="price-cliff" style="left:50%;--cliff-row:1">750.000 AUD</span></div><ul class="price-cliff-notes" id="price-slider-cliffs" aria-label="Các ngưỡng thuế trước bạ cho người mua nhà lần đầu"><li><strong>Hết miễn thuế.</strong> Tới 600.000 AUD, người mua nhà lần đầu đủ điều kiện không phải trả đồng thuế trước bạ nào. Vượt qua ngưỡng này là mất miễn thuế và thuế bắt đầu tính dần, tăng theo giá dốc hơn nhiều so với bất kỳ khoảng giá nào khác.</li><li><strong>Hết giảm thuế.</strong> Từ 600.000 AUD đến 750.000 AUD, thuế được tính theo tỷ lệ giá nằm ở đâu trong khoảng này, tăng dần từ 0 lên mức thuế đầy đủ. Từ 750.000 AUD trở lên là hết giảm thuế và phải trả đủ.</li></ul></div><div class="field" data-field="route" data-importance="primary"><label for="route">Hình thức đặt cọc</label><select id="route"><option value="scheme" selected="">Chương trình đặt cọc 5% của Chính phủ Úc (không LMI)</option><option value="lmi">Trả LMI (đặt cọc dưới 20%)</option><option value="nolmi">Đặt cọc từ 20% hoặc người thân bảo lãnh (không LMI)</option><option value="htb">Help to Buy (đặt cọc 2%, chính phủ góp vốn)</option></select></div><div class="field" data-field="depositPct" data-importance="primary"><label for="dep">Tiền đặt cọc của bạn (%)</label><input id="dep" type="text" inputMode="decimal" autoComplete="off" aria-describedby="dep-hint" value="5"/><span class="field-hint" id="dep-hint">Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Chương trình yêu cầu tối thiểu 5%.</span></div><div class="field" data-field="region" data-importance="secondary"><label for="region">Khu vực tại Victoria</label><select id="region"><option value="metro" selected="">Melbourne hoặc Geelong (mức trần 950.000 AUD)</option><option value="regional">Các vùng khác của Victoria (mức trần 650.000 AUD)</option></select></div><label class="field field-inline" for="fhb" data-field="firstHomeBuyer" data-importance="secondary"><input id="fhb" type="checkbox" checked=""/><span>Người mua nhà lần đầu đủ điều kiện (chưa từng sở hữu nhà, sẽ ở trong nhà 12 tháng)</span></label><label class="field field-inline" for="ppr" data-field="ownerOccupier" data-importance="secondary"><input id="ppr" type="checkbox" checked=""/><span>Mua để ở (nơi cư trú chính)</span></label><label class="field field-inline" for="newhome" data-field="newHome" data-importance="secondary"><input id="newhome" type="checkbox"/><span>Nhà mới (chưa ai ở) — trợ cấp First Home Owner Grant 10.000 AUD nếu giá ≤ 750.000 AUD</span></label><div class="field" data-field="offThePlanConstruction" data-importance="secondary"><label for="otp">Mua nhà trên giấy (off-the-plan): chi phí xây dựng chưa hoàn thành lúc ký hợp đồng (AUD)</label><input id="otp" type="text" inputMode="decimal" autoComplete="off" aria-describedby="otp-hint" value="0"/><span class="field-hint" id="otp-hint">Chỉ áp dụng cho căn hộ/nhà phố strata; giảm giá trị chịu thuế. Nhập 0 cho nhà đã xây xong.</span></div><label class="field field-inline" for="foreign" data-field="foreignPurchaser" data-importance="secondary"><input id="foreign" type="checkbox"/><span>Không phải công dân hoặc thường trú nhân Úc (thuế người mua nước ngoài +8%)</span></label><div class="field" data-field="interestRatePct" data-importance="secondary"><label for="rate">Lãi suất (%/năm)</label><input id="rate" type="text" inputMode="decimal" autoComplete="off" value="6,2"/></div><div class="field" data-field="savings" data-importance="primary"><label for="save">Tiền tiết kiệm hiện có ($)</label><input id="save" type="text" inputMode="decimal" autoComplete="off" aria-describedby="save-hint" value="0"/><span class="field-hint" id="save-hint">Số tiền mặt bạn thực sự lấy ra được: tiền đặt cọc trừ vào đây trong ngày đấu giá, còn tất toán trừ vào phần còn lại.</span></div><div class="field" data-field="preApprovedLoan" data-importance="primary"><label for="loan">Khoản vay đã được duyệt trước ($) — không bắt buộc</label><input id="loan" type="text" inputMode="decimal" autoComplete="off" aria-describedby="loan-hint" value=""/><span class="field-hint" id="loan-hint">Để trống nếu bạn chưa được duyệt trước; khi đó phần kiểm tra tài chính sẽ không chạy chứ không bị coi là không đạt.</span></div><details class="privacy"><summary>Các con số của bạn không bao giờ rời khỏi trình duyệt.</summary><ul class="small" data-field="inputsPrivacy" data-importance="primary"><li><strong>Phép tính chạy ngay tại đây.</strong> Toàn bộ phép tính diễn ra trên thiết bị này, ngay trong trang này. Không có tài khoản, không đăng ký, không theo dõi, không phân tích hành vi và không thu thập thông tin khách hàng tiềm năng — những gì bạn nhập không được gửi cho chúng tôi, cho bên môi giới hay cho bất kỳ ai.</li><li><strong>Đường liên kết bạn chia sẻ có mang theo các con số.</strong> Các con số của bạn nằm trong thanh địa chỉ để trang có thể tải lại và chia sẻ được, nghĩa là ai nhận được đường liên kết cũng đọc được chúng — kể cả tiền tiết kiệm và khoản vay đã được duyệt trước — và ứng dụng nhắn tin hoặc tính năng đồng bộ của trình duyệt có thể giữ lại một bản sao.</li><li><strong>Phương án đã lưu nằm lại trên thiết bị này.</strong> Khi bạn lưu một phương án, các con số của nó được giữ trong bộ nhớ riêng của trình duyệt này, chỉ trên thiết bị này. Chúng không bao giờ được tải lên, và xoá ở đây là xoá hẳn.</li><li><strong>Chỉ một thứ được tải từ bên ngoài, và chỉ khi bạn yêu cầu.</strong> Mọi tệp trang này cần — mã nguồn, phần định dạng hiển thị, kể cả phông chữ — đều được phục vụ từ chính địa chỉ của trang, nên không ai khác nhìn thấy bạn ghé thăm. Ngoại lệ duy nhất là tỷ giá: khi bạn chuyển hiển thị sang đồng, trang mới lấy tỷ giá hôm nay từ exchangerate-api.com — yêu cầu bạn thấy trong trình duyệt là tới open.er-api.com — còn trước đó thì không lấy gì cả. Yêu cầu đó không mang theo con số nào của bạn, không mang cookie, cũng không mang cả địa chỉ trang bạn đang xem. Sẽ không có bên nào khác được thêm vào mà lời cam kết này không được sửa trước.</li></ul></details><details class="assumptions" data-field="assumptions" data-importance="secondary"><summary>Các chi phí ước tính (sửa nếu bạn có báo giá)</summary><div class="field" data-field="conveyancing" data-importance="secondary"><label for="conv">Phí pháp lý chuyển nhượng, gồm chi phí phát sinh (AUD)</label><input id="conv" type="text" inputMode="decimal" autoComplete="off" value="1600"/></div><div class="field" data-field="buildingAndPest" data-importance="secondary"><label for="bp">Phí kiểm tra công trình và mối mọt (AUD)</label><input id="bp" type="text" inputMode="decimal" autoComplete="off" value="550"/></div><div class="field" data-field="propertiesConsidered" data-importance="secondary"><label for="bids">Số căn nhà bạn sẽ trả giá trước khi mua được</label><input id="bids" type="text" inputMode="numeric" autoComplete="off" aria-describedby="bids-hint" value="1"/><span class="field-hint" id="bids-hint">Mỗi lần tham gia đều tốn phí kiểm tra nhà và phí xem hợp đồng, dù thắng hay thua. Để 1 nếu chỉ tính riêng căn này.</span></div><div class="field" data-field="lenderFees" data-importance="secondary"><label for="lender">Phí ngân hàng: tất toán + định giá (AUD)</label><input id="lender" type="text" inputMode="decimal" autoComplete="off" value="300"/></div><div class="field" data-field="settlementAdjustments" data-importance="secondary"><label for="adj">Các khoản điều chỉnh trả cho bên bán khi tất toán (AUD)</label><input id="adj" type="text" inputMode="decimal" autoComplete="off" value="800"/></div><div class="field" data-field="buildingInsurance" data-importance="secondary"><label for="ins">Bảo hiểm công trình, năm đầu (AUD)</label><input id="ins" type="text" inputMode="decimal" autoComplete="off" value="1500"/></div><div class="field" data-field="movingCosts" data-importance="secondary"><label for="move">Chi phí chuyển nhà và ổn định chỗ ở (AUD)</label><input id="move" type="text" inputMode="decimal" autoComplete="off" value="4000"/></div><div class="field" data-field="bufferMonths" data-importance="secondary"><label for="bufm">Khoản dự phòng (số tháng trả nợ)</label><input id="bufm" type="text" inputMode="decimal" autoComplete="off" value="3"/></div><label class="field field-inline" for="caplmi" data-field="capitaliseLmi" data-importance="secondary"><input id="caplmi" type="checkbox"/><span>Cộng LMI vào khoản vay (không trả trước)</span></label></details><p class="panel-foot" data-field="panelFoot" data-importance="secondary">Số liệu của bạn nằm ngay trên thanh địa chỉ, nên một liên kết sẽ tái hiện đúng trang này. Quy định tính đến 25/08/2026; chỉ mang tính tham khảo, không phải tư vấn.</p></section></div></main></div></div>
+    <!--
+      The prerendered shell inside #root is one locale, on the default skin, in
+      the default state (src/prerender/Shell.tsx). It is right for the URL that
+      asked for this document and wrong for any other, so this decides which it
+      is and drops it when it is wrong — here, immediately after the shell is
+      parsed and before the browser paints, rather than in <head> where #root
+      does not exist yet.
+
+      Dropping it costs nothing that was not already the case: an empty #root
+      is exactly what this page shipped before the prerender existed.
+
+      data-doc-lang is written by scripts/prerender.mjs. It is absent in
+      development and there is no shell there either, so this returns at once.
+    -->
+    <script>
+      ;(function () {
+        var root = document.documentElement
+        var docLang = root.getAttribute('data-doc-lang')
+        if (docLang === null) return
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var lang = params.get('lang')
+          if (lang !== 'en' && lang !== 'vi') {
+            // No ?lang= at all: the directory this document was served from is
+            // the request. The app reads the query string and nothing else, so
+            // a non-default locale has to be said there before the module
+            // bundle reads it.
+            if (docLang !== 'vi') {
+              params.set('lang', docLang)
+              window.history.replaceState(
+                window.history.state,
+                '',
+                window.location.pathname + '?' + params.toString() + window.location.hash,
+              )
+            }
+            lang = docLang
+          }
+          // The shell is one language, one skin, one colour mode and the
+          // default figures. A URL that asks for any of them differently gets
+          // the blank start it always got rather than a flash of the wrong
+          // page. ?mode= is in that list even though the ground colours above
+          // already honour it: the shell also paints the mode switch, and a
+          // build cannot know which of its three buttons to mark pressed. On
+          // ?mode=dark it says 'system', which a screen reader would read out
+          // as the answer until hydration corrects it. No ?mode= at all — the
+          // common case, following the operating system — is what the shell
+          // was rendered for and keeps its paint.
+          var stale = lang !== docLang || (params.get('skin') || 'default') !== 'default'
+          params.forEach(function (_value, key) {
+            if (key !== 'lang' && key !== 'skin') stale = true
+          })
+          if (stale) document.getElementById('root').replaceChildren()
+        } catch (error) {
+          // The shell stays put; React replaces it on mount either way.
+        }
+      })()
+    </script>
   </body>
 </html>
