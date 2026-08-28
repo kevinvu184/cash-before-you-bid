@@ -59,7 +59,9 @@
     "lmi": "Under 20%; LMI charged"
   },
   "results": {
-    "flagsLabel": "Warnings and notes"
+    "flagsLabel": "Warnings and notes",
+    "statsHeading": "Summary",
+    "linesHeading": "Line by line"
   },
   "money": {
     "disclaimer": "Every figure above is an estimate, rounded to the nearest {{unit}}.",
@@ -171,5 +173,16 @@
     "sourcesBefore": "Sources and the full explanation are in the ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". General information only, not personal legal, tax or credit advice."
+  },
+  "skins": {
+    "label": "Appearance",
+    "default": "Ledger",
+    "plain": "Plain"
+  },
+  "mode": {
+    "label": "Colour mode",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

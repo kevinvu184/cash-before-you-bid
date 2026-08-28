@@ -1,0 +1,73 @@
+import type { SkinMeta } from '../../types/skin'
+import { tokens } from './tokens'
+
+/**
+ * Everything about the default skin that is cheap enough to load eagerly: its
+ * name, its tokens for both modes, and the manifest of fields it renders.
+ *
+ * `renders` is a `Record<FieldId, true>`, so adding a field to the view-model
+ * contract breaks this file until the skin handles it. The parity test then
+ * proves the manifest is honest by comparing it with the `data-field`
+ * attributes the skin actually puts in the DOM.
+ */
+export const meta: SkinMeta = {
+  id: 'default',
+  nameKey: 'skins.default',
+  tokens,
+  renders: {
+    eyebrow: true,
+    title: true,
+    lede: true,
+    translationNotice: true,
+    language: true,
+    skin: true,
+    colorMode: true,
+    inputsHeading: true,
+    price: true,
+    route: true,
+    depositPct: true,
+    region: true,
+    firstHomeBuyer: true,
+    ownerOccupier: true,
+    newHome: true,
+    offThePlanConstruction: true,
+    foreignPurchaser: true,
+    interestRatePct: true,
+    assumptions: true,
+    conveyancing: true,
+    buildingAndPest: true,
+    lenderFees: true,
+    settlementAdjustments: true,
+    buildingInsurance: true,
+    movingCosts: true,
+    bufferMonths: true,
+    capitaliseLmi: true,
+    panelFoot: true,
+    statTotal: true,
+    statDeposit: true,
+    statCosts: true,
+    statLoan: true,
+    statRepayment: true,
+    lineDeposit: true,
+    lineStampDuty: true,
+    lineForeignDuty: true,
+    lineTransferFee: true,
+    lineMortgageFee: true,
+    linePexaFees: true,
+    lineLmi: true,
+    lineConveyancing: true,
+    lineBuildingAndPest: true,
+    lineLenderFees: true,
+    lineSettlementAdjustments: true,
+    lineBuildingInsurance: true,
+    lineGrant: true,
+    lineCostsSubtotal: true,
+    lineMoving: true,
+    lineBuffer: true,
+    lineTotal: true,
+    flags: true,
+    estimateNote: true,
+    notes: true,
+    sources: true,
+  },
+}
