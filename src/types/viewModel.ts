@@ -84,6 +84,7 @@ export type ChromeFieldId =
   | 'language'
   | 'skin'
   | 'colorMode'
+  | 'print'
 
 export type InputFieldId =
   | 'inputsHeading'
@@ -204,6 +205,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   language: true,
   skin: true,
   colorMode: true,
+  print: true,
   inputsHeading: true,
   price: true,
   priceSlider: true,
@@ -410,6 +412,15 @@ export type AnyInputField = NumberInputField | BooleanInputField
 /** A group of inputs a skin may put behind a disclosure. */
 export interface GroupField extends Field<readonly AnyInputField[]> {
   kind: 'text'
+}
+
+/**
+ * A control that does one thing rather than holding a value. `labelKey` names
+ * the action; there is nothing to read back, so `value` is null.
+ */
+export interface ActionField extends Field<null> {
+  kind: 'text'
+  onActivate(): void
 }
 
 export interface NoticeField extends Field<null> {
@@ -733,6 +744,14 @@ export interface ControlsViewModel {
   language: ChoiceInputField<Lang>
   skin: ChoiceInputField<SkinId>
   colorMode: ChoiceInputField<ModeChoice>
+  /**
+   * Hands the page to the browser's own print pipeline, which is what produces
+   * the auction-day one-pager. It is a control rather than a skin ornament
+   * because "this page can be printed" is a fact about the app; and it exists
+   * at all because on a phone the print command is buried in a share sheet,
+   * which is the last place a bidder should be looking the night before.
+   */
+  print: ActionField
 }
 
 export interface InputsViewModel {

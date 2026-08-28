@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { ChoiceInputField } from '../../types/viewModel'
+import type { ActionField, ChoiceInputField } from '../../types/viewModel'
 
 interface ChoiceButtonsProps<T extends string> {
   field: ChoiceInputField<T>
@@ -33,6 +33,22 @@ export function ChoiceButtons<T extends string>({ field }: ChoiceButtonsProps<T>
           {t(option.labelKey)}
         </button>
       ))}
+    </div>
+  )
+}
+
+/**
+ * A control that does something rather than choosing something: the same
+ * 44px ink-outlined target as a choice option, but a single button with no
+ * pressed state, since there is nothing to stay selected.
+ */
+export function ActionButton({ field }: { field: ActionField }) {
+  const { t } = useTranslation()
+  return (
+    <div className="choice-switch" data-field={field.id} data-importance={field.importance}>
+      <button type="button" className="choice-option" onClick={field.onActivate}>
+        {t(field.labelKey)}
+      </button>
     </div>
   )
 }

@@ -24,6 +24,7 @@ export const meta: SkinMeta = {
     language: true,
     skin: true,
     colorMode: true,
+    print: true,
     inputsHeading: true,
     price: true,
     priceSlider: true,

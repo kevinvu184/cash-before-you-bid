@@ -310,6 +310,10 @@
     "light": "Sáng",
     "dark": "Tối"
   },
+  "print": {
+    "action": "In trang",
+    "priceCaption": "Các con số cho mức giá mua {{price}}."
+  },
   "scenarios": {
     "label": "Phương án đã lưu",
     "heading": "Phương án đã lưu",

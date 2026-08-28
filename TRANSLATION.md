@@ -133,6 +133,15 @@ get wrong and hard to notice:
   after each verdict is what separates "On the day" from "At settlement" when
   the whole thing is read as one utterance.
 
+From the printable one-pager (`print.*`):
+
+- "In trang" for the print control — "In" alone is the verb and would do, but
+  the button sits in a row of one- and two-word switchers and reads as an
+  abbreviation there.
+- "Các con số cho mức giá mua {{price}}." names, on paper, the price the three
+  figures were worked out from. A native reviewer should check whether
+  "mức giá mua" or the plainer "giá mua" is what a buyer would say.
+
 ## Submitting corrections
 
 1. Edit `src/locales/vi.json` (or `en.json`). Keys are flat or one level deep;

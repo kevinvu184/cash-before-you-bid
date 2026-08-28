@@ -15,6 +15,7 @@ import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
 import { localeUrl } from './logic/site'
 import { FALLBACK_SKIN_ID, type SkinId } from './logic/skins'
+import { PrintSheet } from './print/PrintSheet'
 import { SKINS } from './skins/registry'
 import type { AppViewModel } from './types/viewModel'
 
@@ -142,11 +143,23 @@ function App() {
   // Both have to exist whichever skin is mounted — and the announcer has to
   // survive a skin failing to load, which is exactly when a reader most needs
   // to be told the numbers are still there — so they sit outside the boundary.
+  //
+  // Both are still live-page furniture, so both sit inside .app-screen: a skip
+  // link and a live region have nothing to say on paper.
   return (
     <>
-      <SkipLink />
-      <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
-      <ResultsAnnouncer display={vm.display.settings} results={vm.results} />
+      {/* display: contents, so the wrapper changes no layout on screen; it
+          exists so print.css can take the whole live page off the paper with
+          one rule rather than a list of things to hide that goes stale — the
+          currency bar and the skip link this branch merged in included. */}
+      <div className="app-screen">
+        <SkipLink />
+        <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+        <ResultsAnnouncer display={vm.display.settings} results={vm.results} />
+      </div>
+      {/* Skin-independent by design: the printed one-pager is the same sheet
+          whichever skin is on screen, including the fallback. */}
+      <PrintSheet vm={vm} />
     </>
   )
 }

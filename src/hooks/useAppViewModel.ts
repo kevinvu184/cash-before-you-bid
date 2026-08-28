@@ -619,6 +619,18 @@ export function useAppViewModel(
           if (next !== presentation.mode) setMode(next)
         },
       },
+      // The one-pager is produced by the browser's own print pipeline: no
+      // library, no server, nothing leaving the device. Calling window.print()
+      // from here rather than from a skin keeps every skin's button doing the
+      // same thing, and keeps the browser API on one side of the boundary.
+      print: {
+        id: 'print',
+        labelKey: 'print.action',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+        onActivate: () => window.print(),
+      },
     },
     inputs: {
       regionLabelKey: 'inputs.label',
