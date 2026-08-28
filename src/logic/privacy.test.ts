@@ -64,10 +64,21 @@ const repoPath = (file: string): string => relative(ROOT, file).split(sep).join(
 /** Test files name the things they forbid, and none of them is bundled. */
 const notATest = (name: string): boolean => !/\.test\.(ts|tsx)$/.test(name)
 
-// Comments describe requests in prose — this file and sw.js both do — so only
-// code is scanned.
+/**
+ * Block comments and whole-line comments, removed so that prose describing a
+ * request — privacy.ts and sw.js both do — is not read as one.
+ *
+ * A *trailing* `// …` after code is deliberately left in place. Stripping one
+ * means deciding where a comment starts, and `src="//host"`, `url(//host)` and
+ * `"//host"` are all `//` too; getting that wrong deletes the vendor name or
+ * the `fetch(` from the line before the scans below ever see it. That is the
+ * one failure this file must not have. Leaving a trailing comment in can only
+ * produce a false positive — a comment mentioning `fetch` failing the suite —
+ * and a test that fails loudly gets fixed, while one that passes quietly does
+ * not.
+ */
 const stripComments = (source: string): string =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '')
 
 const NETWORK_APIS = /\b(fetch\s*\(|XMLHttpRequest|sendBeacon|EventSource|WebSocket)\b/
 
@@ -205,6 +216,23 @@ describe('what the sources say the page will contact', () => {
       .filter(([, source]) => NETWORK_APIS.test(stripComments(source)))
       .map(([name]) => name)
     expect(offenders).toEqual([])
+  })
+
+  it('never lets comment stripping hide a URL from the scans', () => {
+    // A protocol-relative URL is `//host`, which is also how a line comment
+    // starts. Stripping greedily deleted the rest of the line — so a vendor in
+    // an `src` attribute, or a `fetch(` sitting after such a string, vanished
+    // before it could be detected. Each of these must survive.
+    const survives = [
+      '<script src="//googletagmanager.com/gtm.js"></script>',
+      'const u = "//evil.example/x"; fetch(u)',
+      '.x { background: url(//hotjar.com/a.png); }',
+    ]
+    for (const source of survives) expect(stripComments(source)).toBe(source)
+
+    // Prose still goes, which is the only reason to strip anything.
+    expect(stripComments('  // mentions fetch( and posthog').trim()).toBe('')
+    expect(stripComments('/* mentions sendBeacon */').trim()).toBe('')
   })
 
   it('declares a reason for every host and every caller', () => {
