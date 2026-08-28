@@ -63,6 +63,14 @@ describe('the script that drops a shell the URL did not ask for', () => {
     expect(script).toContain(`(params.get('skin') || '${DEFAULT_SKIN_ID}') !== '${DEFAULT_SKIN_ID}'`)
   })
 
+  it('keeps the shell only for the colour mode that was prerendered', () => {
+    // The shell paints the mode switch, and a build cannot know which of its
+    // three buttons to mark pressed — it says 'system', which is right only
+    // when there is no ?mode= at all. So ?mode= is state like any other here,
+    // and lang and skin are the only two keys the scan forgives.
+    expect(script).toContain(`if (key !== 'lang' && key !== 'skin') stale = true`)
+  })
+
   it('discards the shell rather than hiding it, so React is not fighting CSS', () => {
     expect(script).toContain(`document.getElementById('root').replaceChildren()`)
   })

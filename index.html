@@ -178,12 +178,19 @@
             }
             lang = docLang
           }
-          // The shell is one language, one skin, and the default figures. A
-          // URL that asks for any of the three differently gets the blank
-          // start it always got rather than a flash of the wrong page.
+          // The shell is one language, one skin, one colour mode and the
+          // default figures. A URL that asks for any of them differently gets
+          // the blank start it always got rather than a flash of the wrong
+          // page. ?mode= is in that list even though the ground colours above
+          // already honour it: the shell also paints the mode switch, and a
+          // build cannot know which of its three buttons to mark pressed. On
+          // ?mode=dark it says 'system', which a screen reader would read out
+          // as the answer until hydration corrects it. No ?mode= at all — the
+          // common case, following the operating system — is what the shell
+          // was rendered for and keeps its paint.
           var stale = lang !== docLang || (params.get('skin') || 'default') !== 'default'
           params.forEach(function (_value, key) {
-            if (key !== 'lang' && key !== 'skin' && key !== 'mode') stale = true
+            if (key !== 'lang' && key !== 'skin') stale = true
           })
           if (stale) document.getElementById('root').replaceChildren()
         } catch (error) {
