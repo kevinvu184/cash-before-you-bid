@@ -335,6 +335,150 @@
   }
 }
 
+/* ── price slider and its duty cliffs ─────────────────────────────────────
+   The price on a track, so the two thresholds that dominate first home buyer
+   duty can be aimed at rather than stumbled over. The thumb is 24px on a 44px
+   row: the track's tap area is the whole row, per CLAUDE.md, and the ticks
+   below it are inset by half a thumb so a marker's percentage lands exactly
+   where the thumb's centre does. */
+
+[data-skin='default'] .price-slider {
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+[data-skin='default'] .price-slider input[type='range'] {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  /* The 300ms tap delay has no business on a control that is dragged. */
+  touch-action: manipulation;
+  /* Both tracks and both thumbs are drawn below; the UA's own chrome would
+     otherwise sit under them at different heights per engine. */
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+[data-skin='default'] .price-slider input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-slider input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-slider input[type='range']::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  /* Centres the 24px thumb on the 4px track. */
+  margin-top: -10px;
+  background: var(--color-accent);
+  border: var(--border-strong-width) solid var(--color-bg);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+[data-skin='default'] .price-slider input[type='range']::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--color-accent);
+  border: var(--border-strong-width) solid var(--color-bg);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+/* The ring goes on the control, not the thumb pseudo-element: a ring drawn on
+   the thumb is clipped by the track in more than one engine. */
+[data-skin='default'] .price-slider input[type='range']:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-cliff-rail {
+  position: relative;
+  /* Half a thumb in from each end, so 0% and 100% are where the thumb's centre
+     actually reaches. */
+  margin: -4px 12px 0;
+  /* Holds the row open for the absolutely positioned ticks: one row per
+     marker, at the row height set below. */
+  min-height: 36px;
+  /* A threshold near the end of the track would otherwise push its label past
+     the panel; clipped is better than a page that scrolls sideways. */
+  overflow: hidden;
+}
+
+[data-skin='default'] .price-cliff {
+  position: absolute;
+  top: 0;
+  /* One row down per marker, so cliffs close together on the track do not
+     collide at 360px. --cliff-row is the marker's index, set by the skin; the
+     padding is what the tick line above the label spans. */
+  padding-top: calc(var(--cliff-row) * 16px + 6px);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Labels alternate sides of their own tick — the first ends at it, the second
+   starts at it — so a label never runs across the next cliff's tick line. In
+   Vietnamese the amount reads "600.000 AUD", wide enough that two centred
+   labels would collide outright on a 360px track. */
+[data-skin='default'] .price-cliff:nth-child(odd) {
+  transform: translateX(-100%);
+  padding-right: 5px;
+}
+
+[data-skin='default'] .price-cliff:nth-child(even) {
+  padding-left: 5px;
+}
+
+/* The tick itself: a hairline from the track down to its own label, drawn on
+   whichever edge of the label sits at the threshold. */
+[data-skin='default'] .price-cliff::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: var(--border-strong-width);
+  height: calc(var(--cliff-row) * 16px + 6px);
+  background: var(--color-accent);
+}
+
+[data-skin='default'] .price-cliff:nth-child(odd)::before {
+  right: 0;
+}
+
+[data-skin='default'] .price-cliff:nth-child(even)::before {
+  left: 0;
+}
+
+[data-skin='default'] .price-cliff-notes {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .price-cliff-notes strong {
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
+}
+
 [data-skin='default'] .field-hint {
   font-family: var(--font-mono);
   font-size: var(--font-size-micro);
