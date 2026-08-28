@@ -1,7 +1,8 @@
+import { rowBand } from '../logic/bands'
+import { buildLineFields } from '../logic/lineFields'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { Lang } from '../logic/lang'
 import {
-  LINE_FIELD_ID,
   type AppViewModel,
   type BooleanInputField,
   type FieldId,
@@ -16,7 +17,6 @@ import {
   NOTE_ENTRIES,
   REGION_OPTIONS,
   ROUTE_OPTIONS,
-  ROW_LABEL_KEY,
   SKIN_OPTIONS,
   SOURCES,
 } from '../logic/fieldLabels'
@@ -203,7 +203,7 @@ const LINE_SOURCE: ReadonlyArray<[RowCode, number, LineField['how'], boolean]> =
     },
     false,
   ],
-  ['conveyancing', 1600, { code: 'yourFigure' }, false],
+  ['conveyancing', 1600, { code: 'conveyancing' }, false],
   ['buildingAndPest', 550, { code: 'yourFigure' }, false],
   ['lenderFees', 300, { code: 'yourFigure' }, false],
   ['settlementAdjustments', 800, { code: 'settlementAdjustments' }, false],
@@ -215,15 +215,17 @@ const LINE_SOURCE: ReadonlyArray<[RowCode, number, LineField['how'], boolean]> =
   ['total', 199_354, { code: 'total' }, true],
 ]
 
-const LINES: readonly LineField[] = LINE_SOURCE.map(([code, value, how, emphasis]) => ({
-  id: LINE_FIELD_ID[code],
-  labelKey: ROW_LABEL_KEY[code],
-  value,
-  kind: 'money' as const,
-  importance: emphasis ? ('primary' as const) : ('secondary' as const),
-  how,
-  emphasis,
-}))
+// Banded and subtotalled through the same builder the live view model uses,
+// so the fixture cannot drift from what a skin actually receives.
+const LINES = buildLineFields(
+  LINE_SOURCE.map(([code, value, how, emphasis]) => ({
+    code,
+    amount: value,
+    how,
+    emphasis,
+    band: rowBand(code),
+  })),
+)
 
 export interface FixtureOptions {
   locale?: Lang
@@ -403,7 +405,9 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         amount: 'table.amount',
         how: 'table.how',
       },
-      lines: LINES,
+      lines: LINES.lines,
+      lineGroups: LINES.lineGroups,
+      total: LINES.total,
       estimateNote: {
         id: 'estimateNote',
         labelKey: 'money.disclaimer',
