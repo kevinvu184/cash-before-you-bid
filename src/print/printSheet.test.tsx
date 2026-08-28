@@ -190,13 +190,13 @@ describe('the page the numbers belong to', () => {
 })
 
 describe('what the sheet leaves behind', () => {
-  it('is hidden on screen, and out of the accessibility tree with it', async () => {
+  it('carries no control to operate: no inputs, no switchers, no disclosures', async () => {
     const { sheet } = await renderSheet('en')
-    expect(sheet.hasAttribute('hidden')).toBe(true)
-  })
 
-  it('carries no interactive control: no inputs, no switchers, no buttons', async () => {
-    const { sheet } = await renderSheet('en')
+    // Links are not in this list and are not meant to be: the sheet carries
+    // the SRO calculator and the sources, and a printed link is text. What
+    // must not reach paper is anything a reader could only have used on
+    // screen — a field to type in, a switch to press, a thing to unfold.
     expect(sheet.querySelectorAll('input, select, textarea, button, details')).toHaveLength(0)
   })
 

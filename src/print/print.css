@@ -19,6 +19,15 @@
    defined. They are not a theme — a sheet of paper is white whichever
    colour mode the phone was in, and pinning the ink is what stops a
    dark-mode page from printing white on white, which is a blank page. */
+/* Off the screen, and out of the accessibility tree with it. Plain author CSS,
+   not the `hidden` attribute: `hidden` is defined as "not to be rendered", and
+   revealing the sheet would then mean overriding a user-agent rule inside the
+   one medium where being wrong prints a blank page. The rule below simply
+   loses to the one in the print block, which comes after it. */
+.print-sheet {
+  display: none;
+}
+
 @media print {
   :root {
     /* Dark-mode roots carry color-scheme: dark, which would otherwise make
@@ -41,9 +50,8 @@
     display: none !important;
   }
 
-  /* Hidden on screen (the `hidden` attribute keeps it out of the
-     accessibility tree as well), revealed only for paper. */
-  .print-sheet[hidden] {
+  /* Revealed for paper, and only here. */
+  .print-sheet {
     display: block;
   }
 

@@ -48,6 +48,12 @@ import './print.css'
  * It publishes its own display context. A skin publishes the one it was
  * handed, and this is not inside a skin — so without this the sheet would have
  * no currency to write figures in, and paper would disagree with the screen.
+ *
+ * It is kept off the screen by `display: none` in `print.css` rather than by
+ * the `hidden` attribute: `hidden` means "not to be rendered", and a print
+ * pipeline that honours that over the author stylesheet would print a blank
+ * sheet. Two author rules in one file, the print one second, is the version
+ * with nothing to disagree about.
  */
 export function PrintSheet({ vm }: { vm: AppViewModel }) {
   return (
@@ -73,7 +79,7 @@ function PrintDocument({ vm }: { vm: AppViewModel }) {
   const sources = results.sources.value
 
   return (
-    <div className="print-sheet" hidden>
+    <div className="print-sheet">
       <div className="print-masthead">
         <p className="print-eyebrow">{t(vm.chrome.eyebrow.labelKey)}</p>
         <p className="print-title">{t(vm.chrome.title.labelKey)}</p>

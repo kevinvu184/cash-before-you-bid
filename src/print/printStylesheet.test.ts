@@ -110,10 +110,15 @@ describe('the print stylesheet', () => {
     expect(rule(indexCss, '.app-screen')).toMatch(/display:\s*contents/)
   })
 
-  it('reveals the one-pager, which is hidden everywhere else', () => {
-    expect(rule(block, '.print-sheet[hidden]')).toMatch(/display:\s*block/)
-    // Only the print medium may show it; nothing outside the block does.
-    expect(printCss.replace(block, '')).not.toMatch(/\.print-sheet\[hidden\]/)
+  it('reveals the one-pager for paper, and keeps it off the screen otherwise', () => {
+    // Two author rules, the print one second, so the cascade settles it with
+    // nothing to disagree about. Not the `hidden` attribute: that is defined
+    // as "not to be rendered", and revealing the sheet would then mean
+    // overriding a user-agent rule inside the one medium where being wrong
+    // prints a blank page.
+    expect(soleRule(printCss.replace(block, ''), '.print-sheet')).toMatch(/display:\s*none/)
+    expect(soleRule(block, '.print-sheet')).toMatch(/display:\s*block/)
+    expect(printCss).not.toMatch(/\[hidden\]/)
   })
 
   it('pins ink and paper, so a dark-mode page does not print white on white', () => {
