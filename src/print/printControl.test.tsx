@@ -64,20 +64,27 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('the print control in skin %s'
 
 describe('the wiring', () => {
   it('hands the page to the browser’s own print pipeline, and nothing else', async () => {
-    // jsdom does not implement window.print; the stub is also the assertion.
+    // jsdom implements neither, and stubbing both is also the assertion —
+    // stubGlobal rather than spyOn, as everywhere else in this repo, so the
+    // test does not depend on the runtime having supplied a fetch to spy on.
     const print = vi.fn()
+    const fetchMock = vi.fn()
     vi.stubGlobal('print', print)
-    const fetchSpy = vi.spyOn(globalThis, 'fetch' as never)
+    vi.stubGlobal('fetch', fetchMock)
 
     const { container } = render(<App />)
     await waitFor(() => expect(document.getElementById('price')).not.toBeNull())
     const control = container.querySelector('[data-field="print"] button')
     expect(control).not.toBeNull()
+    // Counted from the click, not from the mount: the app may legitimately
+    // fetch an exchange rate while loading, and the claim being made here is
+    // about printing.
+    fetchMock.mockClear()
     fireEvent.click(control as HTMLButtonElement)
 
     expect(print).toHaveBeenCalledTimes(1)
     // No server round trip: the one-pager is rendered by the browser from the
     // page it already has, so the figures never leave the device.
-    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

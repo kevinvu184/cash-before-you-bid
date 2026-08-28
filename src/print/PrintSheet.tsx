@@ -113,7 +113,9 @@ function PrintDocument({ vm }: { vm: AppViewModel }) {
         {vm.display.rate === null ? null : <RateCaveat field={vm.display.rate} />}
         <p className="print-caveat">
           {t(rates.beforeKey, { date: ratesAsAtDate(rates.asAt, display.locale) ?? rates.asAt })}
-          <a href={rates.href}>{t(rates.linkKey)}</a>
+          <a className="print-cite" href={rates.href}>
+            {t(rates.linkKey)}
+          </a>
           {t(rates.afterKey)}
           {t(sources.beforeKey)}
           <a href={sources.href}>{t(sources.linkKey)}</a>

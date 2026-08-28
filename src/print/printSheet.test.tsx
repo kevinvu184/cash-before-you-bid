@@ -129,7 +129,22 @@ describe('the caveats, which are the requirement not to compromise on', () => {
     expect(text).toContain(i18n.t(rates.linkKey))
     // The year of the as-at date, whichever way the locale writes the date.
     expect(text).toContain(rates.asAt.slice(0, 4))
-    expect(caveats?.querySelector(`a[href="${rates.href}"]`)).not.toBeNull()
+    // Marked as the citation whose address the stylesheet spells out, so the
+    // calculator can be reached from paper.
+    expect(caveats?.querySelector(`a.print-cite[href="${rates.href}"]`)).not.toBeNull()
+  })
+
+  it('spells out the address of the SRO calculator, and of nothing else', async () => {
+    const { sheet, vm } = await renderSheet('en')
+    const cites = [...sheet.querySelectorAll('a.print-cite')].map((link) =>
+      link.getAttribute('href'),
+    )
+
+    // Every other link prints as its text alone. A URL printed in full reads
+    // as an authority a bidder can go and check, and only this one is.
+    expect(cites).toEqual([vm.results.ratesAsAt.value.href])
+    expect(sheet.querySelector(`a[href="${vm.results.sources.value.href}"]`)).not.toBeNull()
+    expect(sheet.querySelector(`a.print-cite[href="${vm.results.sources.value.href}"]`)).toBeNull()
   })
 
   it.each(LANGS)('carries the estimate and not-advice disclaimers in %s', async (locale) => {

@@ -107,9 +107,13 @@
     display: inline;
   }
 
-  /* A printed link cannot be tapped, so it carries its address. This is how
-     the State Revenue Office calculator stays reachable from paper. */
-  .print-sheet.print-sheet a::after {
+  /* A printed link cannot be tapped, so a citation carries its address. This
+     is how the State Revenue Office calculator stays reachable from paper.
+
+     Only a `.print-cite` link, not every link: an address printed in full
+     reads as an authority the bidder can go and check, so it is spelled out
+     only where following it actually verifies a figure on this page. */
+  .print-sheet.print-sheet .print-cite::after {
     content: ' <' attr(href) '>';
     font-size: 8pt;
     word-break: break-all;

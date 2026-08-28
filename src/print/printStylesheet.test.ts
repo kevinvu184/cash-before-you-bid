@@ -157,8 +157,14 @@ describe('the print stylesheet', () => {
     expect(soleRule(block, '.print-sheet.print-sheet')).toMatch(/overflow-wrap:\s*break-word/)
   })
 
-  it('prints the address of every link, since paper cannot be tapped', () => {
-    expect(rule(block, '.print-sheet.print-sheet a::after')).toMatch(/content:.*attr\(href\)/)
+  it('prints the address of a citation, since paper cannot be tapped', () => {
+    expect(rule(block, '.print-sheet.print-sheet .print-cite::after')).toMatch(
+      /content:.*attr\(href\)/,
+    )
+    // Not every link: an address printed in full reads as an authority the
+    // bidder can go and check, so it is spelled out only where following it
+    // actually verifies a figure on this page.
+    expect(() => rule(block, '.print-sheet.print-sheet a::after')).toThrow()
   })
 })
 
