@@ -235,9 +235,9 @@ describe('rounded estimates', () => {
 })
 
 describe('pre-auction spend', () => {
-  it('reads ?bids= into the field and the whole-search figure', () => {
+  it('reads ?bids= into the field and the whole-search figure', async () => {
     window.history.replaceState(null, '', '/?bids=5&lang=en')
-    renderApp()
+    await renderApp()
     expect(input('bids').value).toBe('5')
     // 1,600 conveyancing + 550 inspection = 2,150 per property and 10,750
     // across five, each shown as the page's rounded estimate.
@@ -245,18 +245,18 @@ describe('pre-auction spend', () => {
     expect(field('statSunkSearch')?.textContent).toContain('A$10,800')
   })
 
-  it('offers the numeric keypad for a count of properties', () => {
-    renderApp()
+  it('offers the numeric keypad for a count of properties', async () => {
+    await renderApp()
     expect(input('bids').inputMode).toBe('numeric')
     expect(input('price').inputMode).toBe('decimal')
   })
 
-  it('quotes a fractional count exactly, not rounded to two decimals', () => {
+  it('quotes a fractional count exactly, not rounded to two decimals', async () => {
     // A hand-edited URL can carry more precision than a two-decimal format
     // shows. The sentence must not disagree with the field or the maths:
     // 2.3333 x 2,150 is what is actually multiplied.
     window.history.replaceState(null, '', '/?bids=2.3333')
-    renderApp()
+    await renderApp()
     // Asserted against the field's own text rather than a literal, so the
     // locale's decimal separator is not baked into the test: the point is
     // that the two never disagree.
@@ -265,21 +265,25 @@ describe('pre-auction spend', () => {
     expect(field('statSunkSearch')?.textContent).toContain(`${shown} `)
   })
 
-  it('leaves the total cash figure alone when the count changes', () => {
+  it('leaves the total cash figure alone when the count changes', async () => {
+    // Rendered before switching to fake timers: renderApp waits on the lazy
+    // skin, and waitFor cannot resolve once the clock is frozen.
+    await renderApp()
     vi.useFakeTimers()
-    renderApp()
-    const before = document.getElementById('tTotal')?.textContent
+    const total = () => field('statTotal')?.textContent
+    const before = total()
+    expect(before).toBeTruthy()
     fireEvent.change(input('bids'), { target: { value: '9' } })
     act(() => {
       vi.advanceTimersByTime(URL_DEBOUNCE_MS)
     })
     expect(window.location.search).toBe('?bids=9')
-    expect(document.getElementById('tTotal')?.textContent).toBe(before)
+    expect(total()).toBe(before)
   })
 
-  it('renders the panel in Vietnamese too', () => {
+  it('renders the panel in Vietnamese too', async () => {
     window.history.replaceState(null, '', '/?bids=3')
-    renderApp()
+    await renderApp()
     expect(field('statSunkSearch')?.textContent).toContain('3 căn ×')
     expect(field('sunkFraming')?.textContent).toContain('dù bạn thắng hay thua')
     // The research is cited beside the figures, not presented as ours.
