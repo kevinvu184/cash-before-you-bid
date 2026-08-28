@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
-import { FALLBACK_SKIN_ID } from './logic/skins'
+import { FALLBACK_SKIN_ID, type SkinId } from './logic/skins'
 import { SKINS } from './skins/registry'
 import type { AppViewModel } from './types/viewModel'
 
@@ -15,15 +15,18 @@ import type { AppViewModel } from './types/viewModel'
  */
 
 interface SkinBoundaryProps {
-  skinId: string
   children: ReactNode
-  fallback: ReactNode
+  onFailure: () => void
 }
 
 /**
- * If a skin's chunk fails to load or its render throws, the plain baseline
- * takes over rather than the page going blank. Keyed by skin id so choosing a
- * different skin clears a previous failure.
+ * Reports a skin whose chunk will not load, or whose render throws, up to the
+ * shell — it does not render a replacement itself. The replacement has to be
+ * chosen above `useColorMode`, because a skin is three things that must agree:
+ * the `data-skin` attribute its stylesheet is scoped to, the tokens painted on
+ * the root, and the components. Swapping only the components here would leave
+ * the baseline's markup under the failed skin's attribute, matching no
+ * stylesheet at all.
  */
 class SkinBoundary extends Component<SkinBoundaryProps, { failed: boolean }> {
   state = { failed: false }
@@ -33,28 +36,21 @@ class SkinBoundary extends Component<SkinBoundaryProps, { failed: boolean }> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Reported, not swallowed silently; the fallback still renders.
+    // Reported, not swallowed silently; the shell then re-renders on the
+    // fallback skin, which this boundary's new key gives a fresh boundary.
     console.error(error, info.componentStack)
+    this.props.onFailure()
   }
 
   render() {
-    return this.state.failed ? this.props.fallback : this.props.children
+    return this.state.failed ? null : this.props.children
   }
 }
 
-function SkinRoot({ vm }: { vm: AppViewModel }) {
+function SkinRoot({ vm, onFailure }: { vm: AppViewModel; onFailure: () => void }) {
   const active = SKINS[vm.skinId]
-  const Fallback = SKINS[FALLBACK_SKIN_ID].Root
   return (
-    <SkinBoundary
-      key={vm.skinId}
-      skinId={vm.skinId}
-      fallback={
-        <Suspense fallback={null}>
-          <Fallback vm={vm} />
-        </Suspense>
-      }
-    >
+    <SkinBoundary key={vm.skinId} onFailure={onFailure}>
       <Suspense fallback={null}>
         <active.Root vm={vm} />
       </Suspense>
@@ -70,9 +66,17 @@ function App() {
   const { i18n } = useTranslation()
   const core = useCalculator()
   const [instance] = useState(() => ++coreInstances)
-  const skin = SKINS[core.presentation.skin]
-  const resolvedMode = useColorMode(core.presentation.mode, core.presentation.skin, skin.tokens)
-  const vm = useAppViewModel(core, resolvedMode)
+  const [failedSkin, setFailedSkin] = useState<SkinId | null>(null)
+
+  // What the URL asked for, and what is actually renderable. They differ only
+  // when the requested skin failed; everything downstream — attribute, tokens
+  // and components — then follows the baseline together. Requesting the
+  // baseline and having it fail leaves them equal, so there is no loop.
+  const requested = core.presentation.skin
+  const effective = failedSkin === requested ? FALLBACK_SKIN_ID : requested
+  const skin = SKINS[effective]
+  const resolvedMode = useColorMode(core.presentation.mode, effective, skin.tokens)
+  const vm = useAppViewModel(core, resolvedMode, effective)
 
   // The URL's ?lang= is the source of truth; i18next, <html lang> and the
   // document metadata follow it. The metadata writes wait for changeLanguage
@@ -102,7 +106,7 @@ function App() {
     document.documentElement.dataset.coreInstance = String(instance)
   }, [instance])
 
-  return <SkinRoot vm={vm} />
+  return <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
 }
 
 export default App

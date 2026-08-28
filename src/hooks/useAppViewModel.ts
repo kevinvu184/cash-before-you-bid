@@ -11,7 +11,7 @@ import {
   SOURCES,
 } from '../logic/fieldLabels'
 import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
-import type { ColorMode } from '../logic/skins'
+import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles } from '../types/calculator'
 import {
@@ -210,7 +210,11 @@ function buildLines(result: UseCalculatorResult['result']): readonly LineField[]
  * called above the skin boundary: changing skin or mode swaps a child
  * component and nothing here remounts.
  */
-export function useAppViewModel(core: UseCalculatorResult, resolvedMode: ColorMode): AppViewModel {
+export function useAppViewModel(
+  core: UseCalculatorResult,
+  resolvedMode: ColorMode,
+  effectiveSkin: SkinId,
+): AppViewModel {
   const { i18n } = useTranslation()
   const { inputs, presentation, result, setField, setRoute, setLang, setSkin, setMode } = core
   const locale = i18n.language
@@ -342,7 +346,9 @@ export function useAppViewModel(core: UseCalculatorResult, resolvedMode: ColorMo
 
   return {
     locale: inputs.lang,
-    skinId: presentation.skin,
+    // What is rendering, which is the requested skin unless it failed to load.
+    // The switcher below still shows what the URL asked for.
+    skinId: effectiveSkin,
     resolvedMode,
     chrome: {
       eyebrow: {

@@ -331,6 +331,7 @@ export interface ResultsViewModel {
 
 export interface AppViewModel {
   locale: Lang
+  /** The skin actually rendering — the requested one unless it failed to load. */
   skinId: SkinId
   resolvedMode: ColorMode
   chrome: ChromeViewModel
