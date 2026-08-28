@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import en from '../locales/en.json'
 import vi from '../locales/vi.json'
 import { NETWORK_CALLERS, PRIVACY_STATEMENT, THIRD_PARTY_HOSTS } from './privacy'
+import { SITE_ORIGIN } from './site'
 
 // The half of #24 that can go wrong: wording drifts from reality silently, and
 // a claim that has quietly become false is worse than no claim at all. So this
@@ -113,8 +114,24 @@ const hostsIn = (text: string): string[] =>
 const autoFetchHosts = (source: string): string[] =>
   AUTO_FETCH.flatMap((pattern) => [...source.matchAll(pattern)].flatMap((m) => hostsIn(m[1])))
 
+/**
+ * Where this app is deployed. Since the build began writing absolute URLs into
+ * the served HTML — a canonical link, hreflang alternates, an Open Graph image
+ * — the page names its own host out loud, and it names it in `<link href>`,
+ * which is one of the fetch positions scanned below.
+ *
+ * That host is not a third party by definition: in production it *is* the
+ * origin, so a request to it cannot carry a figure anywhere the reader is not
+ * already. Excluding it is what keeps `THIRD_PARTY_HOSTS` meaning what its
+ * name says. Only this one host is excluded and it comes from site.ts, so a
+ * canonical link pointed at somebody else's domain still fails the suite.
+ */
+const OWN_HOST = new URL(SITE_ORIGIN).hostname
+
 const undeclared = (hosts: readonly string[]): string[] =>
-  [...new Set(hosts)].filter((host) => !Object.hasOwn(THIRD_PARTY_HOSTS, host))
+  [...new Set(hosts)].filter(
+    (host) => host !== OWN_HOST && !Object.hasOwn(THIRD_PARTY_HOSTS, host),
+  )
 
 describe('the privacy statement', () => {
   it('says something in both locales, from keys and never sentences', () => {
@@ -189,10 +206,12 @@ describe('the privacy statement', () => {
 describe('what the sources say the page will contact', () => {
   it('references no host in index.html that privacy.ts has not declared', () => {
     // index.html is head content end to end — no anchors, nothing a reader
-    // navigates to — so every host named anywhere in it is one the page
-    // reaches on its own, and a broad scan has nothing to false-positive on.
-    // Adding one means editing privacy.ts, where privacy.thirdPartyBody sits:
-    // declare it, then make the wording true again.
+    // navigates to — so a broad scan for hosts has nothing to false-positive
+    // on except the app's own, which the canonical and hreflang links now name
+    // and OWN_HOST accounts for. Every other host in here is one the page
+    // reaches on its own. Adding one means editing privacy.ts, where
+    // privacy.thirdPartyBody sits: declare it, then make the wording true
+    // again.
     expect(undeclared(hostsIn(readFileSync(join(ROOT, 'index.html'), 'utf8')))).toEqual([])
   })
 
@@ -207,6 +226,20 @@ describe('what the sources say the page will contact', () => {
       .filter(([name]) => notATest(name))
       .flatMap(([name, source]) => undeclared(autoFetchHosts(source)).map((h) => `${name}: ${h}`))
     expect(offenders).toEqual([])
+  })
+
+  it('points its canonical and alternate links at this app, not somewhere else', () => {
+    // The other half of the OWN_HOST exclusion: it is only sound while the
+    // links it excuses actually name this deployment. A canonical link is a
+    // strong instruction to a search engine, so one pointing at a domain
+    // somebody else controls is worth failing a build over.
+    const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
+    const links = [...html.matchAll(/<link\b[^>]*\brel="(?:canonical|alternate)"[^>]*>/g)]
+    expect(links.length).toBeGreaterThan(0)
+    for (const [link] of links) {
+      const href = /\bhref="([^"]+)"/.exec(link)?.[1]
+      expect({ link, host: new URL(String(href)).hostname }).toEqual({ link, host: OWN_HOST })
+    }
   })
 
   it('opens a connection from no file privacy.ts has not declared', () => {
