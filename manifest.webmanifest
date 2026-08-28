@@ -1,0 +1,23 @@
+{
+  "name": "Cash Before You Bid",
+  "short_name": "Before Bid",
+  "description": "Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase.",
+  "start_url": ".",
+  "scope": ".",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f3e8",
+  "theme_color": "#f7f3e8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
