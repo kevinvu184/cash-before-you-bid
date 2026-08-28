@@ -72,6 +72,21 @@ describe('sunkCost — which rows are pre-auction', () => {
     }
   })
 
+  it('reads the band field rather than the row code', () => {
+    // Membership belongs to `bands.ts`. A row is multiplied because of the
+    // band it carries, so a banded row the multiplier has never heard of is
+    // counted and a pre-auction code stripped of its band is not.
+    const invented: TableRow = {
+      code: 'moving',
+      amount: 900,
+      how: null,
+      emphasis: false,
+      band: 'preAuction',
+    }
+    expect(sunkCost([invented], 1).perProperty).toBe(900)
+    expect(sunkCost([{ ...row('buildingAndPest', 550), band: null }], 1).perProperty).toBe(0)
+  })
+
   it('ignores rows the calculator did not emit', () => {
     expect(sunkCost([row('buildingAndPest', 550)], 1).perProperty).toBe(550)
     expect(sunkCost([], 4)).toEqual({

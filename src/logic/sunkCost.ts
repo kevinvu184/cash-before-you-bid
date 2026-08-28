@@ -13,6 +13,13 @@ import type { SunkCostSummary, TableRow } from '../types/calculator'
  * timing band it falls in, and `src/logic/bands.ts` is the one table saying
  * which is which. This module only multiplies what that table already calls
  * pre-auction, so the two can never drift apart.
+ *
+ * One consequence, deliberate and stated on screen: `conveyancing` is a single
+ * input covering the contract review *and* the settlement work, and #15 banded
+ * it pre-auction whole. Only the review part is really paid per attempt, so the
+ * whole-search figure reads high. Budgeting high is the safe direction for this
+ * tool, and the per-property copy says which way it errs. Splitting the input
+ * in two is the fix, and it is an input change, not a change here.
  */
 
 /** One property is the floor: you cannot buy without bidding at least once. */

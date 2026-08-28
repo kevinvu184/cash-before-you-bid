@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_INPUTS } from '../data/defaults'
 import type { CalculatorInputs } from '../types/calculator'
+import { groupRowsByBand } from './bands'
 import { calculate } from './calculate'
 
 // Expected values below were produced by running the original page's <script>
@@ -312,6 +313,17 @@ describe('calculate — pre-auction sunk cost multiplier', () => {
     expect(calculate(inputs({ propertiesConsidered: 0 })).sunkCost.properties).toBe(1)
     expect(calculate(inputs({ propertiesConsidered: Number.NaN })).sunkCost.properties).toBe(1)
     expect(calculate(inputs({ propertiesConsidered: 500 })).sunkCost.properties).toBe(50)
+  })
+
+  it('agrees with the pre-auction band subtotal #15 shows', () => {
+    // The two features now read one source of truth: the multiplier's
+    // per-property figure is the pre-auction band, so the section beside the
+    // table can never quote a different total from the subtotal inside it.
+    for (const overrides of [{}, { conveyancing: 2000, buildingAndPest: 600 }, { buildingAndPest: 0 }]) {
+      const r = calculate(inputs({ ...overrides, propertiesConsidered: 4 }))
+      const band = groupRowsByBand(r.rows).find((group) => group.band === 'preAuction')
+      expect(r.sunkCost.perProperty).toBe(band?.subtotal ?? 0)
+    }
   })
 
   it('follows the inspection and conveyancing figures the user entered', () => {
