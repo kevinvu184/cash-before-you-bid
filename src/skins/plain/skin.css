@@ -392,9 +392,12 @@
   border-top: var(--border-width) solid var(--color-hairline);
 }
 
-/* The override box and its Apply, and Reset beside the MANUAL mark: the same
-   bordered 44px control every other button in this skin is. */
-[data-skin='plain'] .plain-currency button {
+/* Apply and Reset, which are this section's own: the same bordered 44px
+   control every other button in this skin is. Scoped to the rate line rather
+   than to the section, because the currency switch beside it is a .plain-choice
+   and is already styled as one — two selectors dressing the same buttons would
+   be two to keep in step. */
+[data-skin='plain'] [data-field='exchangeRate'] button {
   min-width: 44px;
   min-height: 44px;
   padding: var(--space-2) var(--space-3);
@@ -408,16 +411,16 @@
   touch-action: manipulation;
 }
 
-[data-skin='plain'] .plain-currency .plain-field button {
+[data-skin='plain'] [data-field='exchangeRate'] .plain-field button {
   margin-top: var(--space-2);
 }
 
 /* The rate, its source and its timestamp read as one sentence; without this
    the spans would run together. */
-[data-skin='plain'] .plain-currency p > span + span::before {
+[data-skin='plain'] [data-field='exchangeRate'] p > span + span::before {
   content: ' · ';
 }
 
-[data-skin='plain'] .plain-currency p > strong + button {
+[data-skin='plain'] [data-field='exchangeRate'] p > strong + button {
   margin-left: var(--space-2);
 }
