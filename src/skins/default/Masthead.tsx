@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AppViewModel } from '../../types/viewModel'
 import { ChoiceButtons } from './Controls'
@@ -10,13 +11,7 @@ import { ChoiceButtons } from './Controls'
  * and it has to be the same markup the skin renders a moment later rather
  * than a copy of it that can drift.
  */
-export function Masthead({
-  vm,
-  headerRef,
-}: {
-  vm: AppViewModel
-  headerRef?: React.Ref<HTMLElement>
-}) {
+export function Masthead({ vm, headerRef }: { vm: AppViewModel; headerRef?: Ref<HTMLElement> }) {
   const { t } = useTranslation()
   const notice = vm.chrome.notice
 
