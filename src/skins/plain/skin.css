@@ -1,0 +1,265 @@
+/* The plain baseline. Everything is scoped to [data-skin='plain'].
+   Rules of this skin, in CSS terms:
+     - colour: only var(--color-text) / var(--color-bg) / var(--color-accent);
+     - no box-shadow, no gradient, no border-radius, no background fills;
+     - borders only to separate sections, 1px, in the hairline token;
+     - one system family, two weights, no letter-spacing;
+     - no transition, no animation, ever;
+     - single column, normal document flow.
+   It exists to be boring. Do not add polish here. */
+
+[data-skin='plain'] body {
+  font-family: var(--font-body);
+}
+
+[data-skin='plain'] * {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: none;
+  animation: none;
+  letter-spacing: var(--letter-spacing-label);
+}
+
+[data-skin='plain'] .plain-page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: var(--space-4) max(var(--space-4), env(safe-area-inset-left)) var(--space-12)
+    max(var(--space-4), env(safe-area-inset-right));
+}
+
+[data-skin='plain'] h1,
+[data-skin='plain'] h2,
+[data-skin='plain'] h3 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-tight);
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+[data-skin='plain'] h1 {
+  font-size: var(--font-size-title);
+  margin-top: 0;
+}
+
+[data-skin='plain'] h2 {
+  font-size: var(--font-size-heading);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='plain'] h3 {
+  font-size: var(--font-size-base);
+}
+
+[data-skin='plain'] p,
+[data-skin='plain'] dd,
+[data-skin='plain'] li,
+[data-skin='plain'] td,
+[data-skin='plain'] th,
+[data-skin='plain'] label {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+}
+
+[data-skin='plain'] p {
+  margin: 0 0 var(--space-3);
+}
+
+[data-skin='plain'] strong {
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='plain'] a {
+  color: var(--color-accent);
+  /* A 44px tap target without moving the text in the line box. */
+  display: inline-block;
+  padding: 11px var(--space-1);
+  margin: -11px calc(var(--space-1) * -1);
+  touch-action: manipulation;
+}
+
+[data-skin='plain'] ul {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-6);
+}
+
+[data-skin='plain'] li {
+  margin: 0 0 var(--space-2);
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+
+[data-skin='plain'] .plain-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+[data-skin='plain'] .plain-choice-label {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+
+[data-skin='plain'] .plain-choice button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background: none;
+  border: var(--border-width) solid var(--color-hairline-strong);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* The active option is marked with a rule, not a fill: no background colours
+   in this skin. */
+[data-skin='plain'] .plain-choice button[aria-pressed='true'] {
+  border-color: var(--color-text);
+  border-width: var(--border-width);
+  font-weight: var(--font-weight-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── fields ─────────────────────────────────────────────────────────────── */
+
+[data-skin='plain'] .plain-field {
+  display: block;
+  margin: 0 0 var(--space-4);
+}
+
+[data-skin='plain'] .plain-field label {
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+[data-skin='plain'] .plain-field input[type='text'],
+[data-skin='plain'] .plain-field select {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2);
+  font: inherit;
+  /* Never below 16px, or iOS Safari zooms the page on focus. */
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-hairline-strong);
+}
+
+[data-skin='plain'] .plain-field span {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-base);
+}
+
+[data-skin='plain'] .plain-field-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+}
+
+[data-skin='plain'] .plain-field-inline input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--color-text);
+}
+
+[data-skin='plain'] .plain-field-inline label {
+  margin: 0;
+  /* Pads the label out to a 44px row so the whole line is tappable. */
+  padding: 10px 0;
+}
+
+/* ── stats ──────────────────────────────────────────────────────────────── */
+
+[data-skin='plain'] .plain-stats {
+  margin: 0 0 var(--space-4);
+}
+
+[data-skin='plain'] .plain-stats > div {
+  padding: var(--space-2) 0;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='plain'] .plain-stats dt {
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='plain'] .plain-stats dd {
+  margin: 0;
+}
+
+[data-skin='plain'] .plain-stats dd span {
+  display: block;
+}
+
+[data-skin='plain'] .plain-figure {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── line table ─────────────────────────────────────────────────────────── */
+
+/* A real table with all three columns. Long workings wrap; the wrapper only
+   scrolls if a single unbreakable run is wider than the screen. */
+[data-skin='plain'] .plain-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+[data-skin='plain'] .plain-lines {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+[data-skin='plain'] .plain-lines th,
+[data-skin='plain'] .plain-lines td {
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  vertical-align: top;
+  text-align: left;
+  font-weight: var(--font-weight-normal);
+  border-bottom: var(--border-width) solid var(--color-hairline);
+  overflow-wrap: anywhere;
+}
+
+[data-skin='plain'] .plain-lines thead th {
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='plain'] .plain-lines tr[data-importance='primary'] th,
+[data-skin='plain'] .plain-lines tr[data-importance='primary'] td {
+  font-weight: var(--font-weight-strong);
+}
+
+/* ── notice ─────────────────────────────────────────────────────────────── */
+
+[data-skin='plain'] aside[role='note'] {
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='plain'] aside[role='note'] button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: none;
+  border: var(--border-width) solid var(--color-hairline-strong);
+  cursor: pointer;
+  touch-action: manipulation;
+}

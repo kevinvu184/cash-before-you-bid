@@ -1,10 +1,41 @@
 import type { TFunction } from 'i18next'
-import { formatAud, formatNumber, formatPercent } from '../logic/format'
-import type { Flag, RowCode, RowHow } from '../types/calculator'
+import { formatAud, formatNumber, formatPercent } from '../../logic/format'
+import type { Flag, RowHow } from '../../types/calculator'
+import type { TextParam, TextRef } from '../../types/viewModel'
 
 // The calculator emits codes and numbers; these maps turn them into text for
 // the active locale. Every key is a literal — no key construction — so a
 // grep for a key always finds both the JSON entry and its use.
+//
+// This module is shared presentation, not core: it is the one place where a
+// key and its numbers become a sentence, so no skin has to own that mapping
+// and no two skins can disagree about it.
+
+/** Formats one interpolation parameter the view model tagged with a format. */
+export function textParam(param: TextParam, locale: string): string | number {
+  switch (param.format) {
+    case 'money':
+      return formatAud(param.value, locale)
+    case 'percent':
+      return formatPercent(param.value, locale)
+    case 'number':
+      return formatNumber(param.value, locale)
+    case 'count':
+      // i18next needs the raw number to pick the plural form.
+      return param.value
+    case 'raw':
+      return param.value
+  }
+}
+
+/** Renders a view-model TextRef: its key, with its numbers formatted. */
+export function refText(ref: TextRef, t: TFunction, locale: string): string {
+  const params: Record<string, string | number> = {}
+  for (const [name, param] of Object.entries(ref.params)) {
+    params[name] = textParam(param, locale)
+  }
+  return t(ref.key, params)
+}
 
 export function flagText(flag: Flag, t: TFunction, locale: string): string {
   const p = flag.params ?? {}
@@ -35,30 +66,6 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
         rate: formatPercent(p.ratePct, locale),
       })
   }
-}
-
-const ROW_LABEL_KEYS: Record<RowCode, string> = {
-  deposit: 'rows.deposit',
-  stampDuty: 'rows.stampDuty',
-  foreignDuty: 'rows.foreignDuty',
-  transferFee: 'rows.transferFee',
-  mortgageFee: 'rows.mortgageFee',
-  pexaFees: 'rows.pexaFees',
-  lmi: 'rows.lmi',
-  conveyancing: 'rows.conveyancing',
-  buildingAndPest: 'rows.buildingAndPest',
-  lenderFees: 'rows.lenderFees',
-  settlementAdjustments: 'rows.settlementAdjustments',
-  buildingInsurance: 'rows.buildingInsurance',
-  grant: 'rows.grant',
-  costsSubtotal: 'rows.costsSubtotal',
-  moving: 'rows.moving',
-  buffer: 'rows.buffer',
-  total: 'rows.total',
-}
-
-export function rowLabel(code: RowCode, t: TFunction): string {
-  return t(ROW_LABEL_KEYS[code])
 }
 
 export function howText(how: RowHow | null, t: TFunction, locale: string): string {

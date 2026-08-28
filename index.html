@@ -6,6 +6,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1f1b13" media="(prefers-color-scheme: dark)" />
+    <!--
+      Ground colours before first paint. The stylesheet paints the page from
+      var(--color-bg) / var(--color-text), which nothing defines until React
+      mounts and useColorMode writes the active skin's tokens — so the script
+      below resolves the skin and mode from the same URL params the app reads
+      and sets those two variables synchronously, in <head>, before the body
+      paints. The :root block under it is the no-JS ground (the plain skin's
+      light tokens).
+
+      Trade-off: eight colour values live here as well as in the skins'
+      tokens.ts. src/skins/preloadedGround.test.ts parses this file and fails
+      if any of them drifts from the token objects, so the duplication cannot
+      rot silently. The alternative — generating a stylesheet from the tokens
+      at build time — would remove the duplication but put a Vite plugin
+      between the token objects and the page for the sake of four pairs.
+    -->
+    <style>
+      :root {
+        --color-bg: #ffffff;
+        --color-text: #000000;
+      }
+      html,
+      body {
+        background: var(--color-bg);
+        color: var(--color-text);
+      }
+    </style>
+    <script>
+      ;(function () {
+        var GROUND = {
+          default: {
+            light: ['#f7f3e8', '#201c15'],
+            dark: ['#1f1b13', '#ece4d1'],
+          },
+          plain: {
+            light: ['#ffffff', '#000000'],
+            dark: ['#000000', '#ffffff'],
+          },
+        }
+        var has = function (id) {
+          return Object.prototype.hasOwnProperty.call(GROUND, id)
+        }
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var rawSkin = params.get('skin')
+          var skin = rawSkin === null ? 'default' : has(rawSkin) ? rawSkin : 'plain'
+          var rawMode = params.get('mode')
+          var mode =
+            rawMode === 'light' || rawMode === 'dark'
+              ? rawMode
+              : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          var ground = GROUND[skin][mode]
+          var root = document.documentElement
+          root.dataset.skin = skin
+          root.dataset.mode = mode
+          root.style.setProperty('color-scheme', mode)
+          root.style.setProperty('--color-bg', ground[0])
+          root.style.setProperty('--color-text', ground[1])
+        } catch (error) {
+          // Leaves the :root fallback above in place; the app still boots.
+        }
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

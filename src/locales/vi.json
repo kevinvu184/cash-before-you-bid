@@ -65,7 +65,9 @@
     "lmi": "Dưới 20%; phải trả LMI"
   },
   "results": {
-    "flagsLabel": "Cảnh báo và ghi chú"
+    "flagsLabel": "Cảnh báo và ghi chú",
+    "statsHeading": "Tóm tắt",
+    "linesHeading": "Chi tiết từng dòng"
   },
   "flagKinds": {
     "warn": "CẢNH BÁO",
@@ -170,5 +172,16 @@
     "sourcesBefore": "Nguồn và giải thích đầy đủ nằm trong ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". Chỉ là thông tin chung, không phải tư vấn pháp lý, thuế hay tín dụng cho cá nhân bạn."
+  },
+  "skins": {
+    "label": "Giao diện",
+    "default": "Ledger",
+    "plain": "Đơn giản"
+  },
+  "mode": {
+    "label": "Chế độ màu",
+    "system": "Hệ thống",
+    "light": "Sáng",
+    "dark": "Tối"
   }
 }

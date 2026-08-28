@@ -1,44 +1,37 @@
-/* App-level base, layered on top of src/styles/ledger.css.
-   Ledger ships tokens for light and an explicit [data-theme="dark"] inversion,
-   but no automatic dark mode. The original page followed the operating system
-   and let :root[data-theme] override it, so the dark tokens are mirrored into a
-   prefers-color-scheme block that :root[data-theme="light"] opts out of. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --color-bg: #1f1b13;
-    --color-surface: #282318;
-    --color-text: #ece4d1;
-    --color-text-muted: #a89f8b;
-    --color-grey-1: #332d20;
-    --color-grey-2: #4a4433;
-    --color-grey-3: #6e6754;
-    --color-grey-4: #9a917c;
-    --color-grey-5: #c6bda7;
-    --color-hairline: #3a3425;
-    --color-hairline-strong: #514a36;
-    --color-accent: #cd8a52;
-    --color-accent-strong: #dda06d;
-    --color-accent-tint: #33281c;
-    --color-success: #8ba37c;
-    --color-warning: #c2a05e;
-    --color-error: #c07b6d;
-  }
+/* The only skin-agnostic stylesheet. It sets what every skin needs and nothing
+   a skin might want to differ on: the box model, the document ground, the
+   focus ring, and the reduced-motion escape hatch. Every value is a token the
+   active skin supplies through src/hooks/useColorMode.ts — there are no
+   colours, families or sizes of its own here. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-:root {
-  color-scheme: light dark;
+html {
+  /* Painted before React mounts by the inline script in index.html, so there
+     is no flash of the wrong ground colour. */
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-base);
   /* Oldstyle figures off — every figure on this page is tabular. */
   font-variant-numeric: tabular-nums;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  min-height: 100dvh;
 }
 
 button,
@@ -46,14 +39,16 @@ a {
   touch-action: manipulation;
 }
 
-/* Ledger states its hovers unconditionally, and on touch a :hover can stick to
-   whatever was tapped last. Of its hover rules only this one reaches an element
-   on this page — the sources link — so it is returned to its resting
-   appearance where there is no hover-capable pointer. */
-@media (hover: none) {
-  a:hover {
-    color: var(--color-accent);
-  }
+/* Scoped to :not(:focus-visible) so the whole rule is invalid — and therefore
+   ignored — in browsers without :focus-visible support, which then keep their
+   native focus indicator. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 img,
@@ -64,10 +59,6 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    scroll-behavior: auto;
-  }
-
   *,
   *::before,
   *::after {

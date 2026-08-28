@@ -1,0 +1,547 @@
+import { useTranslation } from 'react-i18next'
+import {
+  DEPOSIT_HINT_KEY,
+  LANGUAGE_OPTIONS,
+  MODE_OPTIONS,
+  NOTE_ENTRIES,
+  REGION_OPTIONS,
+  ROUTE_OPTIONS,
+  ROW_LABEL_KEY,
+  SKIN_OPTIONS,
+  SOURCES,
+} from '../logic/fieldLabels'
+import type { ColorMode } from '../logic/skins'
+import type { AppState } from '../logic/urlState'
+import type { CalculationTiles } from '../types/calculator'
+import {
+  LINE_FIELD_ID,
+  type AppViewModel,
+  type BooleanInputField,
+  type FieldId,
+  type LineField,
+  type NumberInputField,
+  type StatField,
+  type StatFieldId,
+  type TextParam,
+  type TextRef,
+} from '../types/viewModel'
+import type { UseCalculatorResult } from './useCalculator'
+import { useNumericDraft } from './useNumericDraft'
+import { useTranslationNotice } from './useTranslationNotice'
+
+// Every field the app can show, assembled once, above the skin boundary. The
+// core decides what exists, what it is worth, which key names it and how
+// important it is. Nothing here is a display string and nothing here is a
+// layout decision.
+
+const money = (value: number): TextParam => ({ format: 'money', value })
+const percent = (value: number): TextParam => ({ format: 'percent', value })
+
+interface NumericSpec {
+  id: FieldId
+  controlId: string
+  labelKey: string
+  kind: 'money' | 'number' | 'percent'
+  importance: 'primary' | 'secondary'
+}
+
+function numberField(
+  spec: NumericSpec,
+  value: number,
+  draft: string,
+  onDraftChange: (raw: string) => void,
+  hintKey: string | null,
+): NumberInputField {
+  return {
+    id: spec.id,
+    controlId: spec.controlId,
+    labelKey: spec.labelKey,
+    value,
+    kind: spec.kind,
+    importance: spec.importance,
+    draft,
+    hintKey,
+    onDraftChange,
+  }
+}
+
+function booleanField(
+  id: FieldId,
+  controlId: string,
+  labelKey: string,
+  value: boolean,
+  onChange: (next: boolean) => void,
+): BooleanInputField {
+  return {
+    id,
+    controlId,
+    labelKey,
+    value,
+    kind: 'boolean',
+    importance: 'secondary',
+    onChange,
+  }
+}
+
+function statField(
+  id: StatFieldId,
+  labelKey: string,
+  value: number,
+  detail: TextRef | null,
+  importance: 'primary' | 'secondary',
+): StatField {
+  return { id, labelKey, value, kind: 'money', importance, detail }
+}
+
+function buildStats(tiles: CalculationTiles): readonly StatField[] {
+  const loanDetail: TextRef =
+    tiles.loan.governmentEquity > 0
+      ? {
+          key: 'stats.loanSubWithEquity',
+          params: {
+            lvr: percent(tiles.loan.lvrPct),
+            equity: money(tiles.loan.governmentEquity),
+          },
+        }
+      : { key: 'stats.loanSub', params: { lvr: percent(tiles.loan.lvrPct) } }
+
+  return [
+    statField(
+      'statTotal',
+      'stats.totalLabel',
+      tiles.total.value,
+      {
+        key: 'stats.totalSub',
+        params: {
+          deposit: money(tiles.total.deposit),
+          costs: money(tiles.total.costs),
+          moving: money(tiles.total.moving),
+          buffer: money(tiles.total.buffer),
+        },
+      },
+      'primary',
+    ),
+    statField(
+      'statDeposit',
+      'stats.depositLabel',
+      tiles.deposit.value,
+      {
+        key: 'stats.depositSub',
+        params: {
+          pct: percent(tiles.deposit.pct),
+          price: money(tiles.deposit.price),
+        },
+      },
+      'secondary',
+    ),
+    statField(
+      'statCosts',
+      'stats.costsLabel',
+      tiles.costs.value,
+      // No price means no share of it to quote; the field still exists.
+      tiles.costs.pctOfPrice === null
+        ? null
+        : {
+            key: 'stats.costsSub',
+            params: { pct: percent(tiles.costs.pctOfPrice) },
+          },
+      'secondary',
+    ),
+    statField('statLoan', 'stats.loanLabel', tiles.loan.value, loanDetail, 'secondary'),
+    statField(
+      'statRepayment',
+      'stats.repaymentLabel',
+      tiles.repayment.value,
+      {
+        key: 'stats.repaymentSub',
+        params: {
+          rate: percent(tiles.repayment.ratePct),
+          assessedRate: percent(tiles.repayment.assessedRatePct),
+          assessed: money(tiles.repayment.assessedValue),
+        },
+      },
+      'secondary',
+    ),
+  ]
+}
+
+function buildLines(result: UseCalculatorResult['result']): readonly LineField[] {
+  return result.rows.map((row) => ({
+    id: LINE_FIELD_ID[row.code],
+    labelKey: ROW_LABEL_KEY[row.code],
+    value: row.amount,
+    kind: 'money' as const,
+    importance: row.emphasis ? ('primary' as const) : ('secondary' as const),
+    how: row.how,
+    emphasis: row.emphasis,
+  }))
+}
+
+/**
+ * The one view model for the one screen. It takes the calculator rather than
+ * calling it, so there is exactly one URL-state instance in the app, and it is
+ * called above the skin boundary: changing skin or mode swaps a child
+ * component and nothing here remounts.
+ */
+export function useAppViewModel(core: UseCalculatorResult, resolvedMode: ColorMode): AppViewModel {
+  const { i18n } = useTranslation()
+  const { inputs, presentation, result, setField, setRoute, setLang, setSkin, setMode } = core
+  const locale = i18n.language
+  const notice = useTranslationNotice(inputs.lang === 'vi')
+
+  // One draft per numeric field, in a fixed order. The draft is the raw text
+  // the field is holding, so no skin has to parse or format a keystroke.
+  type SettableField = Parameters<UseCalculatorResult['setField']>[0]
+  const set =
+    <K extends SettableField>(field: K) =>
+    (next: AppState[K]) =>
+      setField(field, next)
+  const price = useNumericDraft(inputs.price, set('price'), locale)
+  const depositPct = useNumericDraft(inputs.depositPct, set('depositPct'), locale)
+  const otp = useNumericDraft(inputs.offThePlanConstruction, set('offThePlanConstruction'), locale)
+  const rate = useNumericDraft(inputs.interestRatePct, set('interestRatePct'), locale)
+  const conveyancing = useNumericDraft(inputs.conveyancing, set('conveyancing'), locale)
+  const buildingAndPest = useNumericDraft(inputs.buildingAndPest, set('buildingAndPest'), locale)
+  const lenderFees = useNumericDraft(inputs.lenderFees, set('lenderFees'), locale)
+  const adjustments = useNumericDraft(
+    inputs.settlementAdjustments,
+    set('settlementAdjustments'),
+    locale,
+  )
+  const insurance = useNumericDraft(inputs.buildingInsurance, set('buildingInsurance'), locale)
+  const moving = useNumericDraft(inputs.movingCosts, set('movingCosts'), locale)
+  const bufferMonths = useNumericDraft(inputs.bufferMonths, set('bufferMonths'), locale)
+
+  const assumptionFields = [
+    numberField(
+      {
+        id: 'conveyancing',
+        controlId: 'conv',
+        labelKey: 'inputs.conveyancing',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.conveyancing,
+      conveyancing.draft,
+      conveyancing.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'buildingAndPest',
+        controlId: 'bp',
+        labelKey: 'inputs.buildingAndPest',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.buildingAndPest,
+      buildingAndPest.draft,
+      buildingAndPest.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'lenderFees',
+        controlId: 'lender',
+        labelKey: 'inputs.lenderFees',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.lenderFees,
+      lenderFees.draft,
+      lenderFees.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'settlementAdjustments',
+        controlId: 'adj',
+        labelKey: 'inputs.settlementAdjustments',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.settlementAdjustments,
+      adjustments.draft,
+      adjustments.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'buildingInsurance',
+        controlId: 'ins',
+        labelKey: 'inputs.buildingInsurance',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.buildingInsurance,
+      insurance.draft,
+      insurance.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'movingCosts',
+        controlId: 'move',
+        labelKey: 'inputs.moving',
+        kind: 'money',
+        importance: 'secondary',
+      },
+      inputs.movingCosts,
+      moving.draft,
+      moving.onDraftChange,
+      null,
+    ),
+    numberField(
+      {
+        id: 'bufferMonths',
+        controlId: 'bufm',
+        labelKey: 'inputs.bufferMonths',
+        kind: 'number',
+        importance: 'secondary',
+      },
+      inputs.bufferMonths,
+      bufferMonths.draft,
+      bufferMonths.onDraftChange,
+      null,
+    ),
+    booleanField(
+      'capitaliseLmi',
+      'caplmi',
+      'inputs.capitaliseLmi',
+      inputs.capitaliseLmi,
+      set('capitaliseLmi'),
+    ),
+  ]
+
+  return {
+    locale: inputs.lang,
+    skinId: presentation.skin,
+    resolvedMode,
+    chrome: {
+      eyebrow: {
+        id: 'eyebrow',
+        labelKey: 'app.eyebrow',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      title: {
+        id: 'title',
+        labelKey: 'app.title',
+        value: null,
+        kind: 'text',
+        importance: 'primary',
+      },
+      lede: {
+        id: 'lede',
+        labelKey: 'app.lede',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      notice: notice.visible
+        ? {
+            id: 'translationNotice',
+            labelKey: 'notice.aiTranslation',
+            value: null,
+            kind: 'text',
+            importance: 'secondary',
+            dismissLabelKey: 'notice.dismiss',
+            onDismiss: notice.dismiss,
+          }
+        : null,
+    },
+    controls: {
+      language: {
+        id: 'language',
+        controlId: 'lang',
+        labelKey: 'switcher.label',
+        value: inputs.lang,
+        kind: 'text',
+        importance: 'secondary',
+        options: LANGUAGE_OPTIONS,
+        // Re-picking the active language would push an identical history
+        // entry and pollute the back button.
+        onChange: (next) => {
+          if (next !== inputs.lang) setLang(next)
+        },
+      },
+      skin: {
+        id: 'skin',
+        controlId: 'skin',
+        labelKey: 'skins.label',
+        value: presentation.skin,
+        kind: 'text',
+        importance: 'secondary',
+        options: SKIN_OPTIONS,
+        onChange: (next) => {
+          if (next !== presentation.skin) setSkin(next)
+        },
+      },
+      colorMode: {
+        id: 'colorMode',
+        controlId: 'mode',
+        labelKey: 'mode.label',
+        value: presentation.mode,
+        kind: 'text',
+        importance: 'secondary',
+        options: MODE_OPTIONS,
+        onChange: (next) => {
+          if (next !== presentation.mode) setMode(next)
+        },
+      },
+    },
+    inputs: {
+      regionLabelKey: 'inputs.label',
+      heading: {
+        id: 'inputsHeading',
+        labelKey: 'inputs.heading',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      price: numberField(
+        {
+          id: 'price',
+          controlId: 'price',
+          labelKey: 'inputs.price',
+          kind: 'money',
+          importance: 'primary',
+        },
+        inputs.price,
+        price.draft,
+        price.onDraftChange,
+        null,
+      ),
+      route: {
+        id: 'route',
+        controlId: 'route',
+        labelKey: 'inputs.route',
+        value: inputs.route,
+        kind: 'text',
+        importance: 'primary',
+        options: ROUTE_OPTIONS,
+        onChange: setRoute,
+      },
+      depositPct: numberField(
+        {
+          id: 'depositPct',
+          controlId: 'dep',
+          labelKey: 'inputs.deposit',
+          kind: 'percent',
+          importance: 'primary',
+        },
+        inputs.depositPct,
+        depositPct.draft,
+        depositPct.onDraftChange,
+        DEPOSIT_HINT_KEY[inputs.route],
+      ),
+      region: {
+        id: 'region',
+        controlId: 'region',
+        labelKey: 'inputs.region',
+        value: inputs.region,
+        kind: 'text',
+        importance: 'secondary',
+        options: REGION_OPTIONS,
+        onChange: set('region'),
+      },
+      firstHomeBuyer: booleanField(
+        'firstHomeBuyer',
+        'fhb',
+        'inputs.fhb',
+        inputs.firstHomeBuyer,
+        set('firstHomeBuyer'),
+      ),
+      ownerOccupier: booleanField(
+        'ownerOccupier',
+        'ppr',
+        'inputs.ppr',
+        inputs.ownerOccupier,
+        set('ownerOccupier'),
+      ),
+      newHome: booleanField('newHome', 'newhome', 'inputs.newHome', inputs.newHome, set('newHome')),
+      offThePlanConstruction: numberField(
+        {
+          id: 'offThePlanConstruction',
+          controlId: 'otp',
+          labelKey: 'inputs.otp',
+          kind: 'money',
+          importance: 'secondary',
+        },
+        inputs.offThePlanConstruction,
+        otp.draft,
+        otp.onDraftChange,
+        'inputs.otpHint',
+      ),
+      foreignPurchaser: booleanField(
+        'foreignPurchaser',
+        'foreign',
+        'inputs.foreign',
+        inputs.foreignPurchaser,
+        set('foreignPurchaser'),
+      ),
+      interestRatePct: numberField(
+        {
+          id: 'interestRatePct',
+          controlId: 'rate',
+          labelKey: 'inputs.rate',
+          kind: 'percent',
+          importance: 'secondary',
+        },
+        inputs.interestRatePct,
+        rate.draft,
+        rate.onDraftChange,
+        null,
+      ),
+      assumptions: {
+        id: 'assumptions',
+        labelKey: 'inputs.assumptions',
+        value: assumptionFields,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      foot: {
+        id: 'panelFoot',
+        labelKey: 'inputs.foot',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+      },
+    },
+    results: {
+      flagsRegionLabelKey: 'results.flagsLabel',
+      flags: {
+        id: 'flags',
+        labelKey: 'results.flagsLabel',
+        value: result.flags,
+        kind: 'text',
+        importance: 'primary',
+      },
+      statsHeadingKey: 'results.statsHeading',
+      stats: buildStats(result.tiles),
+      linesHeadingKey: 'results.linesHeading',
+      tableHeadingKeys: {
+        line: 'table.line',
+        amount: 'table.amount',
+        how: 'table.how',
+      },
+      lines: buildLines(result),
+      notesHeadingKey: 'notes.heading',
+      notes: {
+        id: 'notes',
+        labelKey: 'notes.heading',
+        value: NOTE_ENTRIES,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      sources: {
+        id: 'sources',
+        labelKey: 'notes.sourcesLink',
+        value: SOURCES,
+        kind: 'text',
+        importance: 'secondary',
+      },
+    },
+  }
+}
