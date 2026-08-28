@@ -19,6 +19,8 @@ The dev server runs at http://localhost:5173 with hot module replacement.
 | `npm run build`   | Type-check and build for production into `dist/` |
 | `npm run preview` | Preview the production build locally             |
 | `npm run lint`    | Lint the codebase with oxlint                    |
+| `npm test`        | Run the test suite with vitest                   |
+| `npm run size`    | Measure `dist/` against the performance budget   |
 
 ## Project structure
 
@@ -27,10 +29,14 @@ and the boundaries between them are enforced by tests:
 
 ```
 ├── index.html          # SPA entry point; paints the ground colours pre-mount
+├── perf-budget.json    # The page-weight budget, as numbers CI can fail on
 ├── public/             # Static assets served as-is
 │   ├── manifest.webmanifest  # Install metadata; every path relative to the base
 │   ├── sw.js           # Offline shell worker; scope comes from the registration
+│   ├── fonts/          # Self-hosted woff2 subsets; no third-party font host
 │   └── icons/          # Install icons, 192/512/maskable/apple-touch
+├── scripts/
+│   └── check-bundle-size.mjs  # Gzips dist/ and enforces perf-budget.json
 ├── src/
 │   ├── main.tsx        # React root mount
 │   ├── App.tsx         # Shell: owns every hook, hands a skin the view model
@@ -47,6 +53,7 @@ and the boundaries between them are enforced by tests:
 │   │   ├── default/       # The Ledger look — tokens, components, skin.css
 │   │   └── plain/         # The black-and-white baseline
 │   ├── testing/        # The fixed view-model fixture the parity test renders
+│   ├── fonts.css       # @font-face for the self-hosted faces
 │   └── index.css       # The one skin-agnostic stylesheet
 ├── vite.config.ts      # Vite configuration
 └── tsconfig*.json      # TypeScript configuration
@@ -221,10 +228,37 @@ failed fetch falls back to a bundled indicative rate rather than to nothing.
 - `public/sw.js` — caches the shell. Navigations are network-first, so a
   redeploy is picked up on the next online visit rather than stranding anyone
   on a stale bundle; fingerprinted build assets are cache-first, because a
-  given URL's bytes never change. Nothing cross-origin is cached, so the web
-  fonts fall back to the system stack offline.
+  given URL's bytes never change. Nothing cross-origin is cached, and nothing
+  cross-origin is fetched either — the web fonts are served from this origin,
+  so the typography survives offline too.
 - It registers in production only (`src/serviceWorker.ts`); in development it
   would serve a cached shell over Vite's module graph.
+
+## Performance budget
+
+The primary reader is on a phone, on mobile data, the night before an auction.
+`CLAUDE.md` has stated a budget for that reader since the repo started;
+`perf-budget.json` is the machine-readable copy, `scripts/check-bundle-size.mjs`
+enforces it against `dist/`, and `.github/workflows/ci.yml` runs it on every
+pull request alongside lint, tests and the build. Going over fails the pull
+request that does it, and the measured totals are written to the run summary
+whether the check passes or not.
+
+- `npm run build && npm run size` reproduces the check locally.
+- The gzip figure is the pessimistic one. GitHub Pages serves brotli where the
+  client asks for it, so the real transfer is smaller.
+- `src/perfBudget.test.ts` holds the JavaScript ceiling in `perf-budget.json`
+  to the number `CLAUDE.md` states, so raising it has to be a decision taken in
+  both places rather than a quiet bump in a config file.
+
+The fonts are part of that budget. `src/fonts.css` declares the faces and
+`public/fonts/` holds the files, so nothing is fetched from a third party: a
+Google Fonts stylesheet cost the first paint two extra origins and a round trip
+before the browser learned which files it needed, and sent every reader's IP
+address to a third party besides. Only the latin, latin-ext and vietnamese
+subsets ship, each with a `unicode-range`, so a browser downloads only what the
+text on screen needs. `index.html` preloads the two faces the default locale
+starts with. `src/fonts.test.ts` holds all of that together.
 
 ## Adding a skin
 
