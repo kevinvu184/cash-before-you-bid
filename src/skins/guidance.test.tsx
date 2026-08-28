@@ -2,6 +2,7 @@
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import i18n from '../i18n'
+import { BAND_GUIDANCE } from '../logic/fieldLabels'
 import { LANGS } from '../logic/lang'
 import { viewModelFixture } from '../testing/viewModelFixture'
 import type { SkinModule } from '../types/skin'
@@ -33,7 +34,7 @@ async function renderSkin(id: string, locale: (typeof LANGS)[number]) {
 }
 
 describe.each(SKIN_LIST.map((entry) => entry.id))('deposit guidance in skin %s', (skinId) => {
-  it.each(LANGS)('spells out the four payment points in %s', async (locale) => {
+  it.each(LANGS)('spells out every payment point in %s', async (locale) => {
     const container = await renderSkin(skinId, locale)
     const guidance = container.querySelector('[data-field="guidanceAuctionDay"]')
     expect(guidance).not.toBeNull()
@@ -43,7 +44,9 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('deposit guidance in skin %s',
     // a bond is different is the part worth checking has survived.
     expect(text).toContain('Section 27')
     expect(text).toContain('Sale of Land Act 1962')
-    expect(guidance?.querySelectorAll('li').length).toBeGreaterThanOrEqual(4)
+    // Counted from the core rather than written down here, so adding a point
+    // is a one-line change and never a silently stale assertion.
+    expect(guidance?.querySelectorAll('li').length).toBe(BAND_GUIDANCE.auctionDay?.value.length)
   })
 
   it('sits inside the auction-day band, after its subtotal', async () => {
