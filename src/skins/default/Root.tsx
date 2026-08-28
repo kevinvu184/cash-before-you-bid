@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { AppViewModel } from '../../types/viewModel'
+import { DisplayProvider } from '../shared/DisplayProvider'
 import { useScrolledPast } from '../shared/useScrolledPast'
 import { InputsPanel } from './Inputs'
 import { Masthead } from './Masthead'
@@ -19,7 +20,7 @@ export function Root({ vm }: { vm: AppViewModel }) {
   const total = vm.results.stats[0]
 
   return (
-    <>
+    <DisplayProvider settings={vm.display.settings}>
       {total ? <StickyTotal total={total} shown={headerGone} /> : null}
       <div className="page">
         <Masthead vm={vm} headerRef={header} />
@@ -28,9 +29,9 @@ export function Root({ vm }: { vm: AppViewModel }) {
 
         <div className="columns">
           <InputsPanel inputs={vm.inputs} />
-          <Results results={vm.results} />
+          <Results display={vm.display} results={vm.results} />
         </div>
       </div>
-    </>
+    </DisplayProvider>
   )
 }

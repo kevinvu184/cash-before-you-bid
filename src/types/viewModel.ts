@@ -1,3 +1,5 @@
+import type { DisplayCurrency } from '../logic/currencyConfig'
+import type { DisplaySettings } from '../logic/display'
 import type { Lang } from '../logic/lang'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { ModePreference } from '../logic/urlState'
@@ -49,13 +51,30 @@ export type TextParam =
   // and `numberExact` draw the same distinction for plain numbers: a figure
   // the user entered is quoted exactly, to the same precision the field and
   // the URL hold it at, so the sentence can never disagree with the input.
+  // `moneyUnit` is a figure already denominated in the currency on display —
+  // a rounding unit out of that currency's own config — so it is written
+  // exactly and never put through the exchange rate.
   | {
-      format: 'money' | 'moneyExact' | 'percent' | 'number' | 'numberExact' | 'count'
+      format:
+        | 'money'
+        | 'moneyExact'
+        | 'moneyUnit'
+        | 'percent'
+        | 'number'
+        | 'numberExact'
+        | 'count'
       value: number
     }
   | { format: 'raw'; value: string }
 
 // ── field ids ────────────────────────────────────────────────────────────────
+
+/**
+ * The display switch and the rate it converts at. Not calculator inputs and
+ * not chrome: they head the results, because what they change is the currency
+ * the results are written in.
+ */
+export type DisplayFieldId = 'currency' | 'exchangeRate'
 
 export type ChromeFieldId =
   | 'eyebrow'
@@ -157,6 +176,7 @@ export type ScenarioFieldId =
   | 'scenarioPrivacy'
 
 export type FieldId =
+  | DisplayFieldId
   | ChromeFieldId
   | InputFieldId
   | StatFieldId
@@ -173,6 +193,8 @@ export type FieldId =
  * (unknown key). Skins carry the same shape as their `renders` manifest.
  */
 const FIELD_IDS: Readonly<Record<FieldId, true>> = {
+  currency: true,
+  exchangeRate: true,
   eyebrow: true,
   title: true,
   lede: true,
@@ -551,6 +573,86 @@ export interface ScenariosViewModel {
   privacy: TextField
 }
 
+// ── display currency ─────────────────────────────────────────────────────────
+
+/** The per-control labels the rate line needs; keys, as everywhere. */
+export interface ExchangeRateActionKeys {
+  /** Labels the override box: "Override rate: 1 {{base}} =". */
+  overrideLabel: string
+  apply: string
+  cancel: string
+  /** Drops the override, back to the fetched rate. */
+  reset: string
+  /** The chip shown while a typed rate is in force. */
+  manualTag: string
+}
+
+/**
+ * The rate the converted figures were produced at, where it came from, and
+ * when it was quoted — plus the means to replace it.
+ *
+ * `value` is display-currency units per one base-currency unit. It is not a
+ * money amount in the base currency and must never be converted; a skin writes
+ * it with `quotedRate`, which is `displayUnit` under a different name.
+ *
+ * The override exists because this rate is not the one the reader will be
+ * given. Someone comparing a bank's transfer quote, or planning against a rate
+ * they have already locked, needs the page to speak in their number rather
+ * than a mid-market one it fetched.
+ */
+export interface ExchangeRateField extends Field<number> {
+  kind: 'number'
+  /** Stable DOM id for the override box, so every skin pairs its label to it. */
+  controlId: string
+  /** "1 {{base}} = {{quoted}}", filled in by the skin from the two symbols. */
+  lineKey: string
+  /** Names the base currency one unit of which the rate prices. */
+  baseSymbolKey: string
+  /** Names the currency it is priced in — the one on display. */
+  symbolKey: string
+  /** Where this rate came from: the provider, an override, or the fallback. */
+  source: TextRef
+  /** When the provider repriced it; null for an override, fallback or fetch. */
+  updatedAt: number | null
+  /** True while a typed rate is standing in for the fetched one. */
+  manual: boolean
+  actionKeys: ExchangeRateActionKeys
+  /** Who quoted the rate. A name, not a key: it is not ours to translate. */
+  providerName: string
+  /**
+   * The reminder that the inputs and the arithmetic are still in the base
+   * currency whatever the figures are written in, and that fetching the rate
+   * is the one request this page makes. Carries {{currency}} and {{provider}}.
+   */
+  noteKey: string
+  /**
+   * Applies a rate the reader typed, in their own locale's separators.
+   *
+   * Ignored rather than raising: an unusable figure — the rate on screen is
+   * still a working one — and one that matches the rate already in force at
+   * the precision it is shown at. The latter is what makes opening the
+   * override and pressing Apply unedited a no-op rather than a MANUAL
+   * override the reader never asked for.
+   */
+  onOverride(raw: string): void
+  /** Drops the override; the fetched rate takes over again. */
+  onReset(): void
+}
+
+/**
+ * What figures are written in, and the control that changes it.
+ *
+ * `settings` is what every money formatter needs; the skin publishes it to its
+ * own tree and the shared text helpers read it back. `rate` is null while the
+ * base currency is showing — no rate is doing any work then, and quoting one
+ * would suggest the figures had been through it.
+ */
+export interface DisplayViewModel {
+  settings: DisplaySettings
+  currency: ChoiceInputField<DisplayCurrency>
+  rate: ExchangeRateField | null
+}
+
 export interface SourcesValue {
   beforeKey: string
   linkKey: string
@@ -673,6 +775,8 @@ export interface ResultsViewModel {
 
 export interface AppViewModel {
   locale: Lang
+  /** The currency every figure below is written in, and the switch for it. */
+  display: DisplayViewModel
   /** The skin actually rendering — the requested one unless it failed to load. */
   skinId: SkinId
   resolvedMode: ColorMode

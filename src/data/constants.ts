@@ -33,6 +33,13 @@ export const MORTGAGE_REGISTRATION_FEE = 129.2
 export const PEXA_TRANSFER_FEE = 146.3
 export const PEXA_MORTGAGE_FEE = 74.14
 
+// The transfer fee is quoted per whole thousand of the price.
+export const TRANSFER_FEE_UNIT = 1000
+
+// Help to Buy income caps, quoted in the scheme's own note.
+export const HTB_INCOME_CAP_SINGLE = 103_000
+export const HTB_INCOME_CAP_COUPLE = 165_000
+
 export const FHOG_AMOUNT = 10_000
 export const FHOG_PRICE_CAP = 750_000
 

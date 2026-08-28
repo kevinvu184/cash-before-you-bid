@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { StatField } from '../../types/viewModel'
+import { useDisplay } from '../shared/display'
 import { estimateMoney } from '../shared/text'
 
 interface StickyTotalProps {
@@ -15,11 +16,12 @@ interface StickyTotalProps {
  * outright at 1024px, where the stat row is already beside the inputs.
  */
 export function StickyTotal({ total, shown }: StickyTotalProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <div className={shown ? 'sticky-total shown' : 'sticky-total'} aria-hidden="true">
       <span className="sticky-total-label">{t(total.labelKey)}</span>
-      <span className="sticky-total-value">{estimateMoney(total.value, i18n.language)}</span>
+      <span className="sticky-total-value">{estimateMoney(total.value, display)}</span>
     </div>
   )
 }

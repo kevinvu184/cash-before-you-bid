@@ -12,12 +12,13 @@ import { SITE_ORIGIN } from './site'
 // file checks code rather than the sentence.
 //
 // What it checks, exactly: the sources the build is made from — `index.html`,
-// `src/`, `public/` — not `dist/`. Two tripwires, both pointed at privacy.ts,
-// which is where the wording lives. A host `index.html` references must be
-// declared there, and a file that opens a connection must be declared there.
-// Neither can be satisfied without reading the copy next to the declaration,
-// which is the whole mechanism: someone adding a request has to walk past the
-// sentence it would falsify.
+// `src/`, `public/` — not `dist/`. Three tripwires, all pointed at privacy.ts,
+// which is where the wording lives. A host `index.html` or a stylesheet
+// references must be declared there; a file that opens a connection must be
+// declared there; and a host one of those files reaches must be declared
+// there too. None can be satisfied without reading the copy next to the
+// declaration, which is the whole mechanism: someone adding a request has to
+// walk past the sentence it would falsify.
 //
 // What it does not check, and what covers that instead. Nothing here inspects
 // build output or `node_modules`, so it would not catch a request introduced
@@ -133,6 +134,58 @@ const undeclared = (hosts: readonly string[]): string[] =>
     (host) => host !== OWN_HOST && !Object.hasOwn(THIRD_PARTY_HOSTS, host),
   )
 
+/**
+ * Hosts named in the files allowed to open a connection.
+ *
+ * The auto-fetch scan cannot see these: a `fetch()` target is a string
+ * constant, with no `src` or `url()` for the patterns above to find. So the
+ * hosts a declared caller reaches were invisible to both directions — a
+ * tracker added inside an already-declared caller would have passed, and a
+ * host declared for one would have read as stale. Reading those files, and
+ * only those, closes it: they are the ones that make requests, so an absolute
+ * URL in one is a request target rather than a link a reader might click.
+ *
+ * Comments are stripped first, so prose naming a vendor is not read as a call
+ * to it — privacy.ts and sw.js both describe requests they do not make.
+ */
+const IMPORT_FROM = /\bfrom\s+["'](\.[^"']*)["']/g
+
+/**
+ * A caller's own file, plus the repository modules it imports directly.
+ *
+ * One level, and only relative imports. A fetch target is a string constant,
+ * and it does not have to sit in the file that fetches it: this app's endpoint
+ * lives in `logic/exchangeRate.ts`, beside the rest of the rate rules, and is
+ * imported by the hook that calls `fetch`. Reading the caller alone would have
+ * left the host invisible to every forward scan — declared, but with nothing
+ * failing if the declaration were deleted and the wording allowed to drift
+ * back. Following the imports one step is what makes the declaration load
+ * bearing.
+ */
+const callerSources = (name: string): string[] => {
+  const file = join(ROOT, name)
+  const source = readFileSync(file, 'utf8')
+  const dir = dirname(file)
+  const imported = [...source.matchAll(IMPORT_FROM)].flatMap((match) => {
+    // Extensionless in the source, as TypeScript writes them.
+    for (const suffix of ['.ts', '.tsx', '.js', '.mjs', '.css', '']) {
+      const path = join(dir, `${match[1]}${suffix}`)
+      try {
+        return [readFileSync(path, 'utf8')]
+      } catch {
+        continue
+      }
+    }
+    return []
+  })
+  return [source, ...imported]
+}
+
+const networkCallerHosts = (): string[] =>
+  Object.keys(NETWORK_CALLERS)
+    .flatMap(callerSources)
+    .flatMap((source) => hostsIn(stripComments(source)))
+
 describe('the privacy statement', () => {
   it('says something in both locales, from keys and never sentences', () => {
     for (const key of statementKeys()) {
@@ -242,6 +295,15 @@ describe('what the sources say the page will contact', () => {
     }
   })
 
+  it('contacts no host from a declared caller without declaring the host too', () => {
+    // Being allowed to open a connection is not being allowed to open it to
+    // anywhere: the caller list says which files may make a request, and this
+    // says the hosts they reach must still be named. Without it, the one file
+    // in the app that legitimately fetches would have been the one place a
+    // third party could be added silently.
+    expect(undeclared(networkCallerHosts())).toEqual([])
+  })
+
   it('opens a connection from no file privacy.ts has not declared', () => {
     const offenders = sourceFiles(ROOT)
       .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
@@ -280,9 +342,48 @@ describe('what the sources say the page will contact', () => {
         .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
         .filter(([name]) => notATest(name))
         .flatMap(([, source]) => autoFetchHosts(source)),
+      // Broad, unlike the forward scans: a fetch target is a string constant
+      // with no `src` or `url()` to find, and it does not have to sit in the
+      // file that fetches it — this app's lives beside the rest of the
+      // exchange-rate rules. Scanning every source for the name is right here
+      // and would be wrong the other way round, where it would flag the SRO
+      // and roadmap links a reader clicks. This direction only ever asks
+      // whether a declared host has stopped being mentioned at all.
+      ...sourceFiles(ROOT)
+        .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+        .filter(([name]) => notATest(name))
+        .flatMap(([, source]) => hostsIn(stripComments(source))),
     ])
     const stale = Object.keys(THIRD_PARTY_HOSTS).filter((host) => !reached.has(host))
     expect(stale).toEqual([])
+  })
+
+  it('names every declared host in the statement itself, in both locales', () => {
+    // The declaration is for a reader of this repository; the statement is for
+    // the reader of the page, and the whole value of a privacy claim is that a
+    // sceptical one can check it. Someone watching their network tab sees a
+    // host, not a vendor's brand — so a host declared here and absent from the
+    // copy leaves them looking at a request the statement never mentioned.
+    // (`open.er-api.com` is exchangerate-api.com's endpoint; the statement
+    // names both, which is what lets the two be connected at all.)
+    const copy = Object.entries({ en, vi }).map(
+      ([name, strings]) =>
+        [
+          name,
+          statementKeys()
+            .map((key) => String(lookup(strings as unknown as Record<string, unknown>, key)))
+            .join(' '),
+        ] as const,
+    )
+    for (const host of Object.keys(THIRD_PARTY_HOSTS)) {
+      for (const [name, text] of copy) {
+        expect({ host, locale: name, named: text.includes(host) }).toEqual({
+          host,
+          locale: name,
+          named: true,
+        })
+      }
+    }
   })
 
   it('declares a reason for every host and every caller', () => {
