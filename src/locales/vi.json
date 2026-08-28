@@ -111,7 +111,7 @@
   "sunk": {
     "heading": "Tiền đã chi trước khi đấu giá",
     "perPropertyLabel": "Mỗi căn nhà",
-    "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn. Phí pháp lý chuyển nhượng của bạn còn gồm cả phần tất toán, khoản chỉ trả một lần — nên con số này hơi cao",
+    "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn. Phí pháp lý chuyển nhượng của bạn còn gồm cả phần tất toán, khoản chỉ trả một lần — nên con số này hơi cao.",
     "searchLabel": "Cho cả quá trình tìm nhà",
     "searchSub_other": "{{properties}} căn × {{perProperty}} — trong đó {{lost}} là cho những căn bạn không mua được",
     "framing": "Đây là khoản tiền mất đi dù bạn thắng hay thua. Tiền đặt cọc, thuế trước bạ, phí nhà nước, LMI và các chi phí tất toán ở trên chỉ phải trả cho căn bạn thực sự mua — còn khoản này thì không.",
