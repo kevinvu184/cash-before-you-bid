@@ -1,4 +1,4 @@
-import type { RowCode, SunkCostSummary, TableRow } from '../types/calculator'
+import type { SunkCostSummary, TableRow } from '../types/calculator'
 
 /**
  * Pre-auction costs, multiplied across a property search.
@@ -9,14 +9,11 @@ import type { RowCode, SunkCostSummary, TableRow } from '../types/calculator'
  * deposit, stamp duty, government fees, LMI, settlement adjustments, building
  * insurance, moving, buffer — is paid once, on the property actually bought.
  *
- * Which rows are pre-auction is deliberately one list in one module. Issue #15
- * gives every row a timing band; when that lands, the body of `isPreAuction`
- * becomes `row.band === 'preAuction'` and nothing else here changes.
+ * Which rows those are is not decided here: #15 stamps every row with the
+ * timing band it falls in, and `src/logic/bands.ts` is the one table saying
+ * which is which. This module only multiplies what that table already calls
+ * pre-auction, so the two can never drift apart.
  */
-export const PRE_AUCTION_ROWS: ReadonlySet<RowCode> = new Set<RowCode>([
-  'conveyancing',
-  'buildingAndPest',
-])
 
 /** One property is the floor: you cannot buy without bidding at least once. */
 export const PROPERTIES_MIN = 1
@@ -39,7 +36,7 @@ export function clampProperties(properties: number): number {
 }
 
 function isPreAuction(row: TableRow): boolean {
-  return PRE_AUCTION_ROWS.has(row.code)
+  return row.band === 'preAuction'
 }
 
 export function sunkCost(rows: readonly TableRow[], properties: number): SunkCostSummary {

@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import type { RowCode, TableRow } from '../types/calculator'
-import { PRE_AUCTION_ROWS, PROPERTIES_MAX, clampProperties, sunkCost } from './sunkCost'
+import { rowBand } from './bands'
+import { PROPERTIES_MAX, clampProperties, sunkCost } from './sunkCost'
 
-const row = (code: RowCode, amount: number): TableRow => ({ code, amount, how: null, emphasis: false })
+// Rows carry the band the one band table gives them, so these fixtures cannot
+// disagree with what `calculate` actually stamps.
+const row = (code: RowCode, amount: number): TableRow => ({
+  code,
+  amount,
+  how: null,
+  emphasis: false,
+  band: rowBand(code),
+})
 
 // Every row the calculator can emit, each with a distinct amount, so a stray
 // inclusion shows up as a wrong total rather than an ambiguous one.
@@ -56,7 +65,7 @@ describe('sunkCost — which rows are pre-auction', () => {
       'total',
     ]
     for (const code of untouched) {
-      expect(PRE_AUCTION_ROWS.has(code)).toBe(false)
+      expect(rowBand(code)).not.toBe('preAuction')
       // Dropping the row entirely changes nothing the multiplier reports.
       const without = ALL_ROWS.filter((r) => r.code !== code)
       expect(sunkCost(without, 6)).toEqual(sunkCost(ALL_ROWS, 6))

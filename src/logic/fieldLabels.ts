@@ -1,7 +1,7 @@
 import type { Lang } from './lang'
 import type { ColorMode, SkinId } from './skins'
 import type { ModePreference } from './urlState'
-import type { DepositRoute, Region, RowCode } from '../types/calculator'
+import type { DepositRoute, Region, RowCode, TimingBand } from '../types/calculator'
 import type { ChoiceOption, NoteEntry, SourcesValue } from '../types/viewModel'
 
 // Translation keys — never translations. The core names the string a field
@@ -26,6 +26,34 @@ export const ROW_LABEL_KEY: Readonly<Record<RowCode, string>> = {
   moving: 'rows.moving',
   buffer: 'rows.buffer',
   total: 'rows.total',
+}
+
+export const BAND_LABEL_KEY: Readonly<Record<TimingBand, string>> = {
+  preAuction: 'bands.preAuction',
+  auctionDay: 'bands.auctionDay',
+  atSettlement: 'bands.atSettlement',
+  afterSettlement: 'bands.afterSettlement',
+}
+
+/** The one-line "when is this due" gloss under a band's name. */
+export const BAND_NOTE_KEY: Readonly<Record<TimingBand, string>> = {
+  preAuction: 'bands.preAuctionNote',
+  auctionDay: 'bands.auctionDayNote',
+  atSettlement: 'bands.atSettlementNote',
+  afterSettlement: 'bands.afterSettlementNote',
+}
+
+/**
+ * Each band's subtotal names its own band rather than interpolating one label
+ * into another: the grouping is not conveyed to a screen reader reading cell
+ * by cell, and a whole sentence per band is what a translator can actually
+ * work with.
+ */
+export const BAND_SUBTOTAL_LABEL_KEY: Readonly<Record<TimingBand, string>> = {
+  preAuction: 'bands.subtotalPreAuction',
+  auctionDay: 'bands.subtotalAuctionDay',
+  atSettlement: 'bands.subtotalAtSettlement',
+  afterSettlement: 'bands.subtotalAfterSettlement',
 }
 
 export const ROUTE_OPTIONS: readonly ChoiceOption<DepositRoute>[] = [
