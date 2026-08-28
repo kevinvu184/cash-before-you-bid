@@ -1,20 +1,30 @@
 import {
+  DUTY_BAND_BASE,
+  DUTY_BAND_THRESHOLD,
   FHB_DUTY_CONCESSION_CAP,
   FHB_DUTY_CONCESSION_RANGE,
   FHB_DUTY_EXEMPTION_CAP,
 } from '../data/constants'
 import type { DutyHowCode, OffThePlanHow } from '../types/calculator'
 
-// Victorian land transfer duty, general rates.
+// Victorian land transfer duty, general rates. The third band's base and
+// threshold come from constants because the above-cap explanation quotes them:
+// a figure a sentence states and a figure the arithmetic uses must be the same
+// figure, or the two can drift apart.
 export function generalDuty(dutiableValue: number): number {
   if (dutiableValue <= 25_000) return dutiableValue * 0.014
-  if (dutiableValue <= 130_000) return 350 + 0.024 * (dutiableValue - 25_000)
-  if (dutiableValue <= 960_000) return 2870 + 0.06 * (dutiableValue - 130_000)
+  if (dutiableValue <= DUTY_BAND_THRESHOLD) return 350 + 0.024 * (dutiableValue - 25_000)
+  if (dutiableValue <= 960_000) {
+    return DUTY_BAND_BASE + 0.06 * (dutiableValue - DUTY_BAND_THRESHOLD)
+  }
   if (dutiableValue <= 2_000_000) return 0.055 * dutiableValue
   return 110_000 + 0.065 * (dutiableValue - 2_000_000)
 }
 
-// Principal-place-of-residence concession rates, used up to $550k.
+// Principal-place-of-residence concession rates, used up to $550k. Its first
+// band happens to share the general rate's base and threshold today, but it is
+// a separate rule that could be changed on its own, and no explanation quotes
+// it — so the figures stay literal here rather than borrowing the constants.
 export function pprDuty(dutiableValue: number): number {
   if (dutiableValue <= 130_000) return generalDuty(dutiableValue)
   if (dutiableValue <= 440_000) return 2870 + 0.05 * (dutiableValue - 130_000)

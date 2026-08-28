@@ -109,7 +109,18 @@ export function useExchangeRate(currency: DisplayCurrency): ExchangeRate {
     let stale = false
     const load = async () => {
       try {
-        const response = await fetch(RATE_ENDPOINT, { signal: controller.signal })
+        const response = await fetch(RATE_ENDPOINT, {
+          signal: controller.signal,
+          // The query string this page is on carries what the reader typed
+          // into `save` and `loan`. Browsers default to sending only the
+          // origin cross-origin, but that is a default a document policy can
+          // change and older engines did not have; "none of your figures are
+          // sent" is a promise this page makes, so it is stated outright here
+          // rather than inherited. Nothing about the reader identifies them to
+          // a public rate table either, so no cookie goes with it.
+          referrerPolicy: 'no-referrer',
+          credentials: 'omit',
+        })
         if (!response.ok) throw new Error(`rate request failed: ${response.status}`)
         const fresh = parseQuote(await response.json(), currency)
         if (fresh === null) throw new Error('rate response was not usable')

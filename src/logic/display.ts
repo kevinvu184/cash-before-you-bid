@@ -11,7 +11,7 @@ import { formatMoney, formatRowAmount, type FormatMoneyOptions } from './format'
 /**
  * The half of a display the core decides: what the reader asked to see, and
  * the rate that gets them there. It rides in the view model; the locale is
- * added at the point of use (see `src/skins/shared/display.tsx`).
+ * added at the point of use (see `src/skins/shared/display.ts`).
  */
 export interface DisplaySettings {
   currency: DisplayCurrency
