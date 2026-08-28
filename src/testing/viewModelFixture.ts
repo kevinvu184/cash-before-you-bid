@@ -96,7 +96,7 @@ const SUNK_STATS: readonly StatField[] = [
       key: 'sunk.searchSub',
       params: {
         count: { format: 'count', value: 4 },
-        properties: { format: 'number', value: 4 },
+        properties: { format: 'numberExact', value: 4 },
         perProperty: { format: 'money', value: 2350 },
         lost: { format: 'money', value: 7050 },
       },

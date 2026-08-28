@@ -221,9 +221,11 @@ function buildSunkCost(sunk: SunkCostSummary): SunkCostViewModel {
         key: 'sunk.searchSub',
         params: {
           // `count` drives the plural form; `properties` is the same number
-          // formatted for the locale, which is what the sentence shows.
+          // formatted for the locale, which is what the sentence shows. It is
+          // the user's own figure, so it is quoted exactly — rounding it here
+          // would let the sentence disagree with the field they typed it into.
           count: count(sunk.properties),
-          properties: { format: 'number', value: sunk.properties },
+          properties: { format: 'numberExact', value: sunk.properties },
           perProperty: money(sunk.perProperty),
           lost: money(sunk.onPropertiesNotWon),
         },

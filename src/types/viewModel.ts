@@ -35,8 +35,14 @@ export interface TextRef {
 
 export type TextParam =
   // `money` is a computed figure, shown as a rounded estimate; `moneyExact` is
-  // what the user typed or what a rule states, and is never rounded.
-  | { format: 'money' | 'moneyExact' | 'percent' | 'number' | 'count'; value: number }
+  // what the user typed or what a rule states, and is never rounded. `number`
+  // and `numberExact` draw the same distinction for plain numbers: a figure
+  // the user entered is quoted exactly, to the same precision the field and
+  // the URL hold it at, so the sentence can never disagree with the input.
+  | {
+      format: 'money' | 'moneyExact' | 'percent' | 'number' | 'numberExact' | 'count'
+      value: number
+    }
   | { format: 'raw'; value: string }
 
 // ── field ids ────────────────────────────────────────────────────────────────

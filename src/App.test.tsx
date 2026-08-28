@@ -251,6 +251,20 @@ describe('pre-auction spend', () => {
     expect(input('price').inputMode).toBe('decimal')
   })
 
+  it('quotes a fractional count exactly, not rounded to two decimals', () => {
+    // A hand-edited URL can carry more precision than a two-decimal format
+    // shows. The sentence must not disagree with the field or the maths:
+    // 2.3333 x 2,150 is what is actually multiplied.
+    window.history.replaceState(null, '', '/?bids=2.3333')
+    renderApp()
+    // Asserted against the field's own text rather than a literal, so the
+    // locale's decimal separator is not baked into the test: the point is
+    // that the two never disagree.
+    const shown = input('bids').value
+    expect(shown).toMatch(/^2[.,]3333$/)
+    expect(field('statSunkSearch')?.textContent).toContain(`${shown} `)
+  })
+
   it('leaves the total cash figure alone when the count changes', () => {
     vi.useFakeTimers()
     renderApp()
