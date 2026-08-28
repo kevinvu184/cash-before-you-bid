@@ -13,8 +13,10 @@
  *     Assets from an older build linger until the version below changes, which
  *     is what keeps the last-visited version launchable offline.
  *
- * Nothing cross-origin is touched: the web fonts fall back to the system stack
- * offline, which is what font-display: swap already does on a slow connection.
+ * Nothing cross-origin is touched, and since the web fonts moved onto this
+ * origin (src/fonts.css, public/fonts) that no longer costs anything: they are
+ * same-origin, unfingerprinted-but-immutable files, so the cache-first rule
+ * picks them up on the first visit and the typography survives offline.
  *
  * Scope comes from the registration rather than a hardcoded path, so the
  * GitHub Pages base ('/cash-before-you-bid/') needs no mention here.

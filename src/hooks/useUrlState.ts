@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useSearchParams } from './useSearchParams'
 
 export interface UrlStateCodec<T> {
   parse(searchParams: URLSearchParams): T

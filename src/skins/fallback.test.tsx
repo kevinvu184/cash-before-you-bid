@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import i18n from '../i18n'
@@ -41,11 +40,7 @@ afterEach(async () => {
 
 describe('a skin that fails to load', () => {
   it('falls back to plain, and paints plain’s attribute and tokens', async () => {
-    render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>,
-    )
+    render(<App />)
 
     // The URL still asks for the default skin...
     expect(window.location.search).toBe('?lang=en')

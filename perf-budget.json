@@ -1,0 +1,25 @@
+{
+  "comment": "The mobile performance budget from CLAUDE.md, written as numbers the build can fail on. scripts/check-bundle-size.mjs measures dist/ against these and .github/workflows/ci.yml runs it on every pull request. Sizes are gzipped bytes, which is what a phone on mobile data actually downloads.",
+  "budgets": [
+    {
+      "name": "JavaScript",
+      "select": "extension",
+      "extension": ".js",
+      "maxGzipBytes": 153600,
+      "why": "CLAUDE.md: total JS under 150KB gzipped. Every chunk counts, not only the entry, because the active skin's chunk is fetched on the same first load."
+    },
+    {
+      "name": "CSS",
+      "select": "extension",
+      "extension": ".css",
+      "maxGzipBytes": 30720,
+      "why": "Not a CLAUDE.md number. 30KB is roughly five times what the two skins cost today, so it never blocks ordinary work and still catches a stylesheet that has stopped being hand-written."
+    },
+    {
+      "name": "Preloaded fonts",
+      "select": "preloaded-fonts",
+      "maxGzipBytes": 51200,
+      "why": "Whatever index.html preloads with as=\"font\", read out of the built HTML so this cannot drift from it. These bytes are on the critical path ahead of the bundle. woff2 is already compressed, so the gzip figure is close to the raw one."
+    }
+  ]
+}
