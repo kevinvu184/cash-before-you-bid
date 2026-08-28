@@ -37,13 +37,47 @@
  * GitHub Pages base ('/cash-before-you-bid/') needs no mention here.
  */
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const CACHE = `cbyb-${VERSION}`
 const SCOPE = self.registration.scope
 const SHELL = new URL('./', SCOPE).toString()
 
-// Enough to launch from the home screen with no network on the first run.
-const PRECACHE = ['./', './manifest.webmanifest', './favicon.svg', './icons/icon-192.png']
+/*
+ * The other locales' documents.
+ *
+ * The build prerenders one document per locale and a static host can only pick
+ * a document by path, so the default locale is served from the scope root and
+ * each other locale from a directory of its own (src/logic/site.ts states
+ * which; src/installable.test.ts holds this list to it). Answering every
+ * navigation with the root shell — which is what this worker did while there
+ * was only one document — would serve the Vietnamese HTML to a reader who
+ * asked for the English URL, and keep doing it offline. That is the one way a
+ * prerender and a service worker quietly undo each other, so the navigation
+ * handler picks the shell the request actually asked for.
+ */
+const LOCALE_SHELLS = ['./en/'].map((path) => new URL(path, SCOPE).toString())
+const SHELLS = [SHELL, ...LOCALE_SHELLS]
+
+/** The document a navigation should be answered with: its own, or the root. */
+function shellFor(url) {
+  // Matched on the path, with and without the trailing slash. Resolving the
+  // request's directory instead would read '/en' as a file inside the scope
+  // root and hand it the default locale's document — and the host's redirect
+  // to '/en/' would never correct it, because a worker that responds to the
+  // navigation is why the request never reaches the host at all. A navigation
+  // carries the app's whole state in its query string, so the path is the only
+  // part of the URL that selects a document.
+  const path = url.pathname
+  for (const shell of SHELLS) {
+    const shellPath = new URL(shell).pathname
+    if (path === shellPath || `${path}/` === shellPath) return shell
+  }
+  return SHELL
+}
+
+// Enough to launch from the home screen with no network on the first run, in
+// either locale.
+const PRECACHE = [...SHELLS, './manifest.webmanifest', './favicon.svg', './icons/icon-192.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -79,7 +113,8 @@ async function networkFirst(request) {
     await cachePut(request, response)
     return response
   } catch (error) {
-    const cached = await caches.match(SHELL)
+    // Offline: the cached copy of the same document, never another locale's.
+    const cached = await caches.match(request)
     if (cached) return cached
     throw error
   }
@@ -100,7 +135,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
   if (!url.pathname.startsWith(new URL(SCOPE).pathname)) return
 
-  // A navigation is the document, whatever the query string says; the app's
-  // whole state is in the query string, so every one of them is the shell.
-  event.respondWith(request.mode === 'navigate' ? networkFirst(SHELL) : cacheFirst(request))
+  // A navigation is a document, whatever the query string says; which document
+  // is the locale directory's call.
+  event.respondWith(request.mode === 'navigate' ? networkFirst(shellFor(url)) : cacheFirst(request))
 })

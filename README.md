@@ -36,7 +36,8 @@ and the boundaries between them are enforced by tests:
 │   ├── fonts/          # Self-hosted woff2 subsets; no third-party font host
 │   └── icons/          # Install icons, 192/512/maskable/apple-touch
 ├── scripts/
-│   └── check-bundle-size.mjs  # Gzips dist/ and enforces perf-budget.json
+│   ├── check-bundle-size.mjs  # Gzips dist/ and enforces perf-budget.json
+│   └── prerender.mjs   # Writes one document per locale, robots.txt, sitemap
 ├── src/
 │   ├── main.tsx        # React root mount
 │   ├── App.tsx         # Shell: owns every hook, hands a skin the view model
@@ -52,6 +53,7 @@ and the boundaries between them are enforced by tests:
 │   │   ├── shared/        # Presentation helpers both skins use
 │   │   ├── default/       # The Ledger look — tokens, components, skin.css
 │   │   └── plain/         # The black-and-white baseline
+│   ├── prerender/      # Build-time render of the served HTML, per locale
 │   ├── testing/        # The fixed view-model fixture the parity test renders
 │   ├── fonts.css       # @font-face for the self-hosted faces
 │   └── index.css       # The one skin-agnostic stylesheet
@@ -234,9 +236,45 @@ failed fetch falls back to a bundled indicative rate rather than to nothing.
   fonts are served from this origin, so the typography survives offline too.
   The one cross-origin fetch the app makes, the exchange rate, is deliberately
   left alone by the worker; see
-  [the one outbound request](#the-one-outbound-request).
+  [the one outbound request](#the-one-outbound-request). There is one shell per
+  locale, not one for the app: the build serves each locale its own document,
+  so answering every navigation with the root one would hand an English URL the
+  Vietnamese HTML and then keep doing it offline.
 - It registers in production only (`src/serviceWorker.ts`); in development it
   would serve a cached shell over Vite's module graph.
+
+## Served HTML, and what a search engine sees
+
+`npm run build` ends in `scripts/prerender.mjs`, which writes the documents
+that are actually served. Three things it does, and why:
+
+- **One document per locale.** `dist/index.html` is Vietnamese, the default;
+  `dist/en/index.html` is English. A static host picks a document by path and
+  never by query string, so `?lang=en` alone could only ever be served the
+  other locale's HTML — with the wrong `<html lang>`, which is an
+  accessibility defect before it is an SEO one. `?lang=` keeps working exactly
+  as it did: it is what the app writes, what a shared link carries, and what
+  the inline script at the bottom of `index.html` reconciles with the document
+  it was served from. `src/logic/site.ts` states where each locale lives.
+- **A canonical link and `hreflang` alternates**, plus Open Graph and Twitter
+  card tags, so a shared link previews as more than a bare URL.
+  `src/prerender/head.ts` generates the whole block; the copy checked into
+  `index.html` is the same generator's output for the default locale, held
+  there by `src/prerender/head.test.ts`.
+- **A first paint that is not blank.** `src/prerender/Shell.tsx` renders the
+  masthead and the inputs panel — the default skin's own components, so the
+  paint cannot drift from what React renders a moment later. It stops short of
+  the results: those are figures, and a build cannot know which ones the reader
+  asked for. The inline script drops the shell when the URL asks for another
+  locale, another skin, or any calculator state, which is precisely when the
+  shell would be wrong.
+
+`robots.txt` and `sitemap.xml` are generated alongside them, from the same
+locale list. Note that a crawler only reads `robots.txt` at an origin root, and
+this app is served from a project sub-path — the file ships because it is
+correct the day this moves to a domain of its own, and because it is where the
+sitemap is announced. The sitemap itself is fine where it is: a sitemap in a
+sub-directory may cover URLs in that sub-directory, which is all there are.
 
 ## Performance budget
 

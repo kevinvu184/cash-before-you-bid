@@ -70,6 +70,19 @@ describe('pre-paint document language', () => {
     expect(html.match(/<html lang="([a-z-]+)"/)?.[1]).toBe(DEFAULT_LANG)
   })
 
+  // …but only in this file. The build writes one document per locale and
+  // stamps each with its own data-doc-lang (scripts/prerender.mjs), and on a
+  // document that is not the default locale's, reaching for DEFAULT_LANG here
+  // would overwrite a lang the served HTML already had right — undoing, before
+  // the first paint, the thing the prerender exists to do.
+  it('falls back to the document’s own locale before the app’s default', () => {
+    expect(html).toContain(`document.documentElement.getAttribute('data-doc-lang')`)
+    expect(html).toContain(
+      `var fallbackLang = LANGS.indexOf(docLang) === -1 ? DEFAULT_LANG : docLang`,
+    )
+    expect(html).toContain(`var lang = LANGS.indexOf(rawLang) === -1 ? fallbackLang : rawLang`)
+  })
+
   it('sets the resolved language on the root element', () => {
     expect(html).toMatch(/root\.lang = lang/)
   })

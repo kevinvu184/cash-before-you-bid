@@ -13,6 +13,7 @@ import { SkipLink } from './a11y/SkipLink'
 import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
+import { localeUrl } from './logic/site'
 import { FALLBACK_SKIN_ID, type SkinId } from './logic/skins'
 import { SKINS } from './skins/registry'
 import type { AppViewModel } from './types/viewModel'
@@ -91,6 +92,14 @@ function App() {
   // The URL's ?lang= is the source of truth; i18next, <html lang> and the
   // document metadata follow it. The metadata writes wait for changeLanguage
   // to resolve, so they never render through the outgoing language's bundle.
+  //
+  // The build now serves all of this correctly in the initial HTML, one
+  // document per locale (scripts/prerender.mjs), so this is no longer how a
+  // crawler learns the language — it is what keeps the document honest after
+  // an in-page language switch, and after a ?lang= that does not match the
+  // document it was served from. The canonical link is included because Google
+  // reads it after running scripts; the Open Graph tags are not, because the
+  // scrapers that read those never do.
   const lang = vm.locale
   useEffect(() => {
     let stale = false
@@ -101,6 +110,7 @@ function App() {
       document
         .querySelector('meta[name="description"]')
         ?.setAttribute('content', i18n.t('app.metaDescription'))
+      document.querySelector('link[rel="canonical"]')?.setAttribute('href', localeUrl(lang))
     }
     if (i18n.language !== lang) {
       void i18n.changeLanguage(lang).then(apply)
