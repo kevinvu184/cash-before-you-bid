@@ -414,7 +414,7 @@
 [data-skin='default'] .price-cliff {
   position: absolute;
   top: 0;
-  /* One row down per marker, so two cliffs $150k apart on a $1.5m track do not
+  /* One row down per marker, so cliffs close together on the track do not
      collide at 360px. --cliff-row is the marker's index, set by the skin; the
      padding is what the tick line above the label spans. */
   padding-top: calc(var(--cliff-row) * 16px + 6px);

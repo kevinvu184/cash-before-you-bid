@@ -30,22 +30,21 @@ import type { PriceMarker, PriceSliderField } from '../types/viewModel'
  */
 
 /**
- * How far one arrow-key press moves the slider. Big enough that crossing a
- * $150,000 concession band is a few seconds of holding a key, small enough
- * that a bidder can settle on a real bidding increment — and a divisor of both
- * ceilings, so the thumb can land exactly on a cliff rather than straddling it.
+ * How far one arrow-key press moves the slider. Big enough that crossing the
+ * concession band is a few seconds of holding a key, small enough that a
+ * bidder can settle on a real bidding increment — and a divisor of both
+ * ceilings, so the thumb can land exactly on a cliff rather than straddling
+ * it, which a test asserts against the config's own figures.
+ *
+ * A price the user *typed* need not be a multiple of it, and a browser snaps
+ * the thumb to the nearest one when it is not. That is display only — the
+ * price itself is whatever was typed, and the thumb is at most half a step
+ * out, well under a pixel on this track — and it is the behaviour worth
+ * having: a price the slider produces is always a figure that can be called
+ * out at an auction, the same instinct as the safe maximum bid's rounding.
  */
 export const PRICE_SLIDER_STEP = 5_000
 
-/**
- * A price the user *typed* need not be a multiple of the step, and a browser
- * snaps the thumb to the nearest one when it is not. That is display only —
- * the price itself is whatever was typed, and the thumb is at most half a step
- * out, well under a pixel on this track — and it is the behaviour worth
- * having: a price the slider produces is always a figure that can be called
- * out at an auction, which is the same instinct as the safe maximum bid's
- * rounding.
- */
 
 /**
  * The track's usual top end. Deliberately *not* derived from the first home

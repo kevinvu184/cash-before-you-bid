@@ -83,8 +83,8 @@ function PriceSlider({ field }: { field: PriceSliderField }) {
           reader as the notes below, which are text rather than a position.
           The rail is inset by half the thumb, so a marker's percentage lands
           exactly where the thumb's centre does at that price. Each tick drops
-          to its own row — at 360px the two cliffs are $150k apart on a $1.5m
-          track, close enough that side by side their labels would collide. */}
+          to its own row — at 360px the two cliffs sit close enough together
+          that side by side their labels would collide. */}
       {hasMarkers ? (
         <div className="price-cliff-rail" aria-hidden="true">
           {field.markers.map((marker, index) => (
