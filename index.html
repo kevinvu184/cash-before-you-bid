@@ -75,21 +75,43 @@
         }
       })()
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      The web fonts are served from this origin (src/fonts.css declares the
+      faces, public/fonts holds the files). Nothing here reaches a third party,
+      so there is no preconnect to make and no DNS lookup, TLS handshake and
+      stylesheet round trip standing between the browser and the first paint.
+
+      These two preloads are the body face for the default locale: latin covers
+      the digits and Latin letters every figure on the page is made of, and
+      vietnamese covers the diacritics the default copy is written in. They
+      start downloading in parallel with the module bundle rather than waiting
+      for the stylesheet to be parsed. The remaining faces — latin-ext, and the
+      monospace family used for the figures below the fold — are left to the
+      stylesheet; preloading everything would just make these two arrive later.
+    -->
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400..600&family=Source+Code+Pro:wght@400&display=swap"
+      rel="preload"
+      href="/cash-before-you-bid/fonts/libre-franklin-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/cash-before-you-bid/fonts/libre-franklin-vietnamese.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
     <meta
       name="description"
       content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase."
     />
     <title>Cash Before You Bid</title>
-    <script type="module" crossorigin src="/cash-before-you-bid/assets/index-DaySrKR8.js"></script>
+    <script type="module" crossorigin src="/cash-before-you-bid/assets/index-DY4mQBpC.js"></script>
     <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/rolldown-runtime-CbXtAM7H.js">
     <link rel="modulepreload" crossorigin href="/cash-before-you-bid/assets/jsx-runtime-CxFzmYwv.js">
-    <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/index-Kc3LfqMv.css">
+    <link rel="stylesheet" crossorigin href="/cash-before-you-bid/assets/index-BSkUsOdG.css">
   </head>
   <body>
     <div id="root"></div>
