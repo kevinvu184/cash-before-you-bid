@@ -7,7 +7,7 @@ import vi from '../locales/vi.json'
 import { DEFAULT_LANG, LANGS } from '../logic/lang'
 import { localeUrl } from '../logic/site'
 import { DEFAULT_SKIN_ID } from '../logic/skins'
-import { HEAD_END, HEAD_START, headMarkup, replaceHead } from './head'
+import { HEAD_END, HEAD_START, escapeHtml, headMarkup, replaceHead } from './head'
 
 // The served HTML has to be right per locale before any JavaScript runs, which
 // makes index.html two things at once: the template the build localises, and
@@ -81,12 +81,21 @@ describe('the head block', () => {
     expect(markup).toContain(`hreflang="x-default" href="${localeUrl(DEFAULT_LANG)}"`)
   })
 
+  // Through escapeHtml, because that is what the generator writes. Spelling
+  // the strings out raw would turn the day someone puts an ampersand in a
+  // title into a red test about nothing. It does not make this circular: the
+  // escaping itself is checked below against a hardcoded expectation, so a
+  // broken escapeHtml fails there rather than hiding behind both sides of
+  // this comparison. What is asserted here is which locale's string lands in
+  // which tag.
   it.each(LANGS)('carries %s’s own title and description', (lang) => {
     const markup = headMarkup(facts(lang))
-    expect(markup).toContain(`<title>${TITLES[lang]}</title>`)
-    expect(markup).toContain(`<meta name="description" content="${DESCRIPTIONS[lang]}" />`)
-    expect(markup).toContain(`<meta property="og:title" content="${TITLES[lang]}" />`)
-    expect(markup).toContain(`<meta name="twitter:title" content="${TITLES[lang]}" />`)
+    const title = escapeHtml(TITLES[lang])
+    const description = escapeHtml(DESCRIPTIONS[lang])
+    expect(markup).toContain(`<title>${title}</title>`)
+    expect(markup).toContain(`<meta name="description" content="${description}" />`)
+    expect(markup).toContain(`<meta property="og:title" content="${title}" />`)
+    expect(markup).toContain(`<meta name="twitter:title" content="${title}" />`)
   })
 
   it('gives each locale its own Open Graph locale, and names the other', () => {
