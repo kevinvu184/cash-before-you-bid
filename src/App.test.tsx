@@ -805,6 +805,34 @@ describe('the exchange rate', () => {
     expect(window.location.search).toBe('?cur=VND')
   })
 
+  it('hands focus back to the rate line whichever way the override closes', async () => {
+    // The form unmounts on close, taking the focused control with it. Without
+    // putting focus back on the control that opened it, a keyboard reader is
+    // dropped on <body> and has to tab from the top of the document.
+    await renderApp()
+    switchTo(DONG)
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+    const button = document.querySelector('.ratebtn') as HTMLButtonElement
+
+    for (const close of [
+      // Apply, with a figure that changes nothing, so the rate line survives.
+      () => fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement),
+      () => fireEvent.click(screen.getByRole('button', { name: 'Hủy' })),
+      () =>
+        fireEvent.keyDown(document.querySelector('.re-row input') as HTMLInputElement, {
+          key: 'Escape',
+        }),
+    ]) {
+      fireEvent.click(button)
+      await waitFor(() =>
+        expect(document.activeElement).toBe(document.querySelector('.re-row input')),
+      )
+      close()
+      await waitFor(() => expect(document.querySelector('.rateedit')).toBeNull())
+      expect(document.activeElement).toBe(button)
+    }
+  })
+
   it('resets an override back to the fetched rate', async () => {
     window.history.replaceState(null, '', '/?cur=VND&fx=20000')
     await renderApp()

@@ -46,11 +46,12 @@ function RateLine({ field }: { field: ExchangeRateField }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const input = useRef<HTMLInputElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
   const formId = useId()
 
-  // Focus moves into the field when it opens — the button that opened it is
-  // about to be replaced by the form, so leaving focus behind would drop it
-  // to the top of the document.
+  // Focus moves into the field when it opens, rather than leaving a keyboard
+  // reader to tab past the control they just activated to reach what it
+  // revealed.
   useEffect(() => {
     if (editing) {
       input.current?.focus()
@@ -65,12 +66,21 @@ function RateLine({ field }: { field: ExchangeRateField }) {
     setEditing(true)
   }
 
+  // The form unmounts on close, and the control that had focus goes with it —
+  // which would drop focus to <body> and lose a keyboard reader their place.
+  // Focus goes back to the control that opened it, before the state change
+  // that removes the form, so there is no frame in between.
+  const close = () => {
+    trigger.current?.focus()
+    setEditing(false)
+  }
+
   const apply = (event: React.FormEvent) => {
     event.preventDefault()
     // An unusable figure closes the field without changing the rate rather
     // than raising an error: the rate on screen is still a working one.
     field.onOverride(draft)
-    setEditing(false)
+    close()
   }
 
   const base = t(field.baseSymbolKey)
@@ -86,13 +96,14 @@ function RateLine({ field }: { field: ExchangeRateField }) {
         <button
           type="button"
           className="ratebtn"
+          ref={trigger}
           aria-expanded={editing}
           // Only while the form exists: aria-controls naming an id that is not
           // in the document is a dangling reference, which validators flag and
           // some assistive tech follows to nothing. aria-expanded carries the
           // collapsed state on its own.
           aria-controls={editing ? formId : undefined}
-          onClick={() => (editing ? setEditing(false) : open())}
+          onClick={() => (editing ? close() : open())}
         >
           <span className="ratebtn-rate">{t(field.lineKey, { base, quoted })}</span>
           <span className="ratebtn-sep" aria-hidden="true">
@@ -135,7 +146,7 @@ function RateLine({ field }: { field: ExchangeRateField }) {
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === 'Escape') setEditing(false)
+                if (event.key === 'Escape') close()
               }}
             />
             <span className="unit" aria-hidden="true">
@@ -144,7 +155,7 @@ function RateLine({ field }: { field: ExchangeRateField }) {
             <button type="submit" className="re-btn primary">
               {t(field.actionKeys.apply)}
             </button>
-            <button type="button" className="re-btn tertiary" onClick={() => setEditing(false)}>
+            <button type="button" className="re-btn tertiary" onClick={close}>
               {t(field.actionKeys.cancel)}
             </button>
           </div>
