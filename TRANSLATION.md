@@ -60,6 +60,15 @@ From the auction-day deposit guidance (`guidance.*`) and the deposit hints
 - "thông lệ phổ biến" for "common practice", in the line that keeps the note
   descriptive rather than advisory.
 
+From the price slider's duty cliffs (`cliffs.*`, `inputs.priceSlider`):
+
+- "Hết miễn thuế" / "Hết giảm thuế" for the two thresholds ending — chosen for
+  brevity, since each is the lead-in to the sentence that follows it. A
+  reviewer may prefer "Ngưỡng miễn thuế" / "Ngưỡng giảm thuế" ("exemption
+  threshold"), which names the boundary rather than its end.
+- "thang trượt" for the sliding scale the concession is charged on.
+- "Điều chỉnh giá" as the label on the slider itself.
+
 From the safe maximum bid (`safeMaxBid.*`):
 
 - "Mức trả giá tối đa an toàn" for the safe maximum bid itself — the headline
