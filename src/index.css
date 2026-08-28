@@ -51,6 +51,13 @@ a {
   outline-offset: var(--focus-ring-offset);
 }
 
+/* The shell's wrapper around whichever skin is rendering. It is transparent
+   on screen — display: contents leaves no box behind — and exists so the
+   print stylesheet can lift the live page off the paper in one rule. */
+.app-screen {
+  display: contents;
+}
+
 img,
 svg,
 video {

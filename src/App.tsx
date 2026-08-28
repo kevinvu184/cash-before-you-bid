@@ -4,6 +4,7 @@ import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
 import { FALLBACK_SKIN_ID, type SkinId } from './logic/skins'
+import { PrintSheet } from './print/PrintSheet'
 import { SKINS } from './skins/registry'
 import type { AppViewModel } from './types/viewModel'
 
@@ -106,7 +107,19 @@ function App() {
     document.documentElement.dataset.coreInstance = String(instance)
   }, [instance])
 
-  return <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+  return (
+    <>
+      {/* display: contents, so the wrapper changes no layout on screen; it
+          exists so print.css can take the whole live page off the paper with
+          one rule rather than a list of things to hide that goes stale. */}
+      <div className="app-screen">
+        <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+      </div>
+      {/* Skin-independent by design: the printed one-pager is the same sheet
+          whichever skin is on screen, including the fallback. */}
+      <PrintSheet vm={vm} />
+    </>
+  )
 }
 
 export default App

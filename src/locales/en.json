@@ -265,6 +265,10 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "print": {
+    "action": "Print",
+    "priceCaption": "Figures for a purchase price of {{price}}."
+  },
   "scenarios": {
     "label": "Saved scenarios",
     "heading": "Saved scenarios",

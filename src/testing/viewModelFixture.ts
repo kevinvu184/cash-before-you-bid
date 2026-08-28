@@ -395,6 +395,14 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         options: MODE_OPTIONS,
         onChange: noop,
       },
+      print: {
+        id: 'print',
+        labelKey: 'print.action',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+        onActivate: noop,
+      },
     },
     inputs: {
       regionLabelKey: 'inputs.label',

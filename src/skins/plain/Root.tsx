@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { MAX_NAME_LENGTH } from '../../logic/scenarioStore'
 import type { FlagKind } from '../../types/calculator'
 import type {
+  ActionField,
   AnyInputField,
   AppViewModel,
   BooleanInputField,
@@ -71,6 +72,18 @@ function Choice<T extends string>({ field }: { field: ChoiceInputField<T> }) {
         </button>
       ))}
     </div>
+  )
+}
+
+/** An action, not a choice: one button, no pressed state, nothing hidden. */
+function Action({ field }: { field: ActionField }) {
+  const { t } = useTranslation()
+  return (
+    <p className="plain-choice" data-field={field.id} data-importance={field.importance}>
+      <button type="button" onClick={field.onActivate}>
+        {t(field.labelKey)}
+      </button>
+    </p>
   )
 }
 
@@ -548,6 +561,7 @@ export function Root({ vm }: { vm: AppViewModel }) {
         <Choice field={vm.controls.language} />
         <Choice field={vm.controls.colorMode} />
         <Choice field={vm.controls.skin} />
+        <Action field={vm.controls.print} />
       </header>
 
       <Inputs inputs={vm.inputs} />

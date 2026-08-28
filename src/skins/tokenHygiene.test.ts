@@ -24,7 +24,16 @@ const COLOUR_PATTERNS: ReadonlyArray<[string, RegExp]> = [
 
 // tokens.ts is where colours are allowed to be literal; index.html carries the
 // pre-paint ground pair and has its own test holding it to the token objects.
-const ALLOWED = new Set(Object.values(SKINS).map((entry) => join('skins', entry.id, 'tokens.ts')))
+//
+// print.css is the third: paper is not a themed surface, so its two colours
+// are not tokens any skin could set. They are pinned there for the same reason
+// they are literal in a tokens.ts — that is where they are defined — and
+// because a dark-mode page whose ink followed the theme would print white on
+// white.
+const ALLOWED = new Set([
+  ...Object.values(SKINS).map((entry) => join('skins', entry.id, 'tokens.ts')),
+  join('print', 'print.css'),
+])
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((item) => {
