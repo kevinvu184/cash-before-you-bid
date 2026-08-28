@@ -366,7 +366,8 @@
   border-top: var(--border-width) solid var(--color-hairline);
 }
 
-[data-skin='default'] .assumptions > summary {
+[data-skin='default'] .assumptions > summary,
+[data-skin='default'] .scenarios-disclosure > summary {
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -383,18 +384,21 @@
   cursor: pointer;
 }
 
-[data-skin='default'] .assumptions > summary::-webkit-details-marker {
+[data-skin='default'] .assumptions > summary::-webkit-details-marker,
+[data-skin='default'] .scenarios-disclosure > summary::-webkit-details-marker {
   display: none;
 }
 
-[data-skin='default'] .assumptions > summary::after {
+[data-skin='default'] .assumptions > summary::after,
+[data-skin='default'] .scenarios-disclosure > summary::after {
   content: '+';
   margin-left: auto;
   font-size: var(--font-size-compact);
   text-decoration: none;
 }
 
-[data-skin='default'] .assumptions[open] > summary::after {
+[data-skin='default'] .assumptions[open] > summary::after,
+[data-skin='default'] .scenarios-disclosure[open] > summary::after {
   content: '−';
 }
 
@@ -674,6 +678,203 @@
   padding: 11px 4px;
   margin: -11px -4px;
   touch-action: manipulation;
+}
+
+/* ── saved scenarios ────────────────────────────────────────────────────── */
+
+/* A disclosure, so a panel that is empty on a first visit never pushes the
+   calculator down the page. Everything inside is a plain control at 44px:
+   nothing here is revealed by a pointer, and nothing needs one. */
+
+[data-skin='default'] .scenarios {
+  margin: 0 0 var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .scenarios-disclosure {
+  margin: 0;
+}
+
+[data-skin='default'] .scenario-save {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0 0 var(--space-3);
+}
+
+[data-skin='default'] .scenario-save > label,
+[data-skin='default'] .scenario-form-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .scenario-save-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* 12ch rather than a pixel width: the box shrinks with the screen and wraps
+   its button underneath before either can overflow at 360px. */
+[data-skin='default'] .scenario-save-row input[type='text'],
+[data-skin='default'] .scenario-form input[type='text'] {
+  flex: 1 1 12ch;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px 8px;
+  /* 16px: anything smaller makes iOS Safari zoom the page in on focus. */
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-skin='default'] .scenario-save-row input[type='text']:focus-visible,
+[data-skin='default'] .scenario-form input[type='text']:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .scenario-save-row input[type='text']:hover,
+  [data-skin='default'] .scenario-form input[type='text']:hover {
+    border-color: var(--color-border-hover);
+  }
+}
+
+[data-skin='default'] .scenario-action {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text);
+  background: none;
+  border: var(--border-width) solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-skin='default'] .scenario-action-primary {
+  color: var(--color-on-ink);
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+
+[data-skin='default'] .scenario-action-danger {
+  color: var(--color-error);
+}
+
+[data-skin='default'] .scenario-action:disabled {
+  color: var(--color-text-muted);
+  background: none;
+  border-color: var(--color-hairline);
+  cursor: default;
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .scenario-action:enabled:hover {
+    border-color: var(--color-border-hover);
+  }
+}
+
+[data-skin='default'] .scenario-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-skin='default'] .scenario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+/* Overrides the flex row above for the two form states; source order, not
+   specificity, decides, so this block has to stay after it. */
+[data-skin='default'] .scenario-form {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+[data-skin='default'] .scenario-load {
+  flex: 1 1 12ch;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-1) 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-skin='default'] .scenario-name {
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-snug);
+  /* A pasted address with no spaces must not widen the page at 360px. */
+  overflow-wrap: anywhere;
+}
+
+[data-skin='default'] .scenario-date {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .scenario-question {
+  margin: 0;
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-snug);
+  overflow-wrap: anywhere;
+}
+
+[data-skin='default'] .scenario-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+[data-skin='default'] .scenario-empty,
+[data-skin='default'] .scenario-privacy,
+[data-skin='default'] .scenario-error {
+  margin: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .scenario-error {
+  color: var(--color-error);
+}
+
+/* The live region is always in the document; it takes no room while silent. */
+[data-skin='default'] .scenario-error:empty {
+  margin: 0;
 }
 
 /* ── 820px: the stat row goes horizontal, the table shows its working ───── */

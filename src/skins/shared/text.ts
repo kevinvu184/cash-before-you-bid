@@ -211,3 +211,17 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
   }
   return text
 }
+
+/**
+ * The day a scenario was saved, in the active locale. A stored timestamp of 0
+ * means the payload carried no usable date (hand-edited, or written by a
+ * version that did not record one); the caller shows nothing rather than
+ * 1 January 1970.
+ */
+export function savedDate(timestamp: number, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(timestamp)
+}

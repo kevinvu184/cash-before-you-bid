@@ -24,7 +24,9 @@ first use): **Cash Before You Bid**, **AUD**, **LMI**, **LVR**, **PEXA**,
 **off-the-plan** (glossed as "mua nhà trên giấy"), **Land Services Victoria**,
 **CBA**, **Bank Australia**, place names.
 
-Terms a native reviewer should look at first: "thuế trước bạ" (stamp duty),
+Terms a native reviewer should look at first: "phương án" (saved scenario —
+chosen over the more literal "kịch bản", which reads as a film script),
+"thuế trước bạ" (stamp duty),
 "tất toán" (settlement), "phí pháp lý chuyển nhượng" (conveyancing),
 "người bảo lãnh" (guarantor), "vốn chính phủ" (government equity),
 "khoản dự phòng" (buffer), "trả giá" (bid). Alternatives are listed in the

@@ -33,6 +33,14 @@ export interface UseCalculatorResult {
   setLang: (lang: Lang) => void
   setSkin: (skin: SkinId) => void
   setMode: (mode: ModePreference) => void
+  /**
+   * The query string that reproduces exactly what is on screen. This is what a
+   * saved scenario stores: one serialisation format, the URL codec's, so an
+   * input added there is saved and restored without a second format to update.
+   */
+  currentQuery: string
+  /** Applies a stored query string — the other half of the round trip. */
+  loadQuery: (query: string) => void
 }
 
 // All shareable state lives in the URL query string — calculator inputs, the
@@ -81,6 +89,18 @@ export function useCalculator(): UseCalculatorResult {
     [presentation, setState, state],
   )
 
+  const loadQuery = useCallback(
+    (query: string) => {
+      const saved = parseUrlState(new URLSearchParams(query))
+      // The calculator half of a saved scenario is the property; the language,
+      // skin and colour mode are how the reader likes to be shown it. Loading
+      // last Saturday's numbers must not flip the interface out from under
+      // them, so the current presentation and language are kept.
+      setState({ app: { ...saved.app, lang: inputs.lang }, presentation }, 'push')
+    },
+    [inputs.lang, presentation, setState],
+  )
+
   const setMode = useCallback(
     (mode: ModePreference) =>
       setState({ ...state, presentation: { ...presentation, mode } }, 'push'),
@@ -96,5 +116,7 @@ export function useCalculator(): UseCalculatorResult {
     setLang,
     setSkin,
     setMode,
+    currentQuery: serialiseUrlState(state).toString(),
+    loadQuery,
   }
 }

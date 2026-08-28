@@ -184,5 +184,26 @@
     "system": "System",
     "light": "Light",
     "dark": "Dark"
+  },
+  "scenarios": {
+    "label": "Saved scenarios",
+    "heading": "Saved scenarios",
+    "listLabel": "Your saved scenarios",
+    "nameLabel": "Name this scenario",
+    "save": "Save",
+    "empty": "Nothing saved yet. Name the numbers on screen, save them, and they will be here after the next inspection.",
+    "loadNamed": "Load {{name}}",
+    "rename": "Rename",
+    "renameNamed": "Rename {{name}}",
+    "renameLabel": "Scenario name",
+    "renameSave": "Save name",
+    "remove": "Delete",
+    "removeNamed": "Delete {{name}}",
+    "removeQuestion": "Delete “{{name}}”?",
+    "cancel": "Cancel",
+    "savedAt": "Saved {{date}}",
+    "privacy": "Saved scenarios stay in this browser, on this device. Nothing is uploaded and nobody else can see them.",
+    "errorUnavailable": "This browser will not let the app store anything, so scenarios cannot be saved here. Everything else still works.",
+    "errorFull": "There is no room to save another scenario. Delete one you no longer need."
   }
 }

@@ -96,7 +96,19 @@ export type LineFieldId =
 
 export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
 
-export type FieldId = ChromeFieldId | InputFieldId | StatFieldId | LineFieldId | ResultsFieldId
+export type ScenarioFieldId =
+  | 'scenariosHeading'
+  | 'scenarioSave'
+  | 'scenarioList'
+  | 'scenarioPrivacy'
+
+export type FieldId =
+  | ChromeFieldId
+  | InputFieldId
+  | StatFieldId
+  | LineFieldId
+  | ResultsFieldId
+  | ScenarioFieldId
 
 /**
  * The exhaustive id set, as a `Record<FieldId, true>` so that adding a member
@@ -158,6 +170,10 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   estimateNote: true,
   notes: true,
   sources: true,
+  scenariosHeading: true,
+  scenarioSave: true,
+  scenarioList: true,
+  scenarioPrivacy: true,
 }
 
 export const ALL_FIELD_IDS = Object.keys(FIELD_IDS) as readonly FieldId[]
@@ -263,6 +279,78 @@ export interface NoteEntry {
   parts: readonly NotePart[]
 }
 
+// ── saved scenarios ──────────────────────────────────────────────────────────
+
+/** What one saved-scenario row is currently showing. */
+export type ScenarioRowMode = 'idle' | 'renaming' | 'confirmingDelete'
+
+export interface ScenarioEntry {
+  id: string
+  name: string
+  /** Epoch milliseconds; the skin formats the date for the active locale. */
+  savedAt: number
+  mode: ScenarioRowMode
+  /** Stable DOM id for the rename control, so label and input always pair up. */
+  controlId: string
+  /** The raw text the rename box is holding while `mode` is `'renaming'`. */
+  nameDraft: string
+  onLoad(): void
+  onRenameStart(): void
+  onNameDraftChange(raw: string): void
+  onRenameCommit(): void
+  onDeleteStart(): void
+  onDeleteConfirm(): void
+  /** Leaves rename or delete confirmation, changing nothing. */
+  onCancel(): void
+}
+
+/** The per-row action names. Keys, as everywhere: the skin calls `t()`. */
+export interface ScenarioActionKeys {
+  /** aria-label for the load control, whose visible text is the name itself. */
+  loadNamed: string
+  rename: string
+  /** aria-label naming the scenario, since "Rename" alone is ambiguous in a list. */
+  renameNamed: string
+  /** The `<label>` for the rename box. */
+  renameLabel: string
+  renameSave: string
+  remove: string
+  removeNamed: string
+  /** The confirmation question, with the name interpolated. */
+  removeQuestion: string
+  cancel: string
+  savedAt: string
+}
+
+/** The name box and its save action. `value` is the raw text being typed. */
+export interface ScenarioSaveField extends Field<string> {
+  kind: 'text'
+  controlId: string
+  actionLabelKey: string
+  /** False while the name box is empty; saving an unnamed scenario is a no-op. */
+  canSave: boolean
+  onDraftChange(raw: string): void
+  onSave(): void
+}
+
+export interface ScenarioListField extends Field<readonly ScenarioEntry[]> {
+  kind: 'text'
+  emptyLabelKey: string
+  /** Names the last storage failure, or null when there has not been one. */
+  errorLabelKey: string | null
+  actionKeys: ScenarioActionKeys
+}
+
+export interface ScenariosViewModel {
+  /** aria-label for the panel as a whole. */
+  regionLabelKey: string
+  heading: TextField
+  save: ScenarioSaveField
+  list: ScenarioListField
+  /** The promise that these figures never leave the device. */
+  privacy: TextField
+}
+
 export interface SourcesValue {
   beforeKey: string
   linkKey: string
@@ -338,4 +426,5 @@ export interface AppViewModel {
   controls: ControlsViewModel
   inputs: InputsViewModel
   results: ResultsViewModel
+  scenarios: ScenariosViewModel
 }

@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MAX_NAME_LENGTH } from '../../logic/scenarioStore'
 import type { FlagKind } from '../../types/calculator'
 import type {
   AnyInputField,
@@ -9,9 +10,19 @@ import type {
   InputsViewModel,
   NumberInputField,
   ResultsViewModel,
+  ScenarioActionKeys,
+  ScenarioEntry,
+  ScenariosViewModel,
   StatField,
 } from '../../types/viewModel'
-import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
+import {
+  estimateMoney,
+  estimateRowAmount,
+  flagText,
+  howText,
+  refText,
+  savedDate,
+} from '../shared/text'
 import './skin.css'
 
 /**
@@ -250,6 +261,128 @@ function Results({ results }: { results: ResultsViewModel }) {
   )
 }
 
+function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
+  const { t, i18n } = useTranslation()
+
+  if (entry.mode === 'renaming') {
+    return (
+      <li>
+        <label htmlFor={entry.controlId}>{t(keys.renameLabel)}</label>
+        <input
+          id={entry.controlId}
+          type="text"
+          autoComplete="off"
+          maxLength={MAX_NAME_LENGTH}
+          value={entry.nameDraft}
+          onChange={(event) => entry.onNameDraftChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') entry.onRenameCommit()
+            if (event.key === 'Escape') entry.onCancel()
+          }}
+        />
+        <button type="button" onClick={entry.onRenameCommit}>
+          {t(keys.renameSave)}
+        </button>
+        <button type="button" onClick={entry.onCancel}>
+          {t(keys.cancel)}
+        </button>
+      </li>
+    )
+  }
+
+  if (entry.mode === 'confirmingDelete') {
+    return (
+      <li>
+        <span>{t(keys.removeQuestion, { name: entry.name })}</span>
+        <button type="button" onClick={entry.onDeleteConfirm}>
+          {t(keys.remove)}
+        </button>
+        <button type="button" onClick={entry.onCancel}>
+          {t(keys.cancel)}
+        </button>
+      </li>
+    )
+  }
+
+  return (
+    <li>
+      <button
+        type="button"
+        aria-label={t(keys.loadNamed, { name: entry.name })}
+        onClick={entry.onLoad}
+      >
+        {entry.name}
+      </button>
+      {entry.savedAt > 0 ? (
+        <span>{t(keys.savedAt, { date: savedDate(entry.savedAt, i18n.language) })}</span>
+      ) : null}
+      <button
+        type="button"
+        aria-label={t(keys.renameNamed, { name: entry.name })}
+        onClick={entry.onRenameStart}
+      >
+        {t(keys.rename)}
+      </button>
+      <button
+        type="button"
+        aria-label={t(keys.removeNamed, { name: entry.name })}
+        onClick={entry.onDeleteStart}
+      >
+        {t(keys.remove)}
+      </button>
+    </li>
+  )
+}
+
+function Scenarios({ scenarios }: { scenarios: ScenariosViewModel }) {
+  const { t } = useTranslation()
+  const { heading, save, list, privacy } = scenarios
+
+  // No disclosure, as everywhere in this skin: the panel is simply on the page.
+  return (
+    <section className="plain-scenarios" aria-label={t(scenarios.regionLabelKey)}>
+      <h2 data-field={heading.id} data-importance={heading.importance}>
+        {t(heading.labelKey)}
+      </h2>
+
+      <p className="plain-field" data-field={save.id} data-importance={save.importance}>
+        <label htmlFor={save.controlId}>{t(save.labelKey)}</label>
+        <input
+          id={save.controlId}
+          type="text"
+          autoComplete="off"
+          maxLength={MAX_NAME_LENGTH}
+          value={save.value}
+          onChange={(event) => save.onDraftChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && save.canSave) save.onSave()
+          }}
+        />
+        <button type="button" disabled={!save.canSave} onClick={save.onSave}>
+          {t(save.actionLabelKey)}
+        </button>
+      </p>
+
+      <div data-field={list.id} data-importance={list.importance}>
+        <p role="status">{list.errorLabelKey === null ? null : t(list.errorLabelKey)}</p>
+        {list.value.length === 0 ? (
+          <p>{t(list.emptyLabelKey)}</p>
+        ) : (
+          <ul aria-label={t(list.labelKey)}>
+            {list.value.map((entry) => (
+              <ScenarioRow key={entry.id} entry={entry} keys={list.actionKeys} />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <p data-field={privacy.id} data-importance={privacy.importance}>
+        {t(privacy.labelKey)}
+      </p>
+    </section>
+  )
+}
+
 export function Root({ vm }: { vm: AppViewModel }) {
   const { t } = useTranslation()
   const notice = vm.chrome.notice
@@ -281,6 +414,7 @@ export function Root({ vm }: { vm: AppViewModel }) {
       </header>
 
       <Inputs inputs={vm.inputs} />
+      <Scenarios scenarios={vm.scenarios} />
       <Results results={vm.results} />
     </div>
   )
