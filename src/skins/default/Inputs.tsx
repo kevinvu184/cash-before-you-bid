@@ -5,6 +5,7 @@ import type {
   ChoiceInputField,
   InputsViewModel,
   NumberInputField,
+  PrivacyField,
 } from '../../types/viewModel'
 
 /**
@@ -91,6 +92,32 @@ function InputRow({ field }: { field: AnyInputField }) {
   return field.kind === 'boolean' ? <CheckboxRow field={field} /> : <NumberRow field={field} />
 }
 
+/**
+ * The privacy statement, directly under the two fields it is about. The claim
+ * itself is the summary, so it is on screen unopened — someone hesitating over
+ * the savings box reads it without tapping anything — and the specifics behind
+ * it are one tap away rather than four sentences in the way.
+ *
+ * `data-field` goes on the list, not the `<details>`: the same arrangement the
+ * band guidance uses, so the points are in the DOM whether or not it is open.
+ */
+function PrivacyNote({ privacy }: { privacy: PrivacyField }) {
+  const { t } = useTranslation()
+  return (
+    <details className="privacy">
+      <summary>{t(privacy.labelKey)}</summary>
+      <ul className="small" data-field={privacy.id} data-importance={privacy.importance}>
+        {privacy.value.map((point) => (
+          <li key={point.termKey}>
+            <strong>{t(point.termKey)}</strong>
+            {t(point.bodyKey)}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
 export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
   const { t } = useTranslation()
 
@@ -119,6 +146,10 @@ export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
           disclosure: without them there is no verdict to show. */}
       <NumberRow field={inputs.savings} />
       <NumberRow field={inputs.preApprovedLoan} />
+
+      {/* Placed here on purpose: the promise is only worth anything at the
+          moment someone is deciding whether to type a savings balance in. */}
+      <PrivacyNote privacy={inputs.privacy} />
 
       {/* Progressive disclosure: the fields stay in the document when closed,
           so the parity contract holds whether or not it has been opened. */}

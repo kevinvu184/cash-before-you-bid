@@ -80,6 +80,7 @@ export type InputFieldId =
   | 'interestRatePct'
   | 'savings'
   | 'preApprovedLoan'
+  | 'inputsPrivacy'
   | 'assumptions'
   | 'conveyancing'
   | 'buildingAndPest'
@@ -192,6 +193,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   interestRatePct: true,
   savings: true,
   preApprovedLoan: true,
+  inputsPrivacy: true,
   assumptions: true,
   conveyancing: true,
   buildingAndPest: true,
@@ -461,6 +463,17 @@ export interface GuidanceField extends Field<readonly NotePart[]> {
   kind: 'text'
 }
 
+/**
+ * The privacy statement, which sits with the savings field because that is
+ * where someone hesitates. `labelKey` is the claim itself — narrow enough to
+ * be true of the audited build, so a skin may show it and nothing else — and
+ * each point is a lead-in term and the sentence that follows it, the same
+ * shape as a rules note.
+ */
+export interface PrivacyField extends Field<readonly NotePart[]> {
+  kind: 'text'
+}
+
 export interface NoteEntry {
   id: string
   parts: readonly NotePart[]
@@ -592,6 +605,8 @@ export interface InputsViewModel {
   savings: NumberInputField
   /** Optional; an empty draft means "not yet pre-approved", and `value` null. */
   preApprovedLoan: NumberInputField
+  /** What happens to the two figures above, and to everything else typed in. */
+  privacy: PrivacyField
   assumptions: GroupField
   foot: TextField
 }

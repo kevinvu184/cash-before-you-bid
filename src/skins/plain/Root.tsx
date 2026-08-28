@@ -11,6 +11,7 @@ import type {
   InputsViewModel,
   LineField,
   NumberInputField,
+  PrivacyField,
   ResultsViewModel,
   SafeMaxBidField,
   ScenarioActionKeys,
@@ -137,6 +138,30 @@ function InputRow({ field }: { field: AnyInputField }) {
   return field.kind === 'boolean' ? <CheckboxRow field={field} /> : <NumberRow field={field} />
 }
 
+/**
+ * The privacy statement, spelled out. No disclosure — the plain skin hides
+ * nothing — so the claim is a paragraph and the specifics are the list under
+ * it, in document order, right after the fields they are about.
+ */
+function PlainPrivacy({ privacy }: { privacy: PrivacyField }) {
+  const { t } = useTranslation()
+  return (
+    <section data-field={privacy.id} data-importance={privacy.importance}>
+      <p>
+        <strong>{t(privacy.labelKey)}</strong>
+      </p>
+      <ul>
+        {privacy.value.map((point) => (
+          <li key={point.termKey}>
+            <strong>{t(point.termKey)}</strong>
+            {t(point.bodyKey)}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function Inputs({ inputs }: { inputs: InputsViewModel }) {
   const { t } = useTranslation()
   return (
@@ -156,6 +181,8 @@ function Inputs({ inputs }: { inputs: InputsViewModel }) {
       <NumberRow field={inputs.interestRatePct} />
       <NumberRow field={inputs.savings} />
       <NumberRow field={inputs.preApprovedLoan} />
+
+      <PlainPrivacy privacy={inputs.privacy} />
 
       {/* No disclosure: nothing here is hidden behind an interaction. */}
       <section data-field={inputs.assumptions.id} data-importance={inputs.assumptions.importance}>
