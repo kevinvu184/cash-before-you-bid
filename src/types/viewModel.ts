@@ -1,7 +1,7 @@
 import type { Lang } from '../logic/lang'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { ModePreference } from '../logic/urlState'
-import type { DepositRoute, Flag, Region, RowCode, RowHow } from './calculator'
+import type { DepositRoute, Flag, Region, RowCode, RowHow, TimingBand } from './calculator'
 
 /**
  * The contract between the headless core and every skin.
@@ -89,9 +89,12 @@ export type LineFieldId =
   | 'lineSettlementAdjustments'
   | 'lineBuildingInsurance'
   | 'lineGrant'
-  | 'lineCostsSubtotal'
   | 'lineMoving'
   | 'lineBuffer'
+  | 'lineSubtotalPreAuction'
+  | 'lineSubtotalAuctionDay'
+  | 'lineSubtotalAtSettlement'
+  | 'lineSubtotalAfterSettlement'
   | 'lineTotal'
 
 export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
@@ -150,9 +153,12 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   lineSettlementAdjustments: true,
   lineBuildingInsurance: true,
   lineGrant: true,
-  lineCostsSubtotal: true,
   lineMoving: true,
   lineBuffer: true,
+  lineSubtotalPreAuction: true,
+  lineSubtotalAuctionDay: true,
+  lineSubtotalAtSettlement: true,
+  lineSubtotalAfterSettlement: true,
   lineTotal: true,
   flags: true,
   estimateNote: true,
@@ -162,8 +168,13 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
 
 export const ALL_FIELD_IDS = Object.keys(FIELD_IDS) as readonly FieldId[]
 
-/** Table row codes come from the calculator; this names their fields. */
-export const LINE_FIELD_ID: Readonly<Record<RowCode, LineFieldId>> = {
+/**
+ * Table row codes come from the calculator; this names their fields. `null`
+ * means the row has no field of its own: `costsSubtotal` adds across timing
+ * bands, so the per-band subtotals below say what it used to say, and the
+ * purchase-costs stat tile still carries the figure.
+ */
+export const LINE_FIELD_ID: Readonly<Record<RowCode, LineFieldId | null>> = {
   deposit: 'lineDeposit',
   stampDuty: 'lineStampDuty',
   foreignDuty: 'lineForeignDuty',
@@ -177,10 +188,18 @@ export const LINE_FIELD_ID: Readonly<Record<RowCode, LineFieldId>> = {
   settlementAdjustments: 'lineSettlementAdjustments',
   buildingInsurance: 'lineBuildingInsurance',
   grant: 'lineGrant',
-  costsSubtotal: 'lineCostsSubtotal',
+  costsSubtotal: null,
   moving: 'lineMoving',
   buffer: 'lineBuffer',
   total: 'lineTotal',
+}
+
+/** One subtotal field per timing band, in the same shape as a line. */
+export const BAND_SUBTOTAL_FIELD_ID: Readonly<Record<TimingBand, LineFieldId>> = {
+  preAuction: 'lineSubtotalPreAuction',
+  auctionDay: 'lineSubtotalAuctionDay',
+  atSettlement: 'lineSubtotalAtSettlement',
+  afterSettlement: 'lineSubtotalAfterSettlement',
 }
 
 // ── field shapes ─────────────────────────────────────────────────────────────
@@ -251,6 +270,25 @@ export interface LineField extends Field<number> {
   how: RowHow | null
   /** Subtotals and totals; the skin decides what "emphasised" looks like. */
   emphasis: boolean
+  /**
+   * When the money is due. `null` on the grand total, which adds across bands.
+   * A band subtotal carries the band it closes.
+   */
+  band: TimingBand | null
+}
+
+/**
+ * One timing band: the lines due at that point, and their subtotal. The core
+ * does the arithmetic and names the band; the skin decides whether to draw the
+ * grouping and what a section looks like.
+ */
+export interface LineGroup {
+  band: TimingBand
+  labelKey: string
+  /** The one-line "when is this due" gloss under the band's name. */
+  noteKey: string
+  lines: readonly LineField[]
+  subtotal: LineField
 }
 
 export interface NotePart {
@@ -321,7 +359,16 @@ export interface ResultsViewModel {
   stats: readonly StatField[]
   linesHeadingKey: string
   tableHeadingKeys: TableHeadingKeys
+  /**
+   * Every line field the skin renders, in display order: each band's lines
+   * followed by its subtotal, then the grand total. `lineGroups` is the same
+   * fields arranged into their bands — a skin renders one or the other, and
+   * either way puts the same field set in the DOM.
+   */
   lines: readonly LineField[]
+  lineGroups: readonly LineGroup[]
+  /** The grand total, which belongs to no band. */
+  total: LineField
   /** The one disclosure that every computed figure above is a rounded estimate. */
   estimateNote: Field<readonly TextRef[]>
   notesHeadingKey: string

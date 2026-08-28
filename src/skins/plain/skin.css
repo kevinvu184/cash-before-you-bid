@@ -244,6 +244,13 @@
   font-weight: var(--font-weight-strong);
 }
 
+/* The band heading that opens each row group. Bold and full width — no rules,
+   no fills; the plain skin says it in words. */
+[data-skin='plain'] .plain-lines tr.plain-band th {
+  padding-top: var(--space-4);
+  font-weight: var(--font-weight-strong);
+}
+
 [data-skin='plain'] .estimate-note {
   margin: 0 0 var(--space-4);
 }

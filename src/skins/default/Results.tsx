@@ -72,9 +72,14 @@ function Stat({ stat }: { stat: StatField }) {
  * behind a per-row disclosure instead. Field ids are unique, so they key both
  * the rows and which disclosures are open, which keeps a row open across a
  * recalculation. The working stays in the DOM either way.
+ *
+ * Rows are grouped by when the money is due: one `<tbody>` per timing band,
+ * headed by its name and closed by its own subtotal, with the grand total in a
+ * final group of its own. The core does the grouping and the arithmetic; this
+ * only draws it.
  */
 function LineTable({ results }: { results: ResultsViewModel }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const wide = useMediaQuery('(min-width: 820px)')
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set())
 
@@ -84,6 +89,18 @@ function LineTable({ results }: { results: ResultsViewModel }) {
       if (!next.delete(id)) next.add(id)
       return next
     })
+
+  const renderLine = (line: LineField) =>
+    wide ? (
+      <WideRow key={line.id} line={line} />
+    ) : (
+      <MobileRow
+        key={line.id}
+        line={line}
+        open={open.has(line.id)}
+        onToggle={() => toggle(line.id)}
+      />
+    )
 
   return (
     <table className="lines">
@@ -100,30 +117,52 @@ function LineTable({ results }: { results: ResultsViewModel }) {
           ) : null}
         </tr>
       </thead>
-      <tbody>
-        {results.lines.map((line) =>
-          wide ? (
-            <tr
-              key={line.id}
-              className={line.emphasis ? 'total' : undefined}
-              data-field={line.id}
-              data-importance={line.importance}
-            >
-              <td>{t(line.labelKey)}</td>
-              <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
-              <td className="m">{howText(line.how, t, i18n.language)}</td>
-            </tr>
-          ) : (
-            <MobileRow
-              key={line.id}
-              line={line}
-              open={open.has(line.id)}
-              onToggle={() => toggle(line.id)}
-            />
-          ),
-        )}
-      </tbody>
+      {results.lineGroups.map((group) => (
+        <tbody key={group.band}>
+          <tr className="band-head">
+            {/* `rowgroup` scope: this heading labels the rows of its own tbody. */}
+            <th scope="rowgroup" colSpan={wide ? 3 : 2}>
+              <span className="band-name">{t(group.labelKey)}</span>
+              <span className="band-note">{t(group.noteKey)}</span>
+            </th>
+          </tr>
+          {group.lines.map(renderLine)}
+          <SubtotalRow line={group.subtotal} wide={wide} />
+        </tbody>
+      ))}
+      <tbody>{renderLine(results.total)}</tbody>
     </table>
+  )
+}
+
+/**
+ * A band's closing figure. It has no working of its own — the lines above it
+ * are the working — so it is a plain row at every width rather than a
+ * disclosure that would open on nothing.
+ */
+function SubtotalRow({ line, wide }: { line: LineField; wide: boolean }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <tr className="band-subtotal" data-field={line.id} data-importance={line.importance}>
+      <td>{t(line.labelKey)}</td>
+      <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
+      {wide ? <td className="m" /> : null}
+    </tr>
+  )
+}
+
+function WideRow({ line }: { line: LineField }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <tr
+      className={line.emphasis ? 'total' : undefined}
+      data-field={line.id}
+      data-importance={line.importance}
+    >
+      <td>{t(line.labelKey)}</td>
+      <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
+      <td className="m">{howText(line.how, t, i18n.language)}</td>
+    </tr>
   )
 }
 

@@ -6,7 +6,6 @@ import {
   NOTE_ENTRIES,
   REGION_OPTIONS,
   ROUTE_OPTIONS,
-  ROW_LABEL_KEY,
   SKIN_OPTIONS,
   SOURCES,
 } from '../logic/fieldLabels'
@@ -14,12 +13,11 @@ import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles } from '../types/calculator'
+import { buildLineFields } from '../logic/lineFields'
 import {
-  LINE_FIELD_ID,
   type AppViewModel,
   type BooleanInputField,
   type FieldId,
-  type LineField,
   type NumberInputField,
   type StatField,
   type StatFieldId,
@@ -194,18 +192,6 @@ function buildStats(tiles: CalculationTiles): readonly StatField[] {
   ]
 }
 
-function buildLines(result: UseCalculatorResult['result']): readonly LineField[] {
-  return result.rows.map((row) => ({
-    id: LINE_FIELD_ID[row.code],
-    labelKey: ROW_LABEL_KEY[row.code],
-    value: row.amount,
-    kind: 'money' as const,
-    importance: row.emphasis ? ('primary' as const) : ('secondary' as const),
-    how: row.how,
-    emphasis: row.emphasis,
-  }))
-}
-
 /**
  * The one view model for the one screen. It takes the calculator rather than
  * calling it, so there is exactly one URL-state instance in the app, and it is
@@ -345,6 +331,8 @@ export function useAppViewModel(
       set('capitaliseLmi'),
     ),
   ]
+
+  const lines = buildLineFields(result.rows)
 
   return {
     locale: inputs.lang,
@@ -561,7 +549,9 @@ export function useAppViewModel(
         amount: 'table.amount',
         how: 'table.how',
       },
-      lines: buildLines(result),
+      lines: lines.lines,
+      lineGroups: lines.lineGroups,
+      total: lines.total,
       estimateNote: {
         id: 'estimateNote',
         labelKey: 'money.disclaimer',

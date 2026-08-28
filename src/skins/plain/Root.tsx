@@ -7,6 +7,7 @@ import type {
   BooleanInputField,
   ChoiceInputField,
   InputsViewModel,
+  LineField,
   NumberInputField,
   ResultsViewModel,
   StatField,
@@ -166,6 +167,17 @@ function Stat({ stat }: { stat: StatField }) {
   )
 }
 
+function PlainRow({ line }: { line: LineField }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <tr data-field={line.id} data-importance={line.importance}>
+      <th scope="row">{t(line.labelKey)}</th>
+      <td className="plain-figure">{estimateRowAmount(line.value, i18n.language)}</td>
+      <td>{howText(line.how, t, i18n.language)}</td>
+    </tr>
+  )
+}
+
 function Results({ results }: { results: ResultsViewModel }) {
   const { t, i18n } = useTranslation()
   return (
@@ -205,14 +217,23 @@ function Results({ results }: { results: ResultsViewModel }) {
                 <th scope="col">{t(results.tableHeadingKeys.how)}</th>
               </tr>
             </thead>
-            <tbody>
-              {results.lines.map((line) => (
-                <tr key={line.id} data-field={line.id} data-importance={line.importance}>
-                  <th scope="row">{t(line.labelKey)}</th>
-                  <td className="plain-figure">{estimateRowAmount(line.value, i18n.language)}</td>
-                  <td>{howText(line.how, t, i18n.language)}</td>
+            {/* One row group per timing band, so the plain skin tells the
+                same story as the default one without borrowing its rules. */}
+            {results.lineGroups.map((group) => (
+              <tbody key={group.band}>
+                <tr className="plain-band">
+                  <th scope="rowgroup" colSpan={3}>
+                    {t(group.labelKey)} — {t(group.noteKey)}
+                  </th>
                 </tr>
-              ))}
+                {group.lines.map((line) => (
+                  <PlainRow key={line.id} line={line} />
+                ))}
+                <PlainRow line={group.subtotal} />
+              </tbody>
+            ))}
+            <tbody>
+              <PlainRow line={results.total} />
             </tbody>
           </table>
         </div>

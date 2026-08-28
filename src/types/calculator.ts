@@ -69,6 +69,7 @@ export type HowCode =
   | 'lmiCharged'
   | 'lmiChargedCapitalised'
   | 'yourFigure'
+  | 'conveyancing'
   | 'settlementAdjustments'
   | 'buildingInsurance'
   | 'grant'
@@ -111,11 +112,24 @@ export type RowCode =
   | 'buffer'
   | 'total'
 
+/**
+ * When the money actually leaves the account. Ordered as a purchase runs:
+ * inspections and the contract review are spent win or lose, the deposit falls
+ * due on the hammer, everything statutory settles weeks later, and the last
+ * band is what you still need afterwards.
+ */
+export type TimingBand = 'preAuction' | 'auctionDay' | 'atSettlement' | 'afterSettlement'
+
 export interface TableRow {
   code: RowCode
   amount: number
   how: RowHow | null
   emphasis: boolean
+  /**
+   * `null` for summary rows (`costsSubtotal`, `total`), which sit outside the
+   * timing bands because they add across them.
+   */
+  band: TimingBand | null
 }
 
 export interface CalculationTiles {

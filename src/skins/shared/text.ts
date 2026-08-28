@@ -172,6 +172,9 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
     case 'yourFigure':
       text = t('how.yourFigure')
       break
+    case 'conveyancing':
+      text = t('how.conveyancing')
+      break
     case 'settlementAdjustments':
       text = t('how.settlementAdjustments')
       break
