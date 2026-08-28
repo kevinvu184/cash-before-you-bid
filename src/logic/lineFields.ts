@@ -2,7 +2,13 @@ import type { TableRow } from '../types/calculator'
 import { BAND_SUBTOTAL_FIELD_ID, LINE_FIELD_ID } from '../types/viewModel'
 import type { LineField, LineGroup } from '../types/viewModel'
 import { groupRowsByBand } from './bands'
-import { BAND_LABEL_KEY, BAND_NOTE_KEY, BAND_SUBTOTAL_LABEL_KEY, ROW_LABEL_KEY } from './fieldLabels'
+import {
+  BAND_GUIDANCE,
+  BAND_LABEL_KEY,
+  BAND_NOTE_KEY,
+  BAND_SUBTOTAL_LABEL_KEY,
+  ROW_LABEL_KEY,
+} from './fieldLabels'
 
 export interface BuiltLines {
   /** Display order: each band's lines, its subtotal, then the grand total. */
@@ -49,6 +55,8 @@ export function buildLineFields(rows: readonly TableRow[]): BuiltLines {
       emphasis: true,
       band: group.band,
     },
+    // Not every band has something to say about how the money is paid.
+    guidance: BAND_GUIDANCE[group.band] ?? null,
   }))
 
   const totalRow = rows.find((row) => row.code === 'total')

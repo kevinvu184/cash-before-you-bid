@@ -76,9 +76,36 @@ so the same state always produces the same URL.
 | `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS |
 | `lang` | `en`, `vi`         | `vi`       | UI language                        |
 
-The calculator's own params (`price`, `route`, `dep`, `region`, `fhb`, `ppr`,
-`newhome`, `otp`, `foreign`, `rate`, `conv`, `bp`, `lender`, `adj`, `ins`,
-`move`, `bufm`, `caplmi`) are read and written by `src/logic/urlState.ts`.
+The calculator's own params are read and written by `src/logic/urlState.ts`.
+Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.
+
+| Param     | Type            | Allowed values                       | Default  |
+| --------- | --------------- | ------------------------------------ | -------- |
+| `price`   | number          | 0 – 100,000,000                      | 750000   |
+| `route`   | enum            | `scheme`, `lmi`, `nolmi`, `htb`      | `scheme` |
+| `dep`     | number (%)      | 0 – 100, raised to the route minimum | route    |
+| `region`  | enum            | `metro`, `regional`                  | `metro`  |
+| `fhb`     | boolean         | `1`, `0`                             | `1`      |
+| `ppr`     | boolean         | `1`, `0`                             | `1`      |
+| `newhome` | boolean         | `1`, `0`                             | `0`      |
+| `otp`     | number          | 0 – 100,000,000                      | 0        |
+| `foreign` | boolean         | `1`, `0`                             | `0`      |
+| `rate`    | number (% p.a.) | 0 – 25                               | 6.2      |
+| `conv`    | number          | 0 – 1,000,000                        | 1600     |
+| `bp`      | number          | 0 – 1,000,000                        | 550      |
+| `bids`    | number          | 1 – 50                               | 1        |
+| `lender`  | number          | 0 – 1,000,000                        | 300      |
+| `adj`     | number          | 0 – 1,000,000                        | 800      |
+| `ins`     | number          | 0 – 1,000,000                        | 1500     |
+| `move`    | number          | 0 – 1,000,000                        | 4000     |
+| `bufm`    | number (months) | 0 – 24                               | 3        |
+| `caplmi`  | boolean         | `1`, `0`                             | `0`      |
+
+`dep` defaults to the deposit route's own minimum (5% scheme, 2% Help to Buy,
+20% no-LMI, 5% LMI), matching what selecting that route resets the field to.
+
+`bids` is the number of properties bid on before winning one. It multiplies the
+pre-auction costs (`conv`, `bp`) and nothing else — see `src/logic/sunkCost.ts`.
 
 An unknown `?skin=` falls back to `plain` — the baseline that always renders —
 and the URL is rewritten with `replace`. An unknown `?mode=` falls back to

@@ -2,7 +2,14 @@ import type { Lang } from './lang'
 import type { ColorMode, SkinId } from './skins'
 import type { ModePreference } from './urlState'
 import type { DepositRoute, Region, RowCode, TimingBand } from '../types/calculator'
-import type { ChoiceOption, NoteEntry, SourcesValue } from '../types/viewModel'
+import type {
+  ChoiceOption,
+  GuidanceField,
+  GuidanceFieldId,
+  NoteEntry,
+  NotePart,
+  SourcesValue,
+} from '../types/viewModel'
 
 // Translation keys — never translations. The core names the string a field
 // needs; the skin calls t() with it. Every key is a literal so a grep finds
@@ -54,6 +61,42 @@ export const BAND_SUBTOTAL_LABEL_KEY: Readonly<Record<TimingBand, string>> = {
   auctionDay: 'bands.subtotalAuctionDay',
   atSettlement: 'bands.subtotalAtSettlement',
   afterSettlement: 'bands.subtotalAfterSettlement',
+}
+
+/**
+ * What the money in a band has to look like, for the bands that have anything
+ * to say. Auction day is the one that catches people out: the figure is only
+ * half the problem, because a bidder who has the deposit in a personal cheque
+ * still cannot pay it. Victorian practice specifically — common practice as
+ * bidders meet it, not a legal position; the estimate and not-advice
+ * disclaimer under the results still governs the whole page.
+ */
+const AUCTION_DAY_POINTS: readonly NotePart[] = [
+  { termKey: 'guidance.hammerTerm', bodyKey: 'guidance.hammerBody' },
+  { termKey: 'guidance.percentTerm', bodyKey: 'guidance.percentBody' },
+  { termKey: 'guidance.formTerm', bodyKey: 'guidance.formBody' },
+  { termKey: 'guidance.bondTerm', bodyKey: 'guidance.bondBody' },
+  { termKey: 'guidance.confirmTerm', bodyKey: 'guidance.confirmBody' },
+]
+
+const guidanceField = (
+  id: GuidanceFieldId,
+  labelKey: string,
+  points: readonly NotePart[],
+): GuidanceField => ({
+  id,
+  labelKey,
+  value: points,
+  kind: 'text',
+  importance: 'secondary',
+})
+
+/**
+ * Bands with no entry carry no guidance; the map is partial rather than four
+ * keys with three of them null.
+ */
+export const BAND_GUIDANCE: Readonly<Partial<Record<TimingBand, GuidanceField>>> = {
+  auctionDay: guidanceField('guidanceAuctionDay', 'guidance.auctionDay', AUCTION_DAY_POINTS),
 }
 
 export const ROUTE_OPTIONS: readonly ChoiceOption<DepositRoute>[] = [
@@ -137,6 +180,19 @@ export const NOTE_ENTRIES: readonly NoteEntry[] = [
     parts: [{ termKey: 'notes.repaymentTerm', bodyKey: 'notes.repaymentBody' }],
   },
 ]
+
+/**
+ * The multiple-inspection research the pre-auction multiplier exists because
+ * of: the Victorian Premier's media release of 12 March 2026, which cites the
+ * Consumer Policy Research Centre. Named beside the figures rather than folded
+ * into them — the numbers on screen are the user's own.
+ */
+export const SUNK_COST_RESEARCH: SourcesValue = {
+  beforeKey: 'sunk.researchBefore',
+  linkKey: 'sunk.researchLink',
+  afterKey: 'sunk.researchAfter',
+  href: 'https://www.premier.vic.gov.au/no-more-hassles-getting-pre-sale-building-inspections',
+}
 
 export const SOURCES: SourcesValue = {
   beforeKey: 'notes.sourcesBefore',

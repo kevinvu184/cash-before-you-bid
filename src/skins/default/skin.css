@@ -613,6 +613,61 @@
   font-weight: var(--font-weight-strong);
 }
 
+/* ── band guidance ─────────────────────────────────────────────────────────
+   The band's closing note, behind a native disclosure: what the money in the
+   band has to look like. It spans the full width and the summary is a 44px
+   target, so the whole thing is one thumb-sized tap on a 360px screen and one
+   Tab stop for a keyboard — nothing here answers to hover. */
+[data-skin='default'] .lines tr.band-guidance {
+  border-bottom: 0;
+}
+
+[data-skin='default'] .lines tr.band-guidance > td {
+  padding: 0 0 var(--space-2);
+}
+
+[data-skin='default'] .guidance > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  list-style: none;
+  cursor: pointer;
+}
+
+[data-skin='default'] .guidance > summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-skin='default'] .guidance > summary::after {
+  content: '+';
+  font-size: var(--font-size-compact);
+  text-decoration: none;
+}
+
+[data-skin='default'] .guidance[open] > summary::after {
+  content: '−';
+}
+
+[data-skin='default'] .guidance ul {
+  margin: 0 0 var(--space-2);
+  padding-left: 18px;
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .guidance li {
+  margin: 0 0 var(--space-2);
+  /* A long legislation name must wrap rather than push the table sideways. */
+  overflow-wrap: anywhere;
+}
+
 [data-skin='default'] .lines td {
   padding: 4px 0;
   line-height: var(--line-height-snug);
@@ -680,6 +735,24 @@
 }
 
 /* ── notes and sources ──────────────────────────────────────────────────── */
+
+/* ── pre-auction spend ───────────────────────────────────────────────────── */
+
+/* Its own section under the table, so the stat row above stays the cost of
+   buying this one property. */
+[data-skin='default'] .sunk h3 {
+  margin: 28px 0 0;
+  padding-top: 24px;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-strong);
+  /* Room for Vietnamese stacked diacritics (ệ, ổ, ữ). */
+  line-height: var(--line-height-tight);
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .sunk .stats {
+  margin: 12px 0;
+}
 
 [data-skin='default'] .notes h3 {
   margin: 32px 0 12px;
@@ -1066,4 +1139,23 @@
     border: var(--border-width) solid var(--color-hairline);
     border-radius: var(--radius-md);
   }
+}
+
+/* Inline links in the prose sit in a single line box, short of the 44px tap
+   target. A transparent overlay lifts the hit area without changing the
+   paragraph's rhythm; a link that already wraps onto two lines is tall enough
+   and the overlay simply sits inside it. */
+[data-skin='default'] .notes a,
+[data-skin='default'] .sunk a {
+  position: relative;
+}
+
+[data-skin='default'] .notes a::after,
+[data-skin='default'] .sunk a::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 44px;
+  translate: 0 -50%;
 }
