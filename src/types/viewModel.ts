@@ -7,6 +7,8 @@ import type {
   Region,
   RowCode,
   RowHow,
+  SafeMaxBidBinding,
+  SafeMaxBidStatus,
   TimingBand,
   VerdictCode,
 } from './calculator'
@@ -125,6 +127,13 @@ export type LineFieldId =
 export type VerdictFieldId = 'verdictAuctionDay' | 'verdictAtSettlement'
 
 /**
+ * The one number the whole epic is for. One field, not one per outcome: what
+ * changes between a ceiling, no affordable price and no ceiling at all is what
+ * the sentence says, not which field exists.
+ */
+export type SafeMaxBidFieldId = 'safeMaxBid'
+
+/**
  * Guidance hangs off a timing band, not off a line: it says what the money in
  * that band has to look like, which is not a figure and has no working. Only
  * the auction-day band has any today, so there is exactly one id.
@@ -149,6 +158,7 @@ export type FieldId =
   | ChromeFieldId
   | InputFieldId
   | StatFieldId
+  | SafeMaxBidFieldId
   | VerdictFieldId
   | LineFieldId
   | GuidanceFieldId
@@ -197,6 +207,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   statCosts: true,
   statLoan: true,
   statRepayment: true,
+  safeMaxBid: true,
   verdictAuctionDay: true,
   verdictAtSettlement: true,
   statSunkPerProperty: true,
@@ -372,6 +383,30 @@ export interface VerdictField extends Field<number> {
 }
 
 export type VerdictStatus = 'covered' | 'short'
+
+/**
+ * The safe maximum bid: the highest price this bidder can call out and still
+ * be covered on both verdicts.
+ *
+ * `value` is that price, already rounded down to a callable figure — but it is
+ * only a price to show when `status` is `'bound'`. On the other two outcomes
+ * there is no ceiling to headline (no price clears at all, or nothing caps the
+ * bid below the calculator's own limit) and `summary` is the whole answer; a
+ * skin reads `status` to know which it has rather than inspecting the number.
+ *
+ * `binding` names the pocket that ran out, which is the lever that moves the
+ * figure. As with the verdict, the core states the outcome and hands over the
+ * sentences; the skin decides how loudly to say it.
+ */
+export interface SafeMaxBidField extends Field<number> {
+  kind: 'money'
+  status: SafeMaxBidStatus
+  binding: SafeMaxBidBinding
+  /** What the figure means, and what stops it there. */
+  summary: TextRef
+  /** The conservative-rounding disclosure; null when there is no figure. */
+  detail: TextRef | null
+}
 
 export const VERDICT_FIELD_ID: Readonly<Record<VerdictCode, VerdictFieldId>> = {
   auctionDay: 'verdictAuctionDay',
@@ -578,6 +613,10 @@ export interface ResultsViewModel {
   /** Section headings a skin may use for grouping; not fields. */
   statsHeadingKey: string
   stats: readonly StatField[]
+  /** Section heading for the safe maximum bid; not a field. */
+  safeMaxBidHeadingKey: string
+  /** The signature figure: how high this bidder can go. */
+  safeMaxBid: SafeMaxBidField
   /** Section heading for the verdicts; not a field. */
   verdictsHeadingKey: string
   /** Always two, in the order the purchase runs. */

@@ -56,6 +56,15 @@ From the auction-day deposit guidance (`guidance.*`) and the deposit hints
 - "thông lệ phổ biến" for "common practice", in the line that keeps the note
   descriptive rather than advisory.
 
+From the safe maximum bid (`safeMaxBid.*`):
+
+- "Mức trả giá tối đa an toàn" for the safe maximum bid itself — the headline
+  figure, so the one worth getting right first.
+- "hô lên" for calling a bid out at an auction, chosen over the flatter
+  "đưa ra"; it is what the copy means by a figure you can say aloud.
+- "cạn cùng lúc" for cash and a pre-approval running out together.
+- "làm tròn xuống" for rounding down, matching "làm tròn" in `money.*`.
+
 ## Submitting corrections
 
 1. Edit `src/locales/vi.json` (or `en.json`). Keys are flat or one level deep;

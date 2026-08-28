@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DEPOSIT_HINT_KEY,
@@ -15,6 +16,8 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
+import { safeMaxBid } from '../logic/safeMaxBid'
+import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { buildVerdictFields } from '../logic/verdictFields'
 import {
   type AppViewModel,
@@ -418,6 +421,12 @@ export function useAppViewModel(
 
   const lines = buildLineFields(result.rows)
 
+  // The one figure on the page that is not a single pass of the engine: the
+  // search runs `calculate()` about forty times, which measures at ~0.3ms on a
+  // laptop and so is worth not repeating on the keystrokes that only move a
+  // draft. Every other figure is a single pass and is left unmemoised.
+  const bid = useMemo(() => safeMaxBid(inputs), [inputs])
+
   return {
     locale: inputs.lang,
     // What is rendering, which is the requested skin unless it failed to load.
@@ -653,6 +662,8 @@ export function useAppViewModel(
       },
       statsHeadingKey: 'results.statsHeading',
       stats: buildStats(result.tiles),
+      safeMaxBidHeadingKey: 'safeMaxBid.heading',
+      safeMaxBid: buildSafeMaxBidField(bid, inputs.savings),
       verdictsHeadingKey: 'results.verdictsHeading',
       verdicts: buildVerdictFields(result.readiness),
       linesHeadingKey: 'results.linesHeading',

@@ -9,6 +9,7 @@ import type {
   LineField,
   NoteEntry,
   ResultsViewModel,
+  SafeMaxBidField,
   SourcesValue,
   StatField,
   SunkCostViewModel,
@@ -48,6 +49,39 @@ function FlagList({
         </p>
       ))}
     </div>
+  )
+}
+
+/**
+ * The number someone screenshots: how high they can go. It leads the results
+ * because it is the question the calculator exists to answer — the verdicts
+ * under it say whether the price they already have in mind clears, and this
+ * says what price would.
+ *
+ * The figure is drawn only for a bounded answer. With no affordable price, or
+ * none below the calculator's own ceiling, there is no number to headline and
+ * the sentence is the whole answer; `status` is the core's word on which of
+ * those this is, so the skin never inspects the figure to find out.
+ */
+function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxBidField }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <section
+      className="max-bid"
+      data-field={field.id}
+      data-importance={field.importance}
+      data-status={field.status}
+    >
+      <h2 className="section-mark">{t(headingKey)}</h2>
+      <p className="max-bid-label">{t(field.labelKey)}</p>
+      {field.status === 'bound' ? (
+        <p className="max-bid-figure">{estimateMoney(field.value, i18n.language)}</p>
+      ) : null}
+      <p className="max-bid-summary">{refText(field.summary, t, i18n.language)}</p>
+      {field.detail === null ? null : (
+        <p className="max-bid-detail small">{refText(field.detail, t, i18n.language)}</p>
+      )}
+    </section>
   )
 }
 
@@ -396,6 +430,7 @@ function RulesNotes({
 export function Results({ results }: { results: ResultsViewModel }) {
   return (
     <main className="results">
+      <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
       <Verdicts headingKey={results.verdictsHeadingKey} verdicts={results.verdicts} />
       <FlagList field={results.flags} regionLabelKey={results.flagsRegionLabelKey} />
       <div className="stats">

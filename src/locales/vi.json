@@ -161,6 +161,18 @@
     "shortSettlementLoan": "Khoản vay: thiếu {{shortfall}}. Phần còn lại của giá mua là {{required}} còn khoản vay được duyệt trước của bạn là {{available}}. Hãy đề nghị ngân hàng duyệt thêm, hoặc trả giá thấp hơn.",
     "financeNotChecked": "Chưa kiểm tra tài chính: bạn chưa nhập khoản vay được duyệt trước. Phần còn lại của giá mua vẫn phải lấy từ đâu đó."
   },
+  "safeMaxBid": {
+    "heading": "Bạn có thể trả giá cao đến đâu?",
+    "label": "Mức trả giá tối đa an toàn",
+    "bound": "Trả giá đến mức này thì bạn vẫn trả được tiền đặt cọc khi búa gõ và mọi khoản phải trả khi tất toán.",
+    "boundCash": "Trả giá đến mức này thì bạn vẫn trả được tiền đặt cọc khi búa gõ và mọi khoản phải trả khi tất toán. Tiền mặt là thứ chặn bạn lại ở đây — mỗi đồng tiết kiệm thêm sẽ nâng con số này lên.",
+    "boundLoan": "Trả giá đến mức này thì bạn vẫn trả được tiền đặt cọc khi búa gõ và mọi khoản phải trả khi tất toán. Khoản vay được duyệt trước là thứ chặn bạn lại ở đây — chỉ khoản vay lớn hơn mới nâng con số này lên.",
+    "boundBoth": "Trả giá đến mức này thì bạn vẫn trả được tiền đặt cọc khi búa gõ và mọi khoản phải trả khi tất toán. Tiền mặt và khoản vay được duyệt trước của bạn cạn cùng lúc, nên chỉ tăng một bên sẽ không làm con số này thay đổi.",
+    "rounding": "Được làm tròn xuống đến {{unit}} gần nhất, để thành một con số bạn có thể hô lên tại buổi đấu giá. Con số này giả định mọi số liệu khác trên trang giữ nguyên.",
+    "noFigures": "Hãy nhập số tiền tiết kiệm của bạn — và khoản vay được duyệt trước, khi bạn đã có — thì đây sẽ là mức giá cao nhất bạn có thể hô mà vẫn tất toán được.",
+    "unaffordable": "Hiện chưa có mức giá nào bạn đủ tiền: riêng những chi phí không thay đổi theo giá mua đã nhiều hơn số tiền tiết kiệm của bạn. Phần kết luận bên dưới cho biết thiếu bao nhiêu.",
+    "unbounded": "Không có số liệu nào của bạn giới hạn mức trả giá dưới {{price}}, mức giá cao nhất mà công cụ này nhận."
+  },
   "guidance": {
     "auctionDay": "Trả tiền đặt cọc trong ngày đấu giá",
     "hammerTerm": "Phải trả ngay khi búa gõ chốt giá.",
