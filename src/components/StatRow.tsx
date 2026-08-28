@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { APP_CURRENCY } from '../logic/currencyConfig'
-import { formatMoney, formatPercent } from '../logic/format'
+import { useDisplay } from '../hooks/useDisplay'
+import { displayMoney } from '../logic/display'
+import { formatPercent } from '../logic/format'
 import type { CalculationTiles } from '../types/calculator'
 import { approxMoney } from './resultText'
 
@@ -31,19 +32,20 @@ interface StatRowProps {
 // A rule-divided list on a phone, a hairline-divided row from 820px. Ledger has
 // no stat component; these are list rows, not cards.
 export function StatRow({ tiles }: StatRowProps) {
-  const { t, i18n } = useTranslation()
-  const locale = i18n.language
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const locale = display.locale
   // Computed figures are estimates: rounded and "~"-prefixed. The purchase
   // price is the user's own input, so it stays exact.
-  const aud = (amount: number) => approxMoney(amount, t, locale)
-  const exact = (amount: number) => formatMoney(amount, APP_CURRENCY, locale, { round: false })
+  const money = (amount: number) => approxMoney(amount, t, display)
+  const exact = (amount: number) => displayMoney(amount, display, { round: false })
   const pct = (value: number) => formatPercent(value, locale)
 
   const loanSub =
     tiles.loan.governmentEquity > 0
       ? t('stats.loanSubWithEquity', {
           lvr: pct(tiles.loan.lvrPct),
-          equity: aud(tiles.loan.governmentEquity),
+          equity: money(tiles.loan.governmentEquity),
         })
       : t('stats.loanSub', { lvr: pct(tiles.loan.lvrPct) })
 
@@ -52,19 +54,19 @@ export function StatRow({ tiles }: StatRowProps) {
       <Stat
         id="tTotal"
         label={t('stats.totalLabel')}
-        value={aud(tiles.total.value)}
+        value={money(tiles.total.value)}
         sub={t('stats.totalSub', {
-          deposit: aud(tiles.total.deposit),
-          costs: aud(tiles.total.costs),
-          moving: aud(tiles.total.moving),
-          buffer: aud(tiles.total.buffer),
+          deposit: money(tiles.total.deposit),
+          costs: money(tiles.total.costs),
+          moving: money(tiles.total.moving),
+          buffer: money(tiles.total.buffer),
         })}
         emphasis
       />
       <Stat
         id="tDep"
         label={t('stats.depositLabel')}
-        value={aud(tiles.deposit.value)}
+        value={money(tiles.deposit.value)}
         sub={t('stats.depositSub', {
           pct: pct(tiles.deposit.pct),
           price: exact(tiles.deposit.price),
@@ -73,22 +75,22 @@ export function StatRow({ tiles }: StatRowProps) {
       <Stat
         id="tCosts"
         label={t('stats.costsLabel')}
-        value={aud(tiles.costs.value)}
+        value={money(tiles.costs.value)}
         sub={
           tiles.costs.pctOfPrice === null
             ? ''
             : t('stats.costsSub', { pct: pct(tiles.costs.pctOfPrice) })
         }
       />
-      <Stat id="tLoan" label={t('stats.loanLabel')} value={aud(tiles.loan.value)} sub={loanSub} />
+      <Stat id="tLoan" label={t('stats.loanLabel')} value={money(tiles.loan.value)} sub={loanSub} />
       <Stat
         id="tRep"
         label={t('stats.repaymentLabel')}
-        value={aud(tiles.repayment.value)}
+        value={money(tiles.repayment.value)}
         sub={t('stats.repaymentSub', {
           rate: pct(tiles.repayment.ratePct),
           assessedRate: pct(tiles.repayment.assessedRatePct),
-          assessed: aud(tiles.repayment.assessedValue),
+          assessed: money(tiles.repayment.assessedValue),
         })}
       />
     </div>

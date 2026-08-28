@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useDisplay } from '../hooks/useDisplay'
 import type { Flag, FlagKind } from '../types/calculator'
 import { flagText } from './resultText'
 
@@ -15,7 +16,8 @@ interface FlagListProps {
 }
 
 export function FlagList({ flags }: FlagListProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   if (flags.length === 0) return null
 
   return (
@@ -23,7 +25,7 @@ export function FlagList({ flags }: FlagListProps) {
       {flags.map((flag) => (
         <p className={`flag ${flag.kind}`} key={`${flag.kind}:${flag.code}`}>
           <span className="flag-label">{t(KIND_KEYS[flag.kind])}</span>
-          <span className="flag-text">{flagText(flag, t, i18n.language)}</span>
+          <span className="flag-text">{flagText(flag, t, display)}</span>
         </p>
       ))}
     </div>

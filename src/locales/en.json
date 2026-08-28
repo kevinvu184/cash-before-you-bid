@@ -66,6 +66,25 @@
     "disclaimer": "Figures are estimates rounded to the nearest {{unit}}.",
     "roundingNote": "Parts may not add to the total due to rounding."
   },
+  "currency": {
+    "label": "Currency",
+    "switcherLabel": "Display currency",
+    "symbolAud": "$",
+    "symbolVnd": "₫",
+    "nameAud": "Australian dollars",
+    "nameVnd": "Vietnamese đồng",
+    "rateLine": "1 {{base}} = {{quoted}}",
+    "sourceLive": "{{provider}}",
+    "sourceLoading": "fetching rate…",
+    "sourceFallback": "indicative rate, offline",
+    "sourceManual": "your rate",
+    "manualTag": "MANUAL",
+    "reset": "Reset",
+    "overrideLabel": "Override rate: 1 {{base}} =",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "note": "Amounts are calculated in Australian dollars; {{currency}} is a display conversion."
+  },
   "flagKinds": {
     "warn": "WARNING",
     "note": "NOTE",
@@ -78,9 +97,9 @@
     "schemeOwnerOccupier": "The scheme is owner-occupier only — LMI applied instead.",
     "htbCapExceeded": "Price is above the Help to Buy cap of {{cap}} for this region.",
     "htbCitizenship": "Help to Buy requires Australian citizenship.",
-    "htbDetails": "Help to Buy: income caps $103,000 single / $165,000 couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
+    "htbDetails": "Help to Buy: income caps {{single}} single / {{couple}} couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
     "guarantorGap": "Under 20% deposit without LMI needs a family guarantor pledging the gap; shown with no LMI.",
-    "fhogPriceCap": "First Home Owner Grant not available: price above $750,000.",
+    "fhogPriceCap": "First Home Owner Grant not available: price above {{cap}}.",
     "genuineSavings": "LVR above 90%: most lenders want 5% of the price as genuine savings held for 3+ months.",
     "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut."
   },
@@ -100,7 +119,8 @@
   "table": {
     "line": "Line",
     "amount": "$",
-    "how": "How it was worked out"
+    "how": "How it was worked out",
+    "amountVnd": "₫"
   },
   "rows": {
     "deposit": "Deposit",
@@ -122,18 +142,18 @@
     "total": "Total cash before you bid"
   },
   "how": {
-    "dutyFhbExempt": "First home buyer exemption: dutiable value {{dutiableValue}} ≤ $600,000 → $0",
-    "dutyFhbConcession": "General duty {{base}} × ({{dutiableValue}} − $600,000) ÷ $150,000",
-    "dutyFhbAboveCap": "Above $750,000: no first home concession. $2,870 + 6% × ({{dutiableValue}} − $130,000)",
+    "dutyFhbExempt": "First home buyer exemption: dutiable value {{dutiableValue}} ≤ {{cap}} → {{zero}}",
+    "dutyFhbConcession": "General duty {{base}} × ({{dutiableValue}} − {{cap}}) ÷ {{range}}",
+    "dutyFhbAboveCap": "Above {{cap}}: no first home concession. {{bandBase}} + 6% × ({{dutiableValue}} − {{bandThreshold}})",
     "dutyPpr": "PPR concession rate on {{dutiableValue}}",
     "dutyGeneral": "General rate on {{dutiableValue}}",
     "dutyOffThePlan": "Off-the-plan: {{price}} − {{construction}} construction = dutiable {{dutiableValue}}.",
     "foreignDuty": "8% × {{dutiableValue}}",
-    "transferFee": "$104.30 + $2.34 × {{thousands}} (per $1,000), capped $3,614, rounded up",
+    "transferFee": "{{base}} + {{perThousand}} × {{thousands}} (per {{unit}}), capped {{cap}}, rounded up",
     "mortgageFeeLoan": "Land Services Victoria 2026-27",
     "mortgageFeeNoLoan": "No loan",
-    "pexaBoth": "$146.30 transfer + $74.14 mortgage",
-    "pexaTransferOnly": "$146.30 transfer",
+    "pexaBoth": "{{transfer}} transfer + {{mortgage}} mortgage",
+    "pexaTransferOnly": "{{transfer}} transfer",
     "lmiHtb": "Help to Buy: no LMI",
     "lmiScheme": "5% Deposit Scheme: government guarantees 15%, no LMI",
     "lmiLvrUnder80": "LVR {{lvr}} ≤ 80%: no LMI",
@@ -143,11 +163,11 @@
     "yourFigure": "Your figure",
     "settlementAdjustments": "Rates, water, owners corp apportioned to settlement day",
     "buildingInsurance": "Lender requires cover before settlement",
-    "grant": "New home ≤ $750,000, eligible first home buyer; usually applied at settlement",
+    "grant": "New home ≤ {{cap}}, eligible first home buyer; usually applied at settlement",
     "deposit": "{{pct}} × {{price}}",
     "costsSubtotal": "Sum of the lines above (excluding deposit)",
-    "buffer_one": "{{count}} month × {{repayment}} + $1,000",
-    "buffer_other": "{{count}} months × {{repayment}} + $1,000",
+    "buffer_one": "{{count}} month × {{repayment}} + {{base}}",
+    "buffer_other": "{{count}} months × {{repayment}} + {{base}}",
     "noBuffer": "No buffer",
     "total": "Deposit + costs + moving + buffer"
   },

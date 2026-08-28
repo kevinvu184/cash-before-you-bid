@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { calculate } from '../logic/calculate'
+import type { DisplayCurrency } from '../logic/currencyConfig'
 import { clampDepositPct, defaultDepositPctForRoute } from '../logic/deposit'
 import type { Lang } from '../logic/lang'
 import { parseParams, serialiseParams, type AppState } from '../logic/urlState'
@@ -7,9 +8,11 @@ import type { CalculationResult, DepositRoute } from '../types/calculator'
 import { useUrlState, type UrlStateCodec } from './useUrlState'
 
 // Changing route must also reset the deposit to the route default, so route is
-// only settable through the dedicated setRoute action; the language has its
-// own action for the same reason (it is not a calculator input).
-type SettableField = Exclude<keyof AppState, 'route' | 'lang'>
+// only settable through the dedicated setRoute action; the language, display
+// currency and rate override have their own for the same reason (none of them
+// is a calculator input — they change how the result is written, not what it
+// is).
+type SettableField = Exclude<keyof AppState, 'route' | 'lang' | 'currency' | 'manualRate'>
 
 const codec: UrlStateCodec<AppState> = {
   parse: parseParams,
@@ -22,6 +25,8 @@ export interface UseCalculatorResult {
   setField: <K extends SettableField>(field: K, value: AppState[K]) => void
   setRoute: (route: DepositRoute) => void
   setLang: (lang: Lang) => void
+  setCurrency: (currency: DisplayCurrency) => void
+  setManualRate: (rate: number | null) => void
 }
 
 // All shareable state lives in the URL query string — calculator inputs and
@@ -52,5 +57,25 @@ export function useCalculator(): UseCalculatorResult {
     [inputs, setState],
   )
 
-  return { inputs, result: calculate(inputs), setField, setRoute, setLang }
+  const setCurrency = useCallback(
+    (currency: DisplayCurrency) => setState({ ...inputs, currency }, 'push'),
+    [inputs, setState],
+  )
+
+  // Applying or resetting an override is a deliberate act, not typing: it
+  // lands in the URL at once and the back button steps over it.
+  const setManualRate = useCallback(
+    (manualRate: number | null) => setState({ ...inputs, manualRate }, 'push'),
+    [inputs, setState],
+  )
+
+  return {
+    inputs,
+    result: calculate(inputs),
+    setField,
+    setRoute,
+    setLang,
+    setCurrency,
+    setManualRate,
+  }
 }

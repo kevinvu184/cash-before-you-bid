@@ -26,6 +26,23 @@ export const MORTGAGE_REGISTRATION_FEE = 129.2
 export const PEXA_TRANSFER_FEE = 146.3
 export const PEXA_MORTGAGE_FEE = 74.14
 
+// First home buyer duty concession (Victoria): nothing to pay up to the
+// exemption cap, then the general duty tapered across the range above it.
+export const FHB_DUTY_EXEMPTION_CAP = 600_000
+export const FHB_DUTY_CONCESSION_CAP = 750_000
+export const FHB_DUTY_CONCESSION_RANGE = 150_000
+
+// The general-rate band the above-cap explanation quotes.
+export const DUTY_BAND_BASE = 2870
+export const DUTY_BAND_THRESHOLD = 130_000
+
+// The transfer fee is quoted per whole thousand of the price.
+export const TRANSFER_FEE_UNIT = 1000
+
+// Help to Buy income caps, quoted in the scheme's own note.
+export const HTB_INCOME_CAP_SINGLE = 103_000
+export const HTB_INCOME_CAP_COUPLE = 165_000
+
 export const FHOG_AMOUNT = 10_000
 export const FHOG_PRICE_CAP = 750_000
 

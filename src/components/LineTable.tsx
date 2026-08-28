@@ -1,7 +1,9 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDisplay } from '../hooks/useDisplay'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import type { RowCode, TableRow } from '../types/calculator'
+import { AMOUNT_HEADER_KEYS } from './currencyLabels'
 import { approxRowAmount, howText, rowLabel } from './resultText'
 
 interface LineTableProps {
@@ -16,7 +18,8 @@ interface LineTableProps {
  * recalculation.
  */
 export function LineTable({ rows }: LineTableProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   const wide = useMediaQuery('(min-width: 820px)')
   const [open, setOpen] = useState<ReadonlySet<RowCode>>(() => new Set())
 
@@ -33,7 +36,9 @@ export function LineTable({ rows }: LineTableProps) {
         <tr>
           <th scope="col">{t('table.line')}</th>
           <th scope="col" className="n">
-            {t('table.amount')}
+            {/* The column is headed by the currency its figures are written
+                in, so it says what it holds without a word of prose. */}
+            {t(AMOUNT_HEADER_KEYS[display.currency])}
           </th>
           {wide ? (
             <th scope="col" className="m">
@@ -47,8 +52,8 @@ export function LineTable({ rows }: LineTableProps) {
           wide ? (
             <tr key={row.code} className={row.emphasis ? 'total' : undefined}>
               <td>{rowLabel(row.code, t)}</td>
-              <td className="n">{approxRowAmount(row.amount, t, i18n.language)}</td>
-              <td className="m">{howText(row.how, t, i18n.language)}</td>
+              <td className="n">{approxRowAmount(row.amount, t, display)}</td>
+              <td className="m">{howText(row.how, t, display)}</td>
             </tr>
           ) : (
             <MobileRow
@@ -71,8 +76,9 @@ interface MobileRowProps {
 }
 
 function MobileRow({ row, open, onToggle }: MobileRowProps) {
-  const { t, i18n } = useTranslation()
-  const how = howText(row.how, t, i18n.language)
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const how = howText(row.how, t, display)
   const expanded = open && how !== ''
   const className = [row.emphasis ? 'total' : '', expanded ? 'expanded' : '']
     .filter(Boolean)
@@ -100,7 +106,7 @@ function MobileRow({ row, open, onToggle }: MobileRowProps) {
             rowLabel(row.code, t)
           )}
         </td>
-        <td className="n">{approxRowAmount(row.amount, t, i18n.language)}</td>
+        <td className="n">{approxRowAmount(row.amount, t, display)}</td>
       </tr>
       {/* Always rendered, hidden by CSS when collapsed, so aria-controls always
           resolves. Never `.total`: the ink rule belongs to the row above, and

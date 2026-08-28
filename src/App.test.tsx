@@ -6,9 +6,10 @@ import App from './App'
 import i18n from './i18n'
 import { URL_DEBOUNCE_MS } from './hooks/useUrlState'
 import { calculate } from './logic/calculate'
-import { APP_CURRENCY } from './logic/currencyConfig'
+import { BASE_CURRENCY } from './logic/currencyConfig'
 import { formatMoney } from './logic/format'
 import { roundForDisplay } from './logic/rounding'
+import { displayMoney } from './logic/display'
 import { parseParams } from './logic/urlState'
 
 function renderApp() {
@@ -23,8 +24,31 @@ function renderApp() {
 const input = (id: string) => document.getElementById(id) as HTMLInputElement
 const select = (id: string) => document.getElementById(id) as HTMLSelectElement
 
+// The rate fetch is the one thing on this page that leaves the browser. Tests
+// answer it themselves: a real request would make the figures depend on the
+// day's market, and the offline case has to be reachable on purpose.
+const LIVE_RATE = 18_707.672741
+const QUOTED_AT = 1_787_788_951
+
+function mockRateResponse() {
+  return vi.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          result: 'success',
+          base_code: 'AUD',
+          time_last_update_unix: QUOTED_AT,
+          rates: { AUD: 1, VND: LIVE_RATE },
+        }),
+    } as Response),
+  )
+}
+
 beforeEach(async () => {
   window.history.replaceState(null, '', '/')
+  localStorage.clear()
+  vi.stubGlobal('fetch', mockRateResponse())
   // The i18n instance is a singleton; put it back on the default language so
   // tests are order-independent.
   await i18n.changeLanguage('vi')
@@ -32,6 +56,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   cleanup()
+  vi.unstubAllGlobals()
   vi.useRealTimers()
 })
 
@@ -164,15 +189,15 @@ describe('rounded estimates', () => {
     const state = parseParams(new URLSearchParams(window.location.search))
     const { total } = calculate(state).tiles
     const sumOfRoundedParts =
-      roundForDisplay(total.deposit, APP_CURRENCY) +
-      roundForDisplay(total.costs, APP_CURRENCY) +
-      roundForDisplay(total.moving, APP_CURRENCY) +
-      roundForDisplay(total.buffer, APP_CURRENCY)
+      roundForDisplay(total.deposit, BASE_CURRENCY) +
+      roundForDisplay(total.costs, BASE_CURRENCY) +
+      roundForDisplay(total.moving, BASE_CURRENCY) +
+      roundForDisplay(total.buffer, BASE_CURRENCY)
     // These inputs are chosen so the two roundings actually diverge; the
     // display must follow the exact total.
-    expect(roundForDisplay(total.value, APP_CURRENCY)).not.toBe(sumOfRoundedParts)
+    expect(roundForDisplay(total.value, BASE_CURRENCY)).not.toBe(sumOfRoundedParts)
     expect(document.getElementById('tTotal')?.textContent).toBe(
-      `~${formatMoney(total.value, APP_CURRENCY, 'vi')}`,
+      `~${formatMoney(total.value, BASE_CURRENCY, 'vi')}`,
     )
   })
 
@@ -243,5 +268,198 @@ describe('localisation', () => {
     renderApp()
     fireEvent.click(screen.getByRole('button', { name: 'English' }))
     expect(window.location.search).toBe('?lang=en&price=820000&route=lmi')
+  })
+})
+
+describe('currency switching', () => {
+  const switchTo = (name: string) => fireEvent.click(screen.getByRole('radio', { name }))
+
+  it('starts in Australian dollars and asks for no rate at all', () => {
+    renderApp()
+    expect(screen.getByRole('radio', { name: 'Đô la Úc' })).toHaveProperty('ariaChecked', 'true')
+    // The default view never touches the network: nothing needs converting.
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('switching to đồng records it in the URL and converts every figure', async () => {
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    expect(window.location.search).toBe('?cur=VND')
+
+    const { total } = calculate(parseParams(new URLSearchParams('cur=VND'))).tiles
+    await waitFor(() =>
+      expect(document.getElementById('tTotal')?.textContent).toBe(
+        `~${displayMoney(total.value, { locale: 'vi', currency: 'VND', rate: LIVE_RATE })}`,
+      ),
+    )
+  })
+
+  it('heads the amount column with the currency on display', async () => {
+    renderApp()
+    const head = () => document.querySelector('.lines thead th.n')?.textContent
+    expect(head()).toBe('AUD')
+    switchTo('Đồng Việt Nam')
+    await waitFor(() => expect(head()).toBe('₫'))
+  })
+
+  it('names the đồng rounding unit in the disclaimer once converting', async () => {
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    await waitFor(() =>
+      expect(document.querySelector('.estimate-note')?.textContent).toContain('100.000'),
+    )
+  })
+
+  it('re-tapping the active currency pushes no history entry', () => {
+    renderApp()
+    const before = window.history.length
+    switchTo('Đô la Úc')
+    expect(window.history.length).toBe(before)
+    expect(window.location.search).toBe('')
+  })
+
+  it('never mixes currencies inside one explanation', async () => {
+    // A threshold left as a literal "$600,000" beside a converted amount
+    // would render an equation subtracting dollars from đồng.
+    window.history.replaceState(null, '', '/?newhome=1&route=lmi')
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    await waitFor(() =>
+      expect(document.querySelector('.lines td.n')?.textContent).toContain('₫'),
+    )
+    const written = [
+      ...document.querySelectorAll('.lines td.m, .lines td.n, .stat-value, .stat-sub, .flag-text'),
+    ].map((cell) => cell.textContent ?? '')
+    expect(written.length).toBeGreaterThan(10)
+    for (const text of written) {
+      expect(text).not.toMatch(/AUD|A\$/)
+    }
+  })
+
+  it('leaves the calculator inputs in Australian dollars', async () => {
+    window.history.replaceState(null, '', '/?price=820000')
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&price=820000'))
+    // The price field is what the user typed, in the currency they typed it.
+    expect(input('price').value).toBe('820000')
+  })
+})
+
+describe('the exchange rate', () => {
+  const switchToDong = () => fireEvent.click(screen.getByRole('radio', { name: 'Đồng Việt Nam' }))
+
+  it('shows the live rate and where it came from', async () => {
+    renderApp()
+    switchToDong()
+    await waitFor(() =>
+      expect(document.querySelector('.ratebtn')?.textContent).toContain('exchangerate-api.com'),
+    )
+    expect(document.querySelector('.ratebtn')?.textContent).toContain('18.708')
+  })
+
+  it('falls back to the indicative rate when the request fails, and says so', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('offline'))))
+    renderApp()
+    switchToDong()
+    await waitFor(() =>
+      expect(document.querySelector('.ratebtn')?.textContent).toContain('ngoại tuyến'),
+    )
+    // A figure is still on screen: the fallback rate priced it.
+    expect(document.getElementById('tTotal')?.textContent).toContain('₫')
+  })
+
+  it('still converts when the response is not a usable quote', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ result: 'error' }) } as Response)),
+    )
+    renderApp()
+    switchToDong()
+    await waitFor(() =>
+      expect(document.querySelector('.ratebtn')?.textContent).toContain('ngoại tuyến'),
+    )
+  })
+
+  it('applies a typed override, marks it, and carries it in the URL', async () => {
+    renderApp()
+    switchToDong()
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    const field = document.querySelector('.re-row input') as HTMLInputElement
+    fireEvent.change(field, { target: { value: '20000' } })
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=20000'))
+    expect(document.querySelector('.rateline .tag')?.textContent).toBe('THỦ CÔNG')
+
+    const { total } = calculate(parseParams(new URLSearchParams('cur=VND'))).tiles
+    expect(document.getElementById('tTotal')?.textContent).toBe(
+      `~${displayMoney(total.value, { locale: 'vi', currency: 'VND', rate: 20_000 })}`,
+    )
+  })
+
+  it('reads an override typed with Vietnamese separators', async () => {
+    renderApp()
+    switchToDong()
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    fireEvent.change(document.querySelector('.re-row input') as HTMLInputElement, {
+      target: { value: '20.500' },
+    })
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=20500'))
+  })
+
+  it('resets an override back to the fetched rate', async () => {
+    window.history.replaceState(null, '', '/?cur=VND&fx=20000')
+    renderApp()
+    await waitFor(() => expect(document.querySelector('.rateline .tag')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Đặt lại' }))
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND'))
+    expect(document.querySelector('.rateline .tag')).toBeNull()
+  })
+
+  it('ignores an unusable override rather than pricing anything at zero', async () => {
+    renderApp()
+    switchToDong()
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    fireEvent.change(document.querySelector('.re-row input') as HTMLInputElement, {
+      target: { value: '0' },
+    })
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+
+    await waitFor(() => expect(document.querySelector('.rateedit')).toBeNull())
+    expect(window.location.search).toBe('?cur=VND')
+  })
+
+  it('reproduces a shared converted view exactly, rate and all', async () => {
+    window.history.replaceState(null, '', '/?cur=VND&fx=17500&price=900000')
+    renderApp()
+    const { total } = calculate(parseParams(new URLSearchParams('cur=VND&price=900000'))).tiles
+    await waitFor(() =>
+      expect(document.getElementById('tTotal')?.textContent).toBe(
+        `~${displayMoney(total.value, { locale: 'vi', currency: 'VND', rate: 17_500 })}`,
+      ),
+    )
+  })
+
+  it('does not go back to the network for a rate cached this session', async () => {
+    const { unmount } = renderApp()
+    fireEvent.click(screen.getByRole('radio', { name: 'Đồng Việt Nam' }))
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    unmount()
+
+    window.history.replaceState(null, '', '/?cur=VND')
+    renderApp()
+    await waitFor(() =>
+      expect(document.querySelector('.ratebtn')?.textContent).toContain('18.708'),
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })
