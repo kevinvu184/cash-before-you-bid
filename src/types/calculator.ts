@@ -208,8 +208,15 @@ export interface Readiness {
   /** Two verdicts, in the order the purchase runs. Never merged into one. */
   verdicts: readonly Verdict[]
   /**
-   * False when no pre-approval was entered. The finance check is then absent
-   * from the settlement verdict rather than failing it.
+   * Whether this purchase needs a loan at all. False on a 100% deposit, where
+   * there is no balance to fund and so nothing for a finance check to ask.
+   */
+  loanRequired: boolean
+  /**
+   * True only when the loan check actually ran — a loan is needed *and* a
+   * pre-approval was entered to test it against. False leaves the check absent
+   * from the settlement verdict rather than failing it, and the UI must not
+   * let that absence read as a pass.
    */
   financeChecked: boolean
 }

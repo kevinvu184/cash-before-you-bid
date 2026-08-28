@@ -153,6 +153,7 @@
     "auctionDayCovered": "Tiền tiết kiệm của bạn đủ cho khoản đặt cọc {{required}} phải trả ngay khi búa gõ.",
     "auctionDayShort": "Thiếu {{shortfall}} cho khoản đặt cọc {{required}} phải trả ngay khi búa gõ.",
     "atSettlementCovered": "Phần tiền tiết kiệm còn lại đủ cho {{required}} phải trả khi tất toán, và khoản vay được duyệt trước đủ cho phần còn lại của giá mua.",
+    "atSettlementCoveredCashOnly": "Phần tiền tiết kiệm còn lại đủ cho {{required}} phải trả khi tất toán.",
     "atSettlementShort": "Thiếu {{shortfall}} khi tất toán.",
     "atSettlementShortMultiple": "Thiếu ở cả hai nguồn khi tất toán. Phần thiếu tiền mặt và phần thiếu khoản vay là hai vấn đề riêng biệt — khoản vay lớn hơn không trả được thuế, và tiết kiệm nhiều hơn cũng không làm khoản vay tăng lên.",
     "shortAuctionDayCash": "Tiền mặt: thiếu {{shortfall}}. Tiền đặt cọc là {{required}} còn bạn có {{available}}. Hãy tiết kiệm thêm, hoặc trả giá thấp hơn.",

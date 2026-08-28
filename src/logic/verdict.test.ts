@@ -105,6 +105,7 @@ describe('assessReadiness — an absent pre-approval', () => {
   it('says nothing about finance when there is no loan to fund', () => {
     const r = calculate(inputs({ route: 'nolmi', depositPct: 100 }))
     expect(r.totals.loan).toBe(0)
+    expect(r.readiness.loanRequired).toBe(false)
     expect(r.flags.map((flag) => flag.code)).not.toContain('noPreApproval')
     expect(r.flags.map((flag) => flag.code)).not.toContain('financeUnconditional')
   })
@@ -197,6 +198,45 @@ describe('the verdict fields a skin renders', () => {
     const settlement = buildVerdictFields(r.readiness)[1]
     expect(settlement.status).toBe('covered')
     expect(settlement.details.map((detail) => detail.key)).toEqual(['verdicts.financeNotChecked'])
+  })
+
+  it('never headlines a pre-approval it did not test', () => {
+    // "Covered" is a claim about the checks that ran. The ordinary covered
+    // copy names the pre-approval covering the balance of the price, so a
+    // verdict that never tested one must not reach for it.
+    const unchecked = calculate(inputs({ savings: 10_000_000, preApprovedLoan: null }))
+    expect(buildVerdictFields(unchecked.readiness)[1].summary.key).toBe(
+      'verdicts.atSettlementCoveredCashOnly',
+    )
+    const checked = calculate(inputs({ savings: 10_000_000, preApprovedLoan: 10_000_000 }))
+    expect(buildVerdictFields(checked.readiness)[1].summary.key).toBe(
+      'verdicts.atSettlementCovered',
+    )
+  })
+
+  it('asks no finance question at all when the purchase needs no loan', () => {
+    // A 100% deposit has no balance to fund. An unrun check has to be said out
+    // loud; an inapplicable one must not be, or the page invents a worry.
+    const r = calculate(
+      inputs({ route: 'nolmi', depositPct: 100, savings: 10_000_000, preApprovedLoan: null }),
+    )
+    expect(r.totals.loan).toBe(0)
+    expect(r.readiness.loanRequired).toBe(false)
+    expect(r.readiness.financeChecked).toBe(false)
+    const settlement = buildVerdictFields(r.readiness)[1]
+    expect(settlement.details).toEqual([])
+    expect(settlement.summary.key).toBe('verdicts.atSettlementCoveredCashOnly')
+    expect(r.flags.map((flag) => flag.code)).not.toContain('noPreApproval')
+  })
+
+  it('runs no loan check even when a pre-approval is entered but none is needed', () => {
+    const r = calculate(
+      inputs({ route: 'nolmi', depositPct: 100, savings: 10_000_000, preApprovedLoan: 500_000 }),
+    )
+    expect(r.readiness.financeChecked).toBe(false)
+    const settlement = r.readiness.verdicts[1]
+    expect(settlement.checks.map((check) => check.pocket)).toEqual(['cash'])
+    expect(r.flags.map((flag) => flag.code)).not.toContain('financeUnconditional')
   })
 
   it('has nothing left to say once every check has run and passed', () => {

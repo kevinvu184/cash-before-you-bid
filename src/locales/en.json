@@ -148,6 +148,7 @@
     "auctionDayCovered": "Your savings cover the {{required}} deposit due the moment the hammer falls.",
     "auctionDayShort": "Short {{shortfall}} for the {{required}} deposit due the moment the hammer falls.",
     "atSettlementCovered": "What is left of your savings covers the {{required}} due at settlement, and your pre-approval covers the balance of the price.",
+    "atSettlementCoveredCashOnly": "What is left of your savings covers the {{required}} due at settlement.",
     "atSettlementShort": "Short {{shortfall}} at settlement.",
     "atSettlementShortMultiple": "Short at settlement in both pockets. The cash gap and the loan gap are separate problems — a bigger pre-approval does not pay duty, and more savings do not enlarge the loan.",
     "shortAuctionDayCash": "Cash: short {{shortfall}}. The deposit is {{required}} and you have {{available}}. Save more, or bid less.",

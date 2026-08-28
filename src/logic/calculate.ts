@@ -215,7 +215,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   // The finance check's reason for existing, carried as a flag so the UI owns
   // the words: an auction contract has no finance clause and no cooling-off
   // period, so a loan that does not come through is a defaulted contract.
-  if (totals.loan > 0) {
+  if (readiness.loanRequired) {
     if (preApprovedLoan === null) {
       flag('note', 'noPreApproval')
     } else {

@@ -91,6 +91,13 @@ export const VERDICT_STATUS_KEY: Readonly<Record<VerdictStatus, string>> = {
 
 export interface VerdictSummaryKeys extends Readonly<Record<VerdictStatus, string>> {
   /**
+   * Used when the verdict is covered but the loan check did not run — no
+   * pre-approval to test, or no loan needed at all. The ordinary covered copy
+   * says the pre-approval covers the balance of the price, which would be an
+   * assertion about a check that never happened.
+   */
+  coveredUnchecked?: string
+  /**
    * Used when more than one pocket is short, so the headline never quotes a
    * figure that adds a cash gap to a loan gap — the two are closed differently
    * and one does not make up for the other. Only the settlement verdict has
@@ -106,6 +113,7 @@ export const VERDICT_SUMMARY_KEY: Readonly<Record<VerdictCode, VerdictSummaryKey
   },
   atSettlement: {
     covered: 'verdicts.atSettlementCovered',
+    coveredUnchecked: 'verdicts.atSettlementCoveredCashOnly',
     short: 'verdicts.atSettlementShort',
     shortMultiple: 'verdicts.atSettlementShortMultiple',
   },

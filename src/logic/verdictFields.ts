@@ -37,18 +37,28 @@ export function buildVerdictFields(readiness: Readiness): readonly VerdictField[
       },
     }))
     // A check that did not run is not a check that passed: say so where the
-    // user is reading the settlement verdict, not only in the flag list.
-    if (verdict.code === 'atSettlement' && !readiness.financeChecked) {
+    // user is reading the settlement verdict, not only in the flag list. Only
+    // where a loan is actually needed, though — on a 100% deposit there is no
+    // balance to fund, so there is no unanswered question to report.
+    if (verdict.code === 'atSettlement' && readiness.loanRequired && !readiness.financeChecked) {
       details.push({ key: VERDICT_FINANCE_NOT_CHECKED_KEY, params: {} })
     }
     const status = verdict.covered ? 'covered' : 'short'
     const cash = verdict.checks.find((check) => check.pocket === 'cash')
     const keys = VERDICT_SUMMARY_KEY[verdict.code]
+    // Covered has two headlines, because "covered" is only ever a claim about
+    // the checks that ran. The ordinary copy names the pre-approval, so it is
+    // reserved for the case where the loan check actually tested one; without
+    // it the headline speaks for the cash alone and the details say the rest.
+    const covered =
+      readiness.financeChecked || keys.coveredUnchecked === undefined
+        ? keys.covered
+        : keys.coveredUnchecked
     // With one pocket short the headline quotes its gap. With two, it quotes
     // none: adding a cash gap to a loan gap would produce a figure that is not
     // a sum of anything a bidder can act on, and the details below give each.
     const summaryKey = verdict.covered
-      ? keys.covered
+      ? covered
       : short.length > 1 && keys.shortMultiple !== undefined
         ? keys.shortMultiple
         : keys.short

@@ -101,12 +101,19 @@ export function assessReadiness(result: ReadinessSource, inputs: ReadinessInputs
   // LMI when `capitaliseLmi` puts the premium in the loan. That is also why
   // capitalised LMI is never counted twice: the same setting drops the LMI row
   // to zero, so it leaves the settlement cash band as it enters the loan.
-  if (preApproved !== null) {
+  //
+  // A purchase with no loan has no finance question to answer, so the check is
+  // not merely unrun there — it does not apply. The two are different states:
+  // an unrun check has to be said out loud, an inapplicable one must not be.
+  const loanRequired = result.totals.loan > 0
+  const financeChecked = loanRequired && preApproved !== null
+  if (financeChecked && preApproved !== null) {
     checks.push(pocketCheck('settlementLoan', 'loan', result.totals.loan, preApproved))
   }
 
   return {
     verdicts: [onTheDay, verdict('atSettlement', 'atSettlement', checks)],
-    financeChecked: preApproved !== null,
+    loanRequired,
+    financeChecked,
   }
 }
