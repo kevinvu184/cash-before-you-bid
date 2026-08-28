@@ -88,7 +88,11 @@ export function RateLine({
           type="button"
           className="ratebtn"
           aria-expanded={editing}
-          aria-controls={formId}
+          // Only while the form exists: aria-controls naming an id that is not
+          // in the document is a dangling reference, which validators flag and
+          // some assistive tech follows to nothing. aria-expanded carries the
+          // collapsed state on its own.
+          aria-controls={editing ? formId : undefined}
           onClick={() => (editing ? setEditing(false) : open())}
         >
           <span className="ratebtn-rate">{t('currency.rateLine', { base, quoted })}</span>

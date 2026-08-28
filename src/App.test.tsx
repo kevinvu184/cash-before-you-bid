@@ -362,6 +362,42 @@ describe('currency switching', () => {
     expect(exemption).not.toContain('~0')
   })
 
+  it('points aria-controls at the override form only while it exists', async () => {
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    const rateButton = await screen.findByRole('button', { expanded: false, name: /=/ })
+    // Collapsed: no reference, because the form it would name is not rendered.
+    expect(rateButton.getAttribute('aria-controls')).toBeNull()
+
+    fireEvent.click(rateButton)
+    const controls = rateButton.getAttribute('aria-controls')
+    expect(controls).not.toBeNull()
+    // Expanded: the reference resolves to a node actually in the document.
+    expect(document.getElementById(controls as string)).not.toBeNull()
+  })
+
+  it('keeps a manual rate through a round trip back to dollars', async () => {
+    // The override survives toggling to dollars and back rather than being
+    // dropped from the URL: someone checking the dollar figure mid-plan should
+    // not have to retype the rate their bank quoted them. It cannot mislead
+    // while dollars are shown — conversion is skipped for the base currency —
+    // and the MANUAL chip reappears with it.
+    window.history.replaceState(null, '', '/?cur=VND&fx=20000')
+    renderApp()
+    const before = document.getElementById('tTotal')?.textContent
+
+    switchTo('Đô la Úc')
+    await waitFor(() => expect(window.location.search).toBe('?fx=20000'))
+    // Dollars are unconverted despite the override riding along in the URL.
+    expect(document.getElementById('tTotal')?.textContent).not.toBe(before)
+    expect(document.getElementById('tTotal')?.textContent).toContain('AUD')
+
+    switchTo('Đồng Việt Nam')
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=20000'))
+    expect(document.getElementById('tTotal')?.textContent).toBe(before)
+    expect(screen.getByText('THỦ CÔNG')).toBeTruthy()
+  })
+
   it('leaves the calculator inputs in Australian dollars', async () => {
     window.history.replaceState(null, '', '/?price=820000')
     renderApp()
