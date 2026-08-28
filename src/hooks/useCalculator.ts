@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { calculate } from '../logic/calculate'
+import type { DisplayCurrency } from '../logic/currencyConfig'
 import { clampDepositPct, defaultDepositPctForRoute } from '../logic/deposit'
 import type { Lang } from '../logic/lang'
 import type { SkinId } from '../logic/skins'
@@ -33,6 +34,10 @@ export interface UseCalculatorResult {
   setLang: (lang: Lang) => void
   setSkin: (skin: SkinId) => void
   setMode: (mode: ModePreference) => void
+  /** The currency figures are written in; it changes nothing that was worked out. */
+  setCurrency: (currency: DisplayCurrency) => void
+  /** A rate typed in place of the fetched one; null goes back to the live rate. */
+  setManualRate: (rate: number | null) => void
   /**
    * The query string that reproduces exactly what is on screen. This is what a
    * saved scenario stores: one serialisation format, the URL codec's, so an
@@ -110,6 +115,20 @@ export function useCalculator(): UseCalculatorResult {
     [presentation, setState, state],
   )
 
+  const setCurrency = useCallback(
+    (currency: DisplayCurrency) =>
+      setState({ ...state, presentation: { ...presentation, currency } }, 'push'),
+    [presentation, setState, state],
+  )
+
+  // Applying or resetting an override is a deliberate act, not typing: it
+  // lands in the URL at once and the back button steps over it.
+  const setManualRate = useCallback(
+    (manualRate: number | null) =>
+      setState({ ...state, presentation: { ...presentation, manualRate } }, 'push'),
+    [presentation, setState, state],
+  )
+
   return {
     inputs,
     presentation,
@@ -119,6 +138,8 @@ export function useCalculator(): UseCalculatorResult {
     setLang,
     setSkin,
     setMode,
+    setCurrency,
+    setManualRate,
     currentQuery: serialiseUrlState(state).toString(),
     loadQuery,
   }

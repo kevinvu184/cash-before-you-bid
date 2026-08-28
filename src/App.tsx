@@ -1,4 +1,12 @@
-import { Component, Suspense, useEffect, useState, type ErrorInfo, type ReactNode } from 'react'
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
@@ -107,11 +115,24 @@ function App() {
     document.documentElement.dataset.coreInstance = String(instance)
   }, [instance])
 
+  // The display currency is published on the root element, beside data-skin
+  // and data-mode, so a stylesheet can answer it directly: đồng figures run
+  // some two and a half times longer than dollars, and the type and the stat
+  // grid have to give way to them.
+  //
+  // Before paint, not after: this is an attribute a stylesheet reads, so a
+  // passive effect would let one frame through at the dollar sizes.
+  const currency = core.presentation.currency
+  useLayoutEffect(() => {
+    document.documentElement.dataset.cur = currency
+  }, [currency])
+
   return (
     <>
       {/* display: contents, so the wrapper changes no layout on screen; it
           exists so print.css can take the whole live page off the paper with
-          one rule rather than a list of things to hide that goes stale. */}
+          one rule rather than a list of things to hide that goes stale — the
+          currency bar this branch merged in included. */}
       <div className="app-screen">
         <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
       </div>

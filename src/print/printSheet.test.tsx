@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '../i18n'
 import { LANGS, type Lang } from '../logic/lang'
 import { SAFE_MAX_BID_CEILING } from '../logic/safeMaxBid'
-import { estimateMoney, exactMoney, refText } from '../skins/shared/text'
+import { BASE_CURRENCY } from '../logic/currencyConfig'
+import type { Display } from '../logic/display'
+import { estimateMoney, exactMoney, quotedRate, refText } from '../skins/shared/text'
 import { viewModelFixture, type FixtureOptions } from '../testing/viewModelFixture'
 import { PrintSheet } from './PrintSheet'
 
@@ -27,6 +29,14 @@ async function renderSheet(locale: Lang, options: FixtureOptions = {}) {
   return { sheet, vm }
 }
 
+// Every figure is written through the display the fixture carries — currency
+// and rate — with the locale added at the point of use, exactly as the sheet
+// does. Asserting against a bare locale would pass while the sheet printed
+// dollars to a reader who asked for đồng.
+function displayFor(locale: Lang, options: FixtureOptions = {}): Display {
+  return { locale, ...viewModelFixture({ ...options, locale }).display.settings }
+}
+
 const bandSubtotal = (vm: ReturnType<typeof viewModelFixture>, band: string) => {
   const group = vm.results.lineGroups.find((candidate) => candidate.band === band)
   if (group === undefined) throw new Error(`fixture has no ${band} band`)
@@ -38,9 +48,9 @@ describe('the three numbers that matter', () => {
     const { sheet, vm } = await renderSheet(locale)
     const headline = sheet.querySelector('.print-headline')?.textContent ?? ''
 
-    expect(headline).toContain(estimateMoney(bandSubtotal(vm, 'auctionDay'), locale))
-    expect(headline).toContain(estimateMoney(vm.results.safeMaxBid.value, locale))
-    expect(headline).toContain(estimateMoney(bandSubtotal(vm, 'atSettlement'), locale))
+    expect(headline).toContain(estimateMoney(bandSubtotal(vm, 'auctionDay'), displayFor(locale)))
+    expect(headline).toContain(estimateMoney(vm.results.safeMaxBid.value, displayFor(locale)))
+    expect(headline).toContain(estimateMoney(bandSubtotal(vm, 'atSettlement'), displayFor(locale)))
   })
 
   it.each(LANGS)('says what the bid ceiling is bounded by, in %s', async (locale) => {
@@ -62,7 +72,7 @@ describe('the three numbers that matter', () => {
 
     // The two band subtotals still headline; the bid does not invent a price.
     expect(figures).toHaveLength(2)
-    expect(figures).not.toContain(estimateMoney(0, 'en'))
+    expect(figures).not.toContain(estimateMoney(0, displayFor('en')))
     expect(sheet.querySelector('.print-bid-note')?.textContent).not.toContain('safeMaxBid.')
   })
 
@@ -78,6 +88,34 @@ describe('the three numbers that matter', () => {
     })
 
     expect(sheet.querySelectorAll('.print-headline-figure')).toHaveLength(2)
+  })
+})
+
+describe('the currency the reader asked for', () => {
+  it.each(LANGS)('writes the figures in the display currency, not the base one, in %s', async (locale) => {
+    const { sheet, vm } = await renderSheet(locale)
+    const deposit = bandSubtotal(vm, 'auctionDay')
+    const text = sheet.textContent ?? ''
+
+    // The fixture displays đồng at a rate, so a sheet that ignored the display
+    // would print the unconverted dollar figure. Both assertions are needed:
+    // the first alone would pass on a sheet that printed both.
+    expect(text).toContain(estimateMoney(deposit, displayFor(locale)))
+    expect(text).not.toContain(
+      estimateMoney(deposit, { locale, currency: BASE_CURRENCY, rate: 1 }),
+    )
+  })
+
+  it.each(LANGS)('says what rate it converted at, and where the rate came from, in %s', async (locale) => {
+    const { sheet, vm } = await renderSheet(locale)
+    const rate = vm.display.rate
+    const caveats = sheet.querySelector('.print-caveats')?.textContent ?? ''
+
+    // A printed page in đồng with no rate on it is a page nobody can check.
+    expect(rate).not.toBeNull()
+    expect(caveats).toContain(quotedRate(rate?.value ?? 0, displayFor(locale)))
+    expect(caveats).toContain(refText(rate?.source ?? { key: '', params: {} }, i18n.t, displayFor(locale)))
+    expect(caveats).not.toContain('currency.')
   })
 })
 
@@ -99,7 +137,7 @@ describe('the caveats, which are the requirement not to compromise on', () => {
     const text = sheet.querySelector('.print-caveats')?.textContent ?? ''
 
     const note = vm.results.estimateNote.value
-      .map((ref) => refText(ref, i18n.t, locale))
+      .map((ref) => refText(ref, i18n.t, displayFor(locale)))
       .join(' ')
 
     expect(text).toContain(note)
@@ -131,7 +169,7 @@ describe('the page the numbers belong to', () => {
     expect(masthead).toContain(i18n.t(vm.chrome.title.labelKey))
     expect(price).not.toBeNull()
     // The price is the user's own figure, so it is quoted exactly.
-    expect(masthead).toContain(exactMoney(price as number, locale))
+    expect(masthead).toContain(exactMoney(price as number, displayFor(locale)))
     expect(masthead).not.toContain('print.')
   })
 })

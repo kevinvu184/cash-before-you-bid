@@ -15,6 +15,8 @@ export const meta: SkinMeta = {
   nameKey: 'skins.plain',
   tokens,
   renders: {
+    currency: true,
+    exchangeRate: true,
     eyebrow: true,
     title: true,
     lede: true,

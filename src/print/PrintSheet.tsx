@@ -1,11 +1,20 @@
 import { useTranslation } from 'react-i18next'
 import type { TimingBand } from '../types/calculator'
-import type { AppViewModel, LineField, LineGroup, SafeMaxBidField } from '../types/viewModel'
+import type {
+  AppViewModel,
+  ExchangeRateField,
+  LineField,
+  LineGroup,
+  SafeMaxBidField,
+} from '../types/viewModel'
+import { DisplayProvider } from '../skins/shared/DisplayProvider'
+import { useDisplay } from '../skins/shared/display'
 import {
   estimateMoney,
   estimateRowAmount,
   exactMoney,
   howText,
+  quotedRate,
   ratesAsAtDate,
   refText,
 } from '../skins/shared/text'
@@ -35,10 +44,22 @@ import './print.css'
  * It carries no `data-field` attributes, for the same reason the sticky total
  * carries none — it re-presents fields the skin has already put in the
  * document rather than being where those fields live.
+ *
+ * It publishes its own display context. A skin publishes the one it was
+ * handed, and this is not inside a skin — so without this the sheet would have
+ * no currency to write figures in, and paper would disagree with the screen.
  */
 export function PrintSheet({ vm }: { vm: AppViewModel }) {
-  const { t, i18n } = useTranslation()
-  const locale = i18n.language
+  return (
+    <DisplayProvider settings={vm.display.settings}>
+      <PrintDocument vm={vm} />
+    </DisplayProvider>
+  )
+}
+
+function PrintDocument({ vm }: { vm: AppViewModel }) {
+  const { t } = useTranslation()
+  const display = useDisplay()
   const results = vm.results
   const groups = new Map<TimingBand, LineGroup>(
     results.lineGroups.map((group) => [group.band, group]),
@@ -58,23 +79,23 @@ export function PrintSheet({ vm }: { vm: AppViewModel }) {
         <p className="print-title">{t(vm.chrome.title.labelKey)}</p>
         {price === null ? null : (
           <p className="print-caption">
-            {t('print.priceCaption', { price: exactMoney(price, locale) })}
+            {t('print.priceCaption', { price: exactMoney(price, display) })}
           </p>
         )}
       </div>
 
       {/* The three figures, in the order the money is needed. */}
       <div className="print-headline">
-        {auctionDay === undefined ? null : <Headline group={auctionDay} locale={locale} />}
+        {auctionDay === undefined ? null : <Headline group={auctionDay} />}
         <div className="print-headline-item">
           <p className="print-headline-label">{t(results.safeMaxBid.labelKey)}</p>
           {results.safeMaxBid.status === 'bound' ? (
             <p className="print-headline-figure">
-              {estimateMoney(results.safeMaxBid.value, locale)}
+              {estimateMoney(results.safeMaxBid.value, display)}
             </p>
           ) : null}
         </div>
-        {atSettlement === undefined ? null : <Headline group={atSettlement} locale={locale} />}
+        {atSettlement === undefined ? null : <Headline group={atSettlement} />}
       </div>
 
       <BidNote field={results.safeMaxBid} />
@@ -84,10 +105,14 @@ export function PrintSheet({ vm }: { vm: AppViewModel }) {
           must not be able to push them onto a second sheet. */}
       <div className="print-caveats">
         <p className="print-caveat">
-          {results.estimateNote.value.map((ref) => refText(ref, t, locale)).join(' ')}
+          {results.estimateNote.value.map((ref) => refText(ref, t, display)).join(' ')}
         </p>
+        {/* Figures converted out of the base currency say what they were
+            converted at, and where that rate came from. A printed page in
+            đồng with no rate on it is a page nobody can check. */}
+        {vm.display.rate === null ? null : <RateCaveat field={vm.display.rate} />}
         <p className="print-caveat">
-          {t(rates.beforeKey, { date: ratesAsAtDate(rates.asAt, locale) ?? rates.asAt })}
+          {t(rates.beforeKey, { date: ratesAsAtDate(rates.asAt, display.locale) ?? rates.asAt })}
           <a href={rates.href}>{t(rates.linkKey)}</a>
           {t(rates.afterKey)}
           {t(sources.beforeKey)}
@@ -146,14 +171,36 @@ export function PrintSheet({ vm }: { vm: AppViewModel }) {
 }
 
 /** One band's closing figure, headlined: what it is, when it is due. */
-function Headline({ group, locale }: { group: LineGroup; locale: string }) {
+function Headline({ group }: { group: LineGroup }) {
   const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <div className="print-headline-item">
       <p className="print-headline-label">{t(group.labelKey)}</p>
-      <p className="print-headline-figure">{estimateMoney(group.subtotal.value, locale)}</p>
+      <p className="print-headline-figure">{estimateMoney(group.subtotal.value, display)}</p>
       <p className="print-headline-note">{t(group.noteKey)}</p>
     </div>
+  )
+}
+
+/**
+ * The rate every converted figure on the sheet was produced at, and its
+ * provenance. Absent under the base currency, where nothing was converted and
+ * there is no rate doing any work.
+ */
+function RateCaveat({ field }: { field: ExchangeRateField }) {
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const line = t(field.lineKey, {
+    base: t(field.baseSymbolKey),
+    quoted: quotedRate(field.value, display),
+  })
+  const note = t(field.noteKey, {
+    currency: t(field.symbolKey),
+    provider: field.providerName,
+  })
+  return (
+    <p className="print-caveat">{`${line} ${refText(field.source, t, display)} ${note}`}</p>
   )
 }
 
@@ -164,21 +211,23 @@ function Headline({ group, locale }: { group: LineGroup; locale: string }) {
  * headline cell above.
  */
 function BidNote({ field }: { field: SafeMaxBidField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   // Joined in JS so the paragraph is one text node with a single space,
   // rather than JSX whitespace rules deciding the gap.
-  const summary = refText(field.summary, t, i18n.language)
-  const detail = field.detail === null ? null : refText(field.detail, t, i18n.language)
+  const summary = refText(field.summary, t, display)
+  const detail = field.detail === null ? null : refText(field.detail, t, display)
   return <p className="print-bid-note">{detail === null ? summary : `${summary} ${detail}`}</p>
 }
 
 function PrintRow({ line }: { line: LineField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <tr className={line.emphasis ? 'print-emphasis' : undefined}>
       <th scope="row">{t(line.labelKey)}</th>
-      <td className="print-amount">{estimateRowAmount(line.value, i18n.language)}</td>
-      <td>{howText(line.how, t, i18n.language)}</td>
+      <td className="print-amount">{estimateRowAmount(line.value, display)}</td>
+      <td>{howText(line.how, t, display)}</td>
     </tr>
   )
 }

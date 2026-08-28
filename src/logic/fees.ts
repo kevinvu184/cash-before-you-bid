@@ -5,12 +5,13 @@ import {
   TRANSFER_FEE_BASE,
   TRANSFER_FEE_CAP,
   TRANSFER_FEE_PER_THOUSAND,
+  TRANSFER_FEE_UNIT,
 } from '../data/constants'
 
 export function transferRegistrationFee(price: number): number {
   return Math.min(
     TRANSFER_FEE_CAP,
-    Math.ceil(TRANSFER_FEE_BASE + TRANSFER_FEE_PER_THOUSAND * Math.floor(price / 1000)),
+    Math.ceil(TRANSFER_FEE_BASE + TRANSFER_FEE_PER_THOUSAND * Math.floor(price / TRANSFER_FEE_UNIT)),
   )
 }
 

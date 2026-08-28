@@ -22,5 +22,21 @@ export const CURRENCY_ROUNDING: Record<CurrencyCode, CurrencyRounding> = {
 // test actually exercises the map rather than deriving one from the other.
 export const CURRENCY_CODES: readonly CurrencyCode[] = ['AUD', 'VND', 'USD']
 
-// The single currency the UI is wired to today.
-export const APP_CURRENCY: CurrencyCode = 'AUD'
+// The currencies the display switch offers. A subset of CurrencyCode: USD has
+// rounding rules ready but no UI, because there is no reason yet to show one.
+export type DisplayCurrency = Extract<CurrencyCode, 'AUD' | 'VND'>
+
+export const DISPLAY_CURRENCIES: readonly DisplayCurrency[] = ['AUD', 'VND']
+
+// Every amount the calculator stores, receives as input, or computes is in this
+// currency at full precision. Any other currency is a display conversion at an
+// exchange rate — nothing downstream of the formatter works in one. It is
+// itself a DisplayCurrency: showing the figures as they were calculated has to
+// stay one of the choices.
+export const BASE_CURRENCY: DisplayCurrency = 'AUD'
+
+export const DEFAULT_DISPLAY_CURRENCY: DisplayCurrency = 'AUD'
+
+export function isDisplayCurrency(value: string | null): value is DisplayCurrency {
+  return DISPLAY_CURRENCIES.includes(value as DisplayCurrency)
+}

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AppViewModel } from '../../types/viewModel'
+import { DisplayProvider } from '../shared/DisplayProvider'
 import { useScrolledPast } from '../shared/useScrolledPast'
 import { ActionButton, ChoiceButtons } from './Controls'
 import { InputsPanel } from './Inputs'
@@ -22,7 +23,7 @@ export function Root({ vm }: { vm: AppViewModel }) {
   const total = vm.results.stats[0]
 
   return (
-    <>
+    <DisplayProvider settings={vm.display.settings}>
       {total ? <StickyTotal total={total} shown={headerGone} /> : null}
       <div className="page">
         {notice ? (
@@ -76,9 +77,9 @@ export function Root({ vm }: { vm: AppViewModel }) {
 
         <div className="columns">
           <InputsPanel inputs={vm.inputs} />
-          <Results results={vm.results} />
+          <Results display={vm.display} results={vm.results} />
         </div>
       </div>
-    </>
+    </DisplayProvider>
   )
 }
