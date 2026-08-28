@@ -76,6 +76,25 @@ From the safe maximum bid (`safeMaxBid.*`):
 - "cạn cùng lúc" for cash and a pre-approval running out together.
 - "làm tròn xuống" for rounding down, matching "làm tròn" in `money.*`.
 
+From the privacy statement (`privacy.*`), which is the one block where a
+mistranslation would turn a promise into a false one, so it is worth a
+careful read:
+
+- "rời khỏi trình duyệt" for "leave your browser" in the claim itself. The
+  claim is deliberately narrow — *your figures*, not *everything*. Since #23
+  self-hosted the fonts the broader claim would in fact be true today, but it
+  is not the one being made: the narrow one is about the reader's money and
+  stays true whatever the page later loads. Do not widen it to
+  "không có gì rời khỏi" on the grounds that it currently holds.
+- "thu thập thông tin khách hàng tiềm năng" for lead capture, which has no
+  short Vietnamese equivalent; "không phân tích hành vi" for analytics.
+- "thanh địa chỉ" for the address bar, and "đồng bộ" for browser sync.
+- "bộ nhớ riêng của trình duyệt" for `localStorage`, kept descriptive rather
+  than naming the API.
+- "phông chữ" for the fonts in the last point, which are now served from this
+  origin — the sentence says nothing is loaded from anyone else, so a
+  translation must not reintroduce a third party into it.
+
 ## Submitting corrections
 
 1. Edit `src/locales/vi.json` (or `en.json`). Keys are flat or one level deep;
