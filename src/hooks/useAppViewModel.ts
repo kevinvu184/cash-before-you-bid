@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DEPOSIT_HINT_KEY,
@@ -17,7 +16,6 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
-import { safeMaxBid } from '../logic/safeMaxBid'
 import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { buildVerdictFields } from '../logic/verdictFields'
 import {
@@ -33,6 +31,7 @@ import {
 } from '../types/viewModel'
 import type { UseCalculatorResult } from './useCalculator'
 import { useNumericDraft, useOptionalNumericDraft } from './useNumericDraft'
+import { useSafeMaxBid } from './useSafeMaxBid'
 import { useScenariosViewModel } from './useScenariosViewModel'
 import { useTranslationNotice } from './useTranslationNotice'
 
@@ -422,11 +421,9 @@ export function useAppViewModel(
 
   const lines = buildLineFields(result.rows)
 
-  // The one figure on the page that is not a single pass of the engine: the
-  // search runs `calculate()` about forty times, which measures at ~0.3ms on a
-  // laptop and so is worth not repeating on the keystrokes that only move a
-  // draft. Every other figure is a single pass and is left unmemoised.
-  const bid = useMemo(() => safeMaxBid(inputs), [inputs])
+  // The one figure that is a search rather than a single pass of the engine,
+  // and so the one that is memoised; see the hook for what it is keyed on.
+  const bid = useSafeMaxBid(inputs)
 
   return {
     locale: inputs.lang,
