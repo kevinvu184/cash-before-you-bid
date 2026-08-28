@@ -1,5 +1,6 @@
 import { rowBand } from '../logic/bands'
 import { buildLineFields } from '../logic/lineFields'
+import { PRIVACY_STATEMENT } from '../logic/privacy'
 import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { assessReadiness } from '../logic/verdict'
 import { buildVerdictFields } from '../logic/verdictFields'
@@ -518,6 +519,7 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         'inputs.preApprovedLoanHint',
         'primary',
       ),
+      privacy: PRIVACY_STATEMENT,
       assumptions: {
         id: 'assumptions',
         labelKey: 'inputs.assumptions',

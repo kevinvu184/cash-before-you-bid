@@ -1,0 +1,337 @@
+import { readFileSync, readdirSync } from 'node:fs'
+import { dirname, join, relative, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+import en from '../locales/en.json'
+import vi from '../locales/vi.json'
+import { NETWORK_CALLERS, PRIVACY_STATEMENT, THIRD_PARTY_HOSTS } from './privacy'
+
+// The half of #24 that can go wrong: wording drifts from reality silently, and
+// a claim that has quietly become false is worse than no claim at all. So this
+// file checks code rather than the sentence.
+//
+// What it checks, exactly: the sources the build is made from — `index.html`,
+// `src/`, `public/` — not `dist/`. Three tripwires, all pointed at privacy.ts,
+// which is where the wording lives. A host `index.html` or a stylesheet
+// references must be declared there; a file that opens a connection must be
+// declared there; and a host one of those files reaches must be declared
+// there too. None can be satisfied without reading the copy next to the
+// declaration, which is the whole mechanism: someone adding a request has to
+// walk past the sentence it would falsify.
+//
+// What it does not check, and what covers that instead. Nothing here inspects
+// build output or `node_modules`, so it would not catch a request introduced
+// by a dependency or injected by a build plugin. Only loading the built page
+// catches those, which is a manual audit — recorded in the pull request that
+// added this file, and the thing to repeat before believing the claim again
+// after a dependency or build-config change. Treat these tests as the guard
+// on everyday edits, not as proof about the deployed bundle.
+
+const SRC = dirname(dirname(fileURLToPath(import.meta.url)))
+const ROOT = dirname(SRC)
+
+const lookup = (strings: Record<string, unknown>, key: string): unknown =>
+  key.split('.').reduce<unknown>((value, part) => {
+    if (typeof value !== 'object' || value === null) return undefined
+    return (value as Record<string, unknown>)[part]
+  }, strings)
+
+const statementKeys = (): string[] => [
+  PRIVACY_STATEMENT.labelKey,
+  ...PRIVACY_STATEMENT.value.flatMap((point) => [point.termKey, point.bodyKey]),
+]
+
+// The build's inputs: source and static asset alike. `dist/` is skipped even
+// though it is precisely what a visitor loads — it is generated, absent in a
+// fresh checkout, and stale whenever it is present, so asserting against it
+// would pass or fail on whether someone had run a build rather than on what
+// the repository says. The manual audit covers the output; this covers the
+// inputs. node_modules is out of scope for the same reason it is out of the
+// claim's reach: see the header.
+const SKIP = new Set(['node_modules', '.git', 'dist', 'coverage'])
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (SKIP.has(entry.name)) return []
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) return sourceFiles(path)
+    if (/\.(ts|tsx|js|mjs|css|html|webmanifest)$/.test(entry.name)) return [path]
+    return []
+  })
+}
+
+const repoPath = (file: string): string => relative(ROOT, file).split(sep).join('/')
+
+/** Test files name the things they forbid, and none of them is bundled. */
+const notATest = (name: string): boolean => !/\.test\.(ts|tsx)$/.test(name)
+
+/**
+ * Block comments and whole-line comments, removed so that prose describing a
+ * request — privacy.ts and sw.js both do — is not read as one.
+ *
+ * A *trailing* `// …` after code is deliberately left in place. Stripping one
+ * means deciding where a comment starts, and `src="//host"`, `url(//host)` and
+ * `"//host"` are all `//` too; getting that wrong deletes the vendor name or
+ * the `fetch(` from the line before the scans below ever see it. That is the
+ * one failure this file must not have. Leaving a trailing comment in can only
+ * produce a false positive — a comment mentioning `fetch` failing the suite —
+ * and a test that fails loudly gets fixed, while one that passes quietly does
+ * not.
+ */
+const stripComments = (source: string): string =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '')
+
+const NETWORK_APIS = /\b(fetch\s*\(|XMLHttpRequest|sendBeacon|EventSource|WebSocket)\b/
+
+/** A hostname, with at least one dot so that `// a comment` is not one. */
+const HOST = String.raw`[a-z0-9-]+(?:\.[a-z0-9-]+)+`
+
+/**
+ * Absolute and protocol-relative alike: `//fonts.example/x` reaches a third
+ * party exactly as `https://fonts.example/x` does.
+ */
+const ABSOLUTE_URL = new RegExp(String.raw`(?:https?:)?//(${HOST})`, 'gi')
+
+/**
+ * The places a URL is fetched without anyone clicking anything — an image
+ * source, a stylesheet, a CSS `url()`. A bare `href` is deliberately absent:
+ * `<a href>` is a navigation the reader chooses, which is why the SRO and
+ * roadmap links are not requests this page makes. `<link href>` is here,
+ * because that one does fetch.
+ */
+const AUTO_FETCH: readonly RegExp[] = [
+  /\bsrc\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\bsrcset\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\bposter\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\burl\(\s*["']?([^)"']*)/gi,
+  /@import\s+(?:url\(\s*)?["']([^"']*)/gi,
+  /<link\b[^>]*?\bhref\s*=\s*["']([^"']*)/gi,
+]
+
+const hostsIn = (text: string): string[] =>
+  [...text.matchAll(ABSOLUTE_URL)].map((match) => match[1].toLowerCase())
+
+const autoFetchHosts = (source: string): string[] =>
+  AUTO_FETCH.flatMap((pattern) => [...source.matchAll(pattern)].flatMap((m) => hostsIn(m[1])))
+
+const undeclared = (hosts: readonly string[]): string[] =>
+  [...new Set(hosts)].filter((host) => !Object.hasOwn(THIRD_PARTY_HOSTS, host))
+
+/**
+ * Hosts named in the files allowed to open a connection.
+ *
+ * The auto-fetch scan cannot see these: a `fetch()` target is a string
+ * constant, with no `src` or `url()` for the patterns above to find. So the
+ * hosts a declared caller reaches were invisible to both directions — a
+ * tracker added inside an already-declared caller would have passed, and a
+ * host declared for one would have read as stale. Reading those files, and
+ * only those, closes it: they are the ones that make requests, so an absolute
+ * URL in one is a request target rather than a link a reader might click.
+ *
+ * Comments are stripped first, so prose naming a vendor is not read as a call
+ * to it — privacy.ts and sw.js both describe requests they do not make.
+ */
+const IMPORT_FROM = /\bfrom\s+["'](\.[^"']*)["']/g
+
+/**
+ * A caller's own file, plus the repository modules it imports directly.
+ *
+ * One level, and only relative imports. A fetch target is a string constant,
+ * and it does not have to sit in the file that fetches it: this app's endpoint
+ * lives in `logic/exchangeRate.ts`, beside the rest of the rate rules, and is
+ * imported by the hook that calls `fetch`. Reading the caller alone would have
+ * left the host invisible to every forward scan — declared, but with nothing
+ * failing if the declaration were deleted and the wording allowed to drift
+ * back. Following the imports one step is what makes the declaration load
+ * bearing.
+ */
+const callerSources = (name: string): string[] => {
+  const file = join(ROOT, name)
+  const source = readFileSync(file, 'utf8')
+  const dir = dirname(file)
+  const imported = [...source.matchAll(IMPORT_FROM)].flatMap((match) => {
+    // Extensionless in the source, as TypeScript writes them.
+    for (const suffix of ['.ts', '.tsx', '.js', '.mjs', '.css', '']) {
+      const path = join(dir, `${match[1]}${suffix}`)
+      try {
+        return [readFileSync(path, 'utf8')]
+      } catch {
+        continue
+      }
+    }
+    return []
+  })
+  return [source, ...imported]
+}
+
+const networkCallerHosts = (): string[] =>
+  Object.keys(NETWORK_CALLERS)
+    .flatMap(callerSources)
+    .flatMap((source) => hostsIn(stripComments(source)))
+
+describe('the privacy statement', () => {
+  it('says something in both locales, from keys and never sentences', () => {
+    for (const key of statementKeys()) {
+      expect(key).toMatch(/^privacy\.[A-Za-z]+$/)
+      for (const [name, strings] of [
+        ['en', en],
+        ['vi', vi],
+      ] as const) {
+        const value = lookup(strings as unknown as Record<string, unknown>, key)
+        expect(typeof value === 'string' && value.length > 0, `${name}: ${key}`).toBe(true)
+      }
+    }
+  })
+
+  it('carries the field id both skins declare, as points rather than a blob', () => {
+    expect(PRIVACY_STATEMENT.id).toBe('inputsPrivacy')
+    // Primary: it is the reason someone types a savings balance in at all.
+    expect(PRIVACY_STATEMENT.importance).toBe('primary')
+    expect(PRIVACY_STATEMENT.value.length).toBeGreaterThan(0)
+    for (const point of PRIVACY_STATEMENT.value) {
+      expect(point.termKey).not.toBe(point.bodyKey)
+    }
+  })
+
+  it('covers each thing the audit found, in both locales', () => {
+    // The four are the whole audit: where the sums run, where the figures end
+    // up (the URL, then this device), and what the page fetches from a third
+    // party. Dropping one would leave a claim with a hole in it.
+    const terms = PRIVACY_STATEMENT.value.map((point) => point.termKey)
+    expect(terms).toEqual([
+      'privacy.localTerm',
+      'privacy.linkTerm',
+      'privacy.storageTerm',
+      'privacy.thirdPartyTerm',
+    ])
+  })
+
+  it('claims only what the audit supports — figures, not everything', () => {
+    // "Nothing leaves your browser" would be false while index.html loads a
+    // font from Google; "your figures never leave your browser" is not. The
+    // claim must therefore be about what the user typed, and must not promise
+    // that the page itself is silent.
+    for (const [name, strings] of [
+      ['en', en],
+      ['vi', vi],
+    ] as const) {
+      const claim = lookup(strings as unknown as Record<string, unknown>, 'privacy.claim')
+      expect(typeof claim, name).toBe('string')
+      expect(String(claim).length, name).toBeLessThan(90)
+    }
+    expect(String(lookup(en as unknown as Record<string, unknown>, 'privacy.claim'))).toMatch(
+      /figures.*never leave/i,
+    )
+  })
+
+  it('names no analytics, because there are none to name', () => {
+    // Requirement 5 of the ticket, as a fact about the sources rather than a
+    // sentence: nothing we wrote reports a page view, an event or an input
+    // value. A vendor pulled in transitively would not show up here — see the
+    // header on what this does and does not reach.
+    const analytics =
+      /gtag|googletagmanager|google-analytics|plausible|posthog|mixpanel|segment\.(io|com)|hotjar|sentry|amplitude|matomo|clarity\.ms/i
+    const offenders = sourceFiles(ROOT)
+      .map(repoPath)
+      .filter(notATest)
+      .filter((name) => analytics.test(stripComments(readFileSync(join(ROOT, name), 'utf8'))))
+    expect(offenders).toEqual([])
+  })
+})
+
+describe('what the sources say the page will contact', () => {
+  it('references no host in index.html that privacy.ts has not declared', () => {
+    // index.html is head content end to end — no anchors, nothing a reader
+    // navigates to — so every host named anywhere in it is one the page
+    // reaches on its own, and a broad scan has nothing to false-positive on.
+    // Adding one means editing privacy.ts, where privacy.thirdPartyBody sits:
+    // declare it, then make the wording true again.
+    expect(undeclared(hostsIn(readFileSync(join(ROOT, 'index.html'), 'utf8')))).toEqual([])
+  })
+
+  it('fetches no host from a component or stylesheet without declaring it', () => {
+    // The narrow scan above would miss a tracking pixel dropped into a skin —
+    // `<img src="https://…">` is a request to a third party that no `fetch(`
+    // appears for — and would miss a `url()` or `@import` in a stylesheet. So
+    // every source file is read for URLs in positions the browser fetches on
+    // its own, protocol-relative ones included.
+    const offenders = sourceFiles(ROOT)
+      .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+      .filter(([name]) => notATest(name))
+      .flatMap(([name, source]) => undeclared(autoFetchHosts(source)).map((h) => `${name}: ${h}`))
+    expect(offenders).toEqual([])
+  })
+
+  it('contacts no host from a declared caller without declaring the host too', () => {
+    // Being allowed to open a connection is not being allowed to open it to
+    // anywhere: the caller list says which files may make a request, and this
+    // says the hosts they reach must still be named. Without it, the one file
+    // in the app that legitimately fetches would have been the one place a
+    // third party could be added silently.
+    expect(undeclared(networkCallerHosts())).toEqual([])
+  })
+
+  it('opens a connection from no file privacy.ts has not declared', () => {
+    const offenders = sourceFiles(ROOT)
+      .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+      .filter(([name]) => notATest(name) && !Object.hasOwn(NETWORK_CALLERS, name))
+      .filter(([, source]) => NETWORK_APIS.test(stripComments(source)))
+      .map(([name]) => name)
+    expect(offenders).toEqual([])
+  })
+
+  it('never lets comment stripping hide a URL from the scans', () => {
+    // A protocol-relative URL is `//host`, which is also how a line comment
+    // starts. Stripping greedily deleted the rest of the line — so a vendor in
+    // an `src` attribute, or a `fetch(` sitting after such a string, vanished
+    // before it could be detected. Each of these must survive.
+    const survives = [
+      '<script src="//googletagmanager.com/gtm.js"></script>',
+      'const u = "//evil.example/x"; fetch(u)',
+      '.x { background: url(//hotjar.com/a.png); }',
+    ]
+    for (const source of survives) expect(stripComments(source)).toBe(source)
+
+    // Prose still goes, which is the only reason to strip anything.
+    expect(stripComments('  // mentions fetch( and posthog').trim()).toBe('')
+    expect(stripComments('/* mentions sendBeacon */').trim()).toBe('')
+  })
+
+  it('declares no host the sources have stopped reaching', () => {
+    // The other direction, and the one that bites on a merge rather than on an
+    // edit: #23 self-hosted the fonts, which left two Google hosts declared
+    // here that nothing reached any more — a statement naming a third party
+    // that no longer exists is as wrong as one omitting a third party that
+    // does. Whichever way the build moves, the wording has to move with it.
+    const reached = new Set([
+      ...hostsIn(readFileSync(join(ROOT, 'index.html'), 'utf8')),
+      ...sourceFiles(ROOT)
+        .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+        .filter(([name]) => notATest(name))
+        .flatMap(([, source]) => autoFetchHosts(source)),
+      // Broad, unlike the forward scans: a fetch target is a string constant
+      // with no `src` or `url()` to find, and it does not have to sit in the
+      // file that fetches it — this app's lives beside the rest of the
+      // exchange-rate rules. Scanning every source for the name is right here
+      // and would be wrong the other way round, where it would flag the SRO
+      // and roadmap links a reader clicks. This direction only ever asks
+      // whether a declared host has stopped being mentioned at all.
+      ...sourceFiles(ROOT)
+        .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+        .filter(([name]) => notATest(name))
+        .flatMap(([, source]) => hostsIn(stripComments(source))),
+    ])
+    const stale = Object.keys(THIRD_PARTY_HOSTS).filter((host) => !reached.has(host))
+    expect(stale).toEqual([])
+  })
+
+  it('declares a reason for every host and every caller', () => {
+    for (const [host, why] of Object.entries(THIRD_PARTY_HOSTS)) {
+      expect(host, why).toMatch(/^[a-z0-9.-]+$/)
+      expect(why.length, host).toBeGreaterThan(10)
+    }
+    for (const [file, why] of Object.entries(NETWORK_CALLERS)) {
+      expect(why.length, file).toBeGreaterThan(10)
+    }
+  })
+})
