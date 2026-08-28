@@ -68,6 +68,7 @@ export const meta: SkinMeta = {
     lineSubtotalAtSettlement: true,
     lineSubtotalAfterSettlement: true,
     lineTotal: true,
+    guidanceAuctionDay: true,
     flags: true,
     estimateNote: true,
     notes: true,

@@ -97,9 +97,22 @@ export type LineFieldId =
   | 'lineSubtotalAfterSettlement'
   | 'lineTotal'
 
+/**
+ * Guidance hangs off a timing band, not off a line: it says what the money in
+ * that band has to look like, which is not a figure and has no working. Only
+ * the auction-day band has any today, so there is exactly one id.
+ */
+export type GuidanceFieldId = 'guidanceAuctionDay'
+
 export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
 
-export type FieldId = ChromeFieldId | InputFieldId | StatFieldId | LineFieldId | ResultsFieldId
+export type FieldId =
+  | ChromeFieldId
+  | InputFieldId
+  | StatFieldId
+  | LineFieldId
+  | GuidanceFieldId
+  | ResultsFieldId
 
 /**
  * The exhaustive id set, as a `Record<FieldId, true>` so that adding a member
@@ -160,6 +173,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   lineSubtotalAtSettlement: true,
   lineSubtotalAfterSettlement: true,
   lineTotal: true,
+  guidanceAuctionDay: true,
   flags: true,
   estimateNote: true,
   notes: true,
@@ -289,11 +303,25 @@ export interface LineGroup {
   noteKey: string
   lines: readonly LineField[]
   subtotal: LineField
+  /**
+   * What the money in this band has to look like on the day — payment form,
+   * timing, who sets the terms. `null` for a band with nothing to say.
+   */
+  guidance: GuidanceField | null
 }
 
 export interface NotePart {
   termKey: string
   bodyKey: string
+}
+
+/**
+ * A band's guidance: `labelKey` names it — the label a skin puts on the
+ * disclosure that reveals the points — and each point is a lead-in term and
+ * the sentence that follows it, the same shape as a rules note.
+ */
+export interface GuidanceField extends Field<readonly NotePart[]> {
+  kind: 'text'
 }
 
 export interface NoteEntry {

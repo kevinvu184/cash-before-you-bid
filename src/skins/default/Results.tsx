@@ -5,6 +5,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery'
 import type { FlagKind } from '../../types/calculator'
 import type {
   Field,
+  GuidanceField,
   LineField,
   NoteEntry,
   ResultsViewModel,
@@ -128,6 +129,9 @@ function LineTable({ results }: { results: ResultsViewModel }) {
           </tr>
           {group.lines.map(renderLine)}
           <SubtotalRow line={group.subtotal} wide={wide} />
+          {group.guidance === null ? null : (
+            <BandGuidance guidance={group.guidance} span={wide ? 3 : 2} />
+          )}
         </tbody>
       ))}
       <tbody>{renderLine(results.total)}</tbody>
@@ -147,6 +151,37 @@ function SubtotalRow({ line, wide }: { line: LineField; wide: boolean }) {
       <td>{t(line.labelKey)}</td>
       <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
       {wide ? <td className="m" /> : null}
+    </tr>
+  )
+}
+
+/**
+ * The band's closing note: what the money in it has to look like. A native
+ * `<details>`, so it opens on tap, on Enter and on Space with no hover
+ * anywhere in it, and the points are in the DOM whether or not it is open.
+ * It sits after the subtotal so the figures of a band stay together.
+ */
+function BandGuidance({ guidance, span }: { guidance: GuidanceField; span: number }) {
+  const { t } = useTranslation()
+  return (
+    <tr className="band-guidance">
+      <td colSpan={span}>
+        <details className="guidance">
+          <summary>{t(guidance.labelKey)}</summary>
+          <ul
+            className="small"
+            data-field={guidance.id}
+            data-importance={guidance.importance}
+          >
+            {guidance.value.map((point) => (
+              <li key={point.termKey}>
+                <strong>{t(point.termKey)}</strong>
+                {t(point.bodyKey)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      </td>
     </tr>
   )
 }

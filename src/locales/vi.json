@@ -59,10 +59,10 @@
     "regional": "Các vùng khác của Victoria (mức trần 650.000 AUD)"
   },
   "hints": {
-    "scheme": "Tối thiểu 5% theo chương trình",
-    "htb": "Tối thiểu 2% theo Help to Buy",
-    "nolmi": "Đặt cọc 20% giúp tránh LMI mà không cần người bảo lãnh",
-    "lmi": "Dưới 20%; phải trả LMI"
+    "scheme": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Chương trình yêu cầu tối thiểu 5%.",
+    "htb": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Help to Buy yêu cầu tối thiểu 2%.",
+    "nolmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Đặt cọc 20% giúp tránh LMI mà không cần người bảo lãnh.",
+    "lmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Dưới 20% thì phải trả LMI."
   },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",
@@ -124,6 +124,19 @@
     "subtotalAuctionDay": "Tổng phụ — ngày đấu giá",
     "subtotalAtSettlement": "Tổng phụ — khi tất toán",
     "subtotalAfterSettlement": "Tổng phụ — sau khi tất toán"
+  },
+  "guidance": {
+    "auctionDay": "Trả tiền đặt cọc trong ngày đấu giá",
+    "hammerTerm": "Phải trả ngay khi búa gõ chốt giá.",
+    "hammerBody": " Bạn ký hợp đồng ngay sau phiên đấu giá, và tiền đặt cọc phải trả lúc đó. Mua qua đấu giá không có thời gian được rút lui khỏi hợp đồng (cooling-off period).",
+    "percentTerm": "Hợp đồng quy định tỷ lệ phần trăm, không phải bạn.",
+    "percentBody": " Thường là 10%. Cũng có trường hợp 5%, nhưng bên bán phải đồng ý trước phiên đấu giá — hãy kiểm tra hợp đồng mua bán (contract of sale).",
+    "formTerm": "Hãy hỏi trước bên môi giới chấp nhận những hình thức thanh toán nào.",
+    "formBody": " Séc cá nhân (personal cheque) thường không được chấp nhận. Thông thường là bank cheque, chuyển khoản EFT, hoặc dịch vụ đặt cọc trực tuyến của bên môi giới.",
+    "bondTerm": "Deposit bond (giấy bảo lãnh đặt cọc) hiếm khi được chấp nhận ở Victoria.",
+    "bondBody": " Section 27 của Sale of Land Act 1962 cho phép bên bán xin giải ngân sớm khoản đặt cọc bằng tiền mặt, còn deposit bond thì không thể giải ngân theo cách đó — nên bond cần bên bán đồng ý bằng văn bản trước phiên đấu giá.",
+    "confirmTerm": "Đây là thông lệ phổ biến, không phải tư vấn pháp lý.",
+    "confirmBody": " Điều khoản mỗi hợp đồng mỗi khác: hãy kiểm tra hợp đồng của bạn với bên môi giới và chuyên viên pháp lý chuyển nhượng (conveyancer) trước khi trả giá."
   },
   "rows": {
     "deposit": "Tiền đặt cọc",
