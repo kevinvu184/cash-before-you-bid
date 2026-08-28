@@ -247,6 +247,9 @@
     "grantBody": ": $10,000, new homes ≤ $750k, first home buyers; usually paid at settlement through the lender, so it is shown here as reducing the cash you need.",
     "repaymentTerm": "Repayment",
     "repaymentBody": ": principal and interest over 30 years at your rate; the lender assesses you at your rate + 3 percentage points (APRA). Buffer = months × repayment at your rate + $1,000.",
+    "ratesAsAtBefore": "Rates current as at {{date}}. Check any figure with the ",
+    "ratesAsAtLink": "State Revenue Office duty calculator",
+    "ratesAsAtAfter": ". ",
     "sourcesBefore": "Sources and the full explanation are in the ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". General information only, not personal legal, tax or credit advice."

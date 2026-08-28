@@ -231,6 +231,22 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
 }
 
 /**
+ * The date the rate config was last verified, in the active locale. Takes the
+ * ISO-8601 date the core holds and returns null if it is not one, so a
+ * hand-edited config cannot print "Invalid Date" beside the figures.
+ */
+export function ratesAsAtDate(iso: string, locale: string): string | null {
+  const parsed = new Date(`${iso}T00:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return null
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(parsed)
+}
+
+/**
  * The day a scenario was saved, in the active locale — or null when the stored
  * payload carried no usable date (hand-edited, or written by a version that
  * did not record one). Null rather than a guard at every call site: a skin

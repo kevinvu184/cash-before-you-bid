@@ -1,3 +1,4 @@
+import { RATES_AS_AT, SRO_DUTY_CALCULATOR_URL } from '../data/rates'
 import type { Lang } from './lang'
 import type { ColorMode, SkinId } from './skins'
 import type { ModePreference } from './urlState'
@@ -16,6 +17,7 @@ import type {
   GuidanceFieldId,
   NoteEntry,
   NotePart,
+  RatesAsAtValue,
   SourcesValue,
   VerdictStatus,
 } from '../types/viewModel'
@@ -292,6 +294,19 @@ export const SUNK_COST_RESEARCH: SourcesValue = {
   linkKey: 'sunk.researchLink',
   afterKey: 'sunk.researchAfter',
   href: 'https://www.premier.vic.gov.au/no-more-hassles-getting-pre-sale-building-inspections',
+}
+
+/**
+ * When the rates were last checked, and the calculator to check them against.
+ * The date is the config's own `RATES_AS_AT`, so the line on screen cannot
+ * claim a currency the numbers do not have.
+ */
+export const RATES_AS_AT_SOURCE: RatesAsAtValue = {
+  beforeKey: 'notes.ratesAsAtBefore',
+  linkKey: 'notes.ratesAsAtLink',
+  afterKey: 'notes.ratesAsAtAfter',
+  href: SRO_DUTY_CALCULATOR_URL,
+  asAt: RATES_AS_AT,
 }
 
 export const SOURCES: SourcesValue = {

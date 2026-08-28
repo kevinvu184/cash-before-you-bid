@@ -5,6 +5,7 @@ import {
   LANGUAGE_OPTIONS,
   MODE_OPTIONS,
   NOTE_ENTRIES,
+  RATES_AS_AT_SOURCE,
   REGION_OPTIONS,
   ROUTE_OPTIONS,
   SKIN_OPTIONS,
@@ -689,6 +690,13 @@ export function useAppViewModel(
         labelKey: 'notes.heading',
         value: NOTE_ENTRIES,
         kind: 'text',
+        importance: 'secondary',
+      },
+      ratesAsAt: {
+        id: 'ratesAsAt',
+        labelKey: 'notes.ratesAsAtLink',
+        value: RATES_AS_AT_SOURCE,
+        kind: 'date',
         importance: 'secondary',
       },
       sources: {
