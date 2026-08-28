@@ -23,6 +23,9 @@ beforeAll(async () => {
 afterEach(async () => {
   cleanup()
   vi.restoreAllMocks()
+  // Unstubbed here rather than at the end of the test body: an assertion that
+  // throws would otherwise leak the stub into whatever runs next.
+  vi.unstubAllGlobals()
   await i18n.changeLanguage('vi')
 })
 
@@ -76,6 +79,5 @@ describe('the wiring', () => {
     // No server round trip: the one-pager is rendered by the browser from the
     // page it already has, so the figures never leave the device.
     expect(fetchSpy).not.toHaveBeenCalled()
-    vi.unstubAllGlobals()
   })
 })
