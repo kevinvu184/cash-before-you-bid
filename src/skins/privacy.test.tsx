@@ -64,6 +64,7 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('privacy statement in skin %s'
     const loan = container.querySelector('[data-field="preApprovedLoan"]')
     expect(privacy).not.toBeNull()
     expect(savings).not.toBeNull()
+    expect(loan).not.toBeNull()
 
     // Same panel as the savings field — not the notes at the foot of the page.
     const panel = savings?.closest('aside, section')
