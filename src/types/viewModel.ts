@@ -89,6 +89,8 @@ export type ChromeFieldId =
 export type InputFieldId =
   | 'inputsHeading'
   | 'price'
+  /** The same price, on a track: the field's twin, not a second answer. */
+  | 'priceSlider'
   | 'route'
   | 'depositPct'
   | 'region'
@@ -206,6 +208,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   print: true,
   inputsHeading: true,
   price: true,
+  priceSlider: true,
   route: true,
   depositPct: true,
   region: true,
@@ -337,6 +340,49 @@ export interface NumberInputField extends Field<number | null> {
   draft: string
   hintKey: string | null
   onDraftChange(raw: string): void
+}
+
+/**
+ * One threshold on the price slider's track, and what changes there.
+ *
+ * `value` and therefore `positionPct` come from the rate config, never from a
+ * figure written here: a threshold that moves in the config moves the marker.
+ * `labelKey` names the cliff and `description` says what a dollar over it
+ * costs — the same lead-in term and following sentence a rules note uses.
+ */
+export interface PriceMarker {
+  id: PriceMarkerId
+  /** The price the marker sits at, in dollars. */
+  value: number
+  /** Where it falls along the track, 0–100, given the slider's own bounds. */
+  positionPct: number
+  labelKey: string
+  description: TextRef
+}
+
+export type PriceMarkerId = 'fhbExemption' | 'fhbConcession'
+
+/**
+ * The price slider: the same value as the price field, on a track that can be
+ * dragged across the duty cliffs rather than typed across them.
+ *
+ * It carries `value`, not a draft — the number field owns the keystrokes, and
+ * the slider reports whole prices through `onChange`, so it can never rewrite
+ * a half-typed figure. `markers` is empty when this purchaser has no first
+ * home buyer cliffs to see, which is a state a skin renders as nothing at all
+ * rather than as an empty rail.
+ */
+export interface PriceSliderField extends Field<number> {
+  kind: 'money'
+  controlId: string
+  min: number
+  max: number
+  /** The increment an arrow key moves, in dollars. */
+  step: number
+  /** Names the marker set for a screen reader; not a heading. */
+  markersLabelKey: string
+  markers: readonly PriceMarker[]
+  onChange(next: number): void
 }
 
 export interface BooleanInputField extends Field<boolean> {
@@ -713,6 +759,8 @@ export interface InputsViewModel {
   regionLabelKey: string
   heading: TextField
   price: NumberInputField
+  /** The price field's twin control, bound to the same value. */
+  priceSlider: PriceSliderField
   route: ChoiceInputField<DepositRoute>
   depositPct: NumberInputField
   region: ChoiceInputField<Region>

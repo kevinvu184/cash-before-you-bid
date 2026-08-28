@@ -27,6 +27,7 @@ export const meta: SkinMeta = {
     print: true,
     inputsHeading: true,
     price: true,
+    priceSlider: true,
     route: true,
     depositPct: true,
     region: true,

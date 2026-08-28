@@ -1,5 +1,6 @@
 import { rowBand } from '../logic/bands'
 import { buildLineFields } from '../logic/lineFields'
+import { buildPriceSliderField } from '../logic/priceMarkers'
 import { PRIVACY_STATEMENT } from '../logic/privacy'
 import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { assessReadiness } from '../logic/verdict'
@@ -467,6 +468,16 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         importance: 'secondary',
       },
       price: number('price', 'price', 'inputs.price', 820_000, 'money', null, 'primary'),
+      // Built for an eligible first home buyer, so the fixture carries the
+      // cliff markers a skin has to be able to draw — the same reason it
+      // carries both the foreign purchaser duty line and the grant, which no
+      // one purchaser gets at once. The checkbox below says foreign purchaser;
+      // this is a field set, not a coherent calculation.
+      priceSlider: buildPriceSliderField(
+        820_000,
+        { firstHomeBuyer: true, ownerOccupier: true, foreignPurchaser: false },
+        noop,
+      ),
       route: {
         id: 'route',
         controlId: 'route',

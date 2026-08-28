@@ -19,6 +19,7 @@ import type {
   GuidanceFieldId,
   NoteEntry,
   NotePart,
+  PriceMarkerId,
   RatesAsAtValue,
   SourcesValue,
   VerdictStatus,
@@ -203,6 +204,28 @@ const guidanceField = (
 export const BAND_GUIDANCE: Readonly<Partial<Record<TimingBand, GuidanceField>>> = {
   auctionDay: guidanceField('guidanceAuctionDay', 'guidance.auctionDay', AUCTION_DAY_POINTS),
 }
+// ── the price slider and its duty cliffs ─────────────────────────────────────
+//
+// A term and the sentence that follows it, the same shape a rules note uses:
+// the marker names the cliff, and the sentence says what a dollar over it
+// costs. The thresholds themselves are never written here — they come from the
+// rate config, and the sentences interpolate them.
+
+export const PRICE_SLIDER_LABEL_KEY = 'inputs.priceSlider'
+
+/** Names the marker set as a whole, for a screen reader reading the track. */
+export const CLIFFS_LABEL_KEY = 'cliffs.label'
+
+export const CLIFF_TERM_KEY: Readonly<Record<PriceMarkerId, string>> = {
+  fhbExemption: 'cliffs.exemptionTerm',
+  fhbConcession: 'cliffs.concessionTerm',
+}
+
+export const CLIFF_DESCRIPTION_KEY: Readonly<Record<PriceMarkerId, string>> = {
+  fhbExemption: 'cliffs.exemptionBody',
+  fhbConcession: 'cliffs.concessionBody',
+}
+
 export const ROUTE_OPTIONS: readonly ChoiceOption<DepositRoute>[] = [
   { value: 'scheme', labelKey: 'routes.scheme' },
   { value: 'lmi', labelKey: 'routes.lmi' },

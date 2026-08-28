@@ -20,7 +20,13 @@ import {
 } from '../../data/rates'
 import { BASE_CURRENCY } from '../../logic/currencyConfig'
 import { rateAsShown } from '../../logic/exchangeRate'
-import { displayMoney, displayRowAmount, displayUnit, type Display } from '../../logic/display'
+import {
+  displayMoney,
+  displayRowAmount,
+  displaySettings,
+  displayUnit,
+  type Display,
+} from '../../logic/display'
 import { formatNumber, formatNumberInput, formatPercent } from '../../logic/format'
 import type { Flag, RowHow } from '../../types/calculator'
 import type { TextParam, TextRef } from '../../types/viewModel'
@@ -94,6 +100,19 @@ export function exactMoney(amount: number, display: Display): string {
     return displayMoney(amount, display, { round: false })
   }
   return estimateMoney(amount, display)
+}
+
+/**
+ * A figure bound to a field the reader types into, written in the base
+ * currency whatever is on display.
+ *
+ * The calculator's inputs are in dollars and stay there — the price box shows
+ * the digits that were typed into it — so a converted echo of one would
+ * disagree with the box beside it. This is for a control mirroring an input,
+ * never for a result: everything the engine computes follows the display.
+ */
+export function inputMoney(amount: number, locale: string): string {
+  return exactMoney(amount, { locale, ...displaySettings(BASE_CURRENCY, 1) })
 }
 
 /**
