@@ -73,7 +73,7 @@
     "storageTerm": "Saved scenarios stay on this device.",
     "storageBody": " Saving one keeps its numbers in this browser’s own storage, on this device only. They are never uploaded, and deleting one here deletes it everywhere.",
     "thirdPartyTerm": "One thing is loaded from elsewhere, and only if you ask.",
-    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address, so no one else sees you arrive. The single exception is the exchange rate: switching the display to đồng fetches today's rate from exchangerate-api.com, and nothing is fetched before you do. That request carries none of your figures, no cookie, and not even the address of the page you are on. Nothing else is added without this statement changing first."
+    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address, so no one else sees you arrive. The single exception is the exchange rate: switching the display to đồng fetches today's rate from exchangerate-api.com — the request your browser will show is to open.er-api.com — and nothing is fetched before you do. That request carries none of your figures, no cookie, and not even the address of the page you are on. Nothing else is added without this statement changing first."
   },
   "results": {
     "flagsLabel": "Warnings and notes",

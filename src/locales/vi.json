@@ -79,7 +79,7 @@
     "storageTerm": "Phương án đã lưu nằm lại trên thiết bị này.",
     "storageBody": " Khi bạn lưu một phương án, các con số của nó được giữ trong bộ nhớ riêng của trình duyệt này, chỉ trên thiết bị này. Chúng không bao giờ được tải lên, và xoá ở đây là xoá hẳn.",
     "thirdPartyTerm": "Chỉ một thứ được tải từ bên ngoài, và chỉ khi bạn yêu cầu.",
-    "thirdPartyBody": " Mọi tệp trang này cần — mã nguồn, phần định dạng hiển thị, kể cả phông chữ — đều được phục vụ từ chính địa chỉ của trang, nên không ai khác nhìn thấy bạn ghé thăm. Ngoại lệ duy nhất là tỷ giá: khi bạn chuyển hiển thị sang đồng, trang mới lấy tỷ giá hôm nay từ exchangerate-api.com, còn trước đó thì không lấy gì cả. Yêu cầu đó không mang theo con số nào của bạn, không mang cookie, cũng không mang cả địa chỉ trang bạn đang xem. Sẽ không có bên nào khác được thêm vào mà lời cam kết này không được sửa trước."
+    "thirdPartyBody": " Mọi tệp trang này cần — mã nguồn, phần định dạng hiển thị, kể cả phông chữ — đều được phục vụ từ chính địa chỉ của trang, nên không ai khác nhìn thấy bạn ghé thăm. Ngoại lệ duy nhất là tỷ giá: khi bạn chuyển hiển thị sang đồng, trang mới lấy tỷ giá hôm nay từ exchangerate-api.com — yêu cầu bạn thấy trong trình duyệt là tới open.er-api.com — còn trước đó thì không lấy gì cả. Yêu cầu đó không mang theo con số nào của bạn, không mang cookie, cũng không mang cả địa chỉ trang bạn đang xem. Sẽ không có bên nào khác được thêm vào mà lời cam kết này không được sửa trước."
   },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",

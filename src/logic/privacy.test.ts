@@ -325,6 +325,34 @@ describe('what the sources say the page will contact', () => {
     expect(stale).toEqual([])
   })
 
+  it('names every declared host in the statement itself, in both locales', () => {
+    // The declaration is for a reader of this repository; the statement is for
+    // the reader of the page, and the whole value of a privacy claim is that a
+    // sceptical one can check it. Someone watching their network tab sees a
+    // host, not a vendor's brand — so a host declared here and absent from the
+    // copy leaves them looking at a request the statement never mentioned.
+    // (`open.er-api.com` is exchangerate-api.com's endpoint; the statement
+    // names both, which is what lets the two be connected at all.)
+    const copy = Object.entries({ en, vi }).map(
+      ([name, strings]) =>
+        [
+          name,
+          statementKeys()
+            .map((key) => String(lookup(strings as unknown as Record<string, unknown>, key)))
+            .join(' '),
+        ] as const,
+    )
+    for (const host of Object.keys(THIRD_PARTY_HOSTS)) {
+      for (const [name, text] of copy) {
+        expect({ host, locale: name, named: text.includes(host) }).toEqual({
+          host,
+          locale: name,
+          named: true,
+        })
+      }
+    }
+  })
+
   it('declares a reason for every host and every caller', () => {
     for (const [host, why] of Object.entries(THIRD_PARTY_HOSTS)) {
       expect(host, why).toMatch(/^[a-z0-9.-]+$/)
