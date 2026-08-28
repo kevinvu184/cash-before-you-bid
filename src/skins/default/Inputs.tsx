@@ -49,12 +49,14 @@ function NumberRow({ field }: { field: NumberInputField }) {
 }
 
 /**
- * The price on a track, with the duty cliffs drawn on it.
+ * The price on a track, with the first home buyer duty thresholds on it.
  *
- * Between $749,000 and $751,000 a first home buyer's duty moves by tens of
- * thousands, and in a bare number field that step is invisible until you
- * happen to type across it. The ticks put both thresholds where they can be
- * seen and aimed at; the notes under the track say what changes at each.
+ * Not a step: the concession formula is continuous at both ceilings (see
+ * `logic/priceMarkers.ts`, which explains what these actually mark). What is
+ * worth seeing is the band between them, where the whole duty bill phases in
+ * over a narrow range of price — invisible in a bare number field until you
+ * happen to type across it. The ticks put both ends of that band where they
+ * can be aimed at; the notes under the track say what changes at each.
  *
  * The slider reports whole prices and never touches the number field's draft,
  * so a half-typed figure is never snapped by it — see `useNumericDraft`.
