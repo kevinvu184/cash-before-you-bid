@@ -61,7 +61,9 @@
     "lmi": "Under 20%; LMI charged"
   },
   "results": {
-    "flagsLabel": "Warnings and notes"
+    "flagsLabel": "Warnings and notes",
+    "statsHeading": "Summary",
+    "linesHeading": "Line by line"
   },
   "money": {
     "disclaimer": "Every figure above is an estimate, rounded to the nearest {{unit}}.",
@@ -82,6 +84,7 @@
     "htbCitizenship": "Help to Buy requires Australian citizenship.",
     "htbDetails": "Help to Buy: income caps $103,000 single / $165,000 couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
     "guarantorGap": "Under 20% deposit without LMI needs a family guarantor pledging the gap; shown with no LMI.",
+    "fhbResidency": "The first home buyer duty exemption and concession require an Australian citizen or permanent resident — duty charged at the standard rates instead.",
     "fhogPriceCap": "First Home Owner Grant not available: price above $750,000.",
     "genuineSavings": "LVR above 90%: most lenders want 5% of the price as genuine savings held for 3+ months.",
     "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut."
@@ -103,11 +106,13 @@
     "heading": "Spent before the hammer falls",
     "perPropertyLabel": "Per property",
     "perPropertySub": "Inspection and conveyancing, paid to go after one property",
-    "searchLabel_one": "Across {{properties}} property",
-    "searchLabel_other": "Across {{properties}} properties",
-    "searchSub": "The whole search, before you own anything",
-    "searchSubWithLosses": "{{lost}} of it on the auctions you do not win",
-    "framing": "This is the money that is gone whether you win or lose. The deposit, stamp duty, government fees, LMI and settlement costs above are only ever paid on the property you actually buy — these are not."
+    "searchLabel": "Across your whole search",
+    "searchSub_one": "{{properties}} property, so nothing beyond the figure above",
+    "searchSub_other": "{{properties}} × {{perProperty}} — {{lost}} of it on the ones you do not win",
+    "framing": "This is the money that is gone whether you win or lose. The deposit, stamp duty, government fees, LMI and settlement costs above are only ever paid on the property you actually buy — these are not.",
+    "researchBefore": "Consumer Policy Research Centre research, cited by the Victorian Government in March 2026, found building and pest reports cost $500–$600 for the pair, that about half of buyers paid for several inspections while house-hunting, and that 17% paid for seven or more — spending up to $4,200. The figures above are your own, not that research. Source: ",
+    "researchLink": "Victorian Premier, 12 March 2026",
+    "researchAfter": "."
   },
   "table": {
     "line": "Line",
@@ -179,12 +184,19 @@
     "grantBody": ": $10,000, new homes ≤ $750k, first home buyers; usually paid at settlement through the lender, so it is shown here as reducing the cash you need.",
     "repaymentTerm": "Repayment",
     "repaymentBody": ": principal and interest over 30 years at your rate; the lender assesses you at your rate + 3 percentage points (APRA). Buffer = months × repayment at your rate + $1,000.",
-    "inspectionsTerm": "Multiple inspections",
-    "inspectionsBody": ": Consumer Policy Research Centre research, cited by the Victorian Government in March 2026, found building and pest reports cost $500–$600 for the pair, that about half of buyers paid for several inspections while house-hunting, and that 17% paid for seven or more — spending up to $4,200. The per-property figures on this page are your own inputs, not that research. Source: ",
-    "inspectionsLink": "Victorian Premier, 12 March 2026",
-    "inspectionsAfter": ".",
     "sourcesBefore": "Sources and the full explanation are in the ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". General information only, not personal legal, tax or credit advice."
+  },
+  "skins": {
+    "label": "Appearance",
+    "default": "Ledger",
+    "plain": "Plain"
+  },
+  "mode": {
+    "label": "Colour mode",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

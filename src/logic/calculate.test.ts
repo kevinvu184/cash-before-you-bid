@@ -179,6 +179,19 @@ describe('calculate — foreign purchaser on the LMI route', () => {
     expect(r.totals.purchaseCosts).toBeCloseTo(123_735.89, 6)
     expect(r.totals.totalCash).toBeCloseTo(216_138.38679288252, 6)
   })
+
+  // The FHB exemption needs an Australian citizen or permanent resident, so
+  // the same $600k purchase is exempt for a citizen and charged in full here.
+  it('withholds the first home buyer exemption and flags why', () => {
+    const withForeign = inputs({ price: 600_000, route: 'lmi', depositPct: 10 })
+    const r = calculate({ ...withForeign, foreignPurchaser: true })
+    expect(r.totals.stampDuty).toBeCloseTo(31_070, 6)
+    expect(r.rows[1].how?.code).toBe('dutyGeneral')
+    expect(r.rows[2].code).toBe('foreignDuty')
+    expect(r.rows[2].amount).toBeCloseTo(48_000, 6)
+    expect(r.flags.some((f) => f.kind === 'warn' && f.code === 'fhbResidency')).toBe(true)
+    expect(calculate(withForeign).totals.stampDuty).toBe(0)
+  })
 })
 
 describe('calculate — off-the-plan concession', () => {

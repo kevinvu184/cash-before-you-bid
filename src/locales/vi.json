@@ -67,7 +67,9 @@
     "lmi": "Dưới 20%; phải trả LMI"
   },
   "results": {
-    "flagsLabel": "Cảnh báo và ghi chú"
+    "flagsLabel": "Cảnh báo và ghi chú",
+    "statsHeading": "Tóm tắt",
+    "linesHeading": "Chi tiết từng dòng"
   },
   "money": {
     "disclaimer": "Mọi con số ở trên đều là ước tính, được làm tròn đến {{unit}} gần nhất.",
@@ -88,6 +90,7 @@
     "htbCitizenship": "Help to Buy yêu cầu quốc tịch Úc.",
     "htbDetails": "Help to Buy: trần thu nhập 103.000 AUD (độc thân) / 165.000 AUD (cặp đôi); 10.000 suất mỗi năm; chỉ qua CBA và Bank Australia (06/2026). Phần vốn của chính phủ là {{share}} và được hoàn trả theo giá thị trường khi bán nhà.",
     "guarantorGap": "Đặt cọc dưới 20% mà không trả LMI thì cần người thân bảo lãnh phần còn thiếu; kết quả hiển thị không gồm LMI.",
+    "fhbResidency": "Miễn hoặc giảm thuế trước bạ cho người mua nhà lần đầu yêu cầu công dân Úc hoặc thường trú nhân — thuế được tính theo mức thông thường.",
     "fhogPriceCap": "Không được nhận First Home Owner Grant: giá cao hơn 750.000 AUD.",
     "genuineSavings": "LVR trên 90%: hầu hết ngân hàng yêu cầu 5% giá nhà là tiền tiết kiệm thực sự đã giữ từ 3 tháng trở lên.",
     "serviceability": "Kiểm tra khả năng trả nợ: ngân hàng sẽ thẩm định ở mức {{assessed}}/tháng với lãi suất {{rate}}. Nếu con số đó vượt khoảng 35–40% thu nhập sau thuế của bạn, khoản vay có thể bị cắt giảm."
@@ -109,10 +112,12 @@
     "heading": "Tiền đã chi trước khi đấu giá",
     "perPropertyLabel": "Mỗi căn nhà",
     "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn",
-    "searchLabel_other": "Cho {{properties}} căn nhà",
-    "searchSub": "Cả quá trình tìm nhà, trước khi bạn sở hữu bất cứ thứ gì",
-    "searchSubWithLosses": "Trong đó {{lost}} là cho những phiên bạn không thắng",
-    "framing": "Đây là khoản tiền mất đi dù bạn thắng hay thua. Tiền đặt cọc, thuế trước bạ, phí nhà nước, LMI và các chi phí tất toán ở trên chỉ phải trả cho căn bạn thực sự mua — còn khoản này thì không."
+    "searchLabel": "Cho cả quá trình tìm nhà",
+    "searchSub_other": "{{properties}} căn × {{perProperty}} — trong đó {{lost}} là cho những căn bạn không mua được",
+    "framing": "Đây là khoản tiền mất đi dù bạn thắng hay thua. Tiền đặt cọc, thuế trước bạ, phí nhà nước, LMI và các chi phí tất toán ở trên chỉ phải trả cho căn bạn thực sự mua — còn khoản này thì không.",
+    "researchBefore": "Nghiên cứu của Consumer Policy Research Centre, được Chính phủ bang Victoria dẫn lại vào tháng 3/2026, cho thấy báo cáo kiểm tra công trình và mối mọt tốn 500–600 AUD cho cả hai báo cáo, khoảng một nửa người mua đã trả tiền cho nhiều lần kiểm tra trong quá trình tìm nhà, và 17% trả cho bảy lần trở lên — tốn tới 4.200 AUD. Các con số ở trên là số liệu của bạn, không phải của nghiên cứu đó. Nguồn: ",
+    "researchLink": "Thủ hiến bang Victoria, 12/03/2026",
+    "researchAfter": "."
   },
   "table": {
     "line": "Khoản mục",
@@ -183,12 +188,19 @@
     "grantBody": ": 10.000 AUD, nhà mới ≤ 750.000 AUD, người mua nhà lần đầu; thường được chi trả khi tất toán qua ngân hàng, nên ở đây được thể hiện là khoản giảm số tiền mặt bạn cần.",
     "repaymentTerm": "Trả nợ",
     "repaymentBody": ": gốc và lãi trong 30 năm theo lãi suất của bạn; ngân hàng thẩm định ở mức lãi suất của bạn + 3 điểm phần trăm (APRA). Khoản dự phòng = số tháng × tiền trả nợ theo lãi suất của bạn + 1.000 AUD.",
-    "inspectionsTerm": "Kiểm tra nhiều căn",
-    "inspectionsBody": ": nghiên cứu của Consumer Policy Research Centre, được Chính phủ bang Victoria dẫn lại vào tháng 3/2026, cho thấy báo cáo kiểm tra công trình và mối mọt tốn 500–600 AUD cho cả hai báo cáo, khoảng một nửa người mua đã trả tiền cho nhiều lần kiểm tra trong quá trình tìm nhà, và 17% trả cho bảy lần trở lên — tốn tới 4.200 AUD. Các con số theo từng căn trên trang này là số liệu bạn tự nhập, không phải của nghiên cứu đó. Nguồn: ",
-    "inspectionsLink": "Thủ hiến bang Victoria, 12/03/2026",
-    "inspectionsAfter": ".",
     "sourcesBefore": "Nguồn và giải thích đầy đủ nằm trong ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". Chỉ là thông tin chung, không phải tư vấn pháp lý, thuế hay tín dụng cho cá nhân bạn."
+  },
+  "skins": {
+    "label": "Giao diện",
+    "default": "Ledger",
+    "plain": "Đơn giản"
+  },
+  "mode": {
+    "label": "Chế độ màu",
+    "system": "Hệ thống",
+    "light": "Sáng",
+    "dark": "Tối"
   }
 }

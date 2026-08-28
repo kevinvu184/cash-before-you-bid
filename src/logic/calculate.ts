@@ -58,6 +58,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
     flag('note', 'htbDetails', { sharePct: govEq * 100 })
   }
   if (route === 'nolmi' && depositPct < 20) flag('note', 'guarantorGap')
+  if (firstHomeBuyer && ownerOccupier && foreignPurchaser) flag('warn', 'fhbResidency')
 
   const deposit = (price * depositPct) / 100
   const loan = Math.max(0, price - deposit - price * govEq)
@@ -72,6 +73,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
     offThePlanConstruction: otp,
     firstHomeBuyer,
     ownerOccupier,
+    foreignPurchaser,
   })
   const { dutiableValue, duty } = dutyResult
   const fpad = foreignPurchaser ? foreignPurchaserDuty(dutiableValue) : 0
