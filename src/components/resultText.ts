@@ -51,6 +51,8 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
       return t('flags.htbDetails', { share: formatPercent(p.sharePct, locale) })
     case 'guarantorGap':
       return t('flags.guarantorGap')
+    case 'fhbResidency':
+      return t('flags.fhbResidency')
     case 'fhogPriceCap':
       return t('flags.fhogPriceCap')
     case 'genuineSavings':
