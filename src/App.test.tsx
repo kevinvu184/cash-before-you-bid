@@ -843,6 +843,21 @@ describe('the exchange rate', () => {
     expect(document.querySelector('.rateline .tag')).toBeNull()
   })
 
+  it('pairs the override label with the control by the id the core handed it', async () => {
+    // The view model names the stable id; both skins use it, so the label and
+    // the control cannot come apart and the DOM handle is the same either way.
+    await renderApp()
+    switchTo(DONG)
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+
+    const box = document.querySelector('.re-row input') as HTMLInputElement
+    const label = document.querySelector('.rateedit label') as HTMLLabelElement
+    expect(box.id).not.toBe('')
+    expect(label.htmlFor).toBe(box.id)
+    expect(document.getElementById(box.id)).toBe(box)
+  })
+
   it('points aria-controls at the override form only while it exists', async () => {
     await renderApp()
     switchTo(DONG)

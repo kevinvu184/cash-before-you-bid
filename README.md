@@ -76,13 +76,19 @@ so the same state always produces the same URL.
 | `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS      |
 | `lang` | `en`, `vi`         | `vi`       | UI language                             |
 | `cur`  | `AUD`, `VND`       | `AUD`      | Currency the figures are **written** in |
-| `fx`   | number             | _(absent)_ | A rate typed in place of the fetched one |
+| `fx`   | number             | _(absent)_ | A typed rate, used only while `cur=VND`  |
 
 `cur` and `fx` change how the results are written, never what was worked out —
 see [Display currency](#display-currency) below. An unknown `cur` falls back to
 `AUD`; an `fx` outside the sane band (or unparseable) is treated as absent
 rather than clamped, because clamping would price the figures at a rate the
 reader never typed.
+
+`fx` only does anything while `cur=VND`, because the base currency is never
+converted. It survives a switch back to `AUD` rather than being dropped —
+someone checking the dollar figure mid-plan should not have to retype the rate
+their bank quoted them — so a link like `?fx=20000` on its own is valid, shows
+dollars, and applies the rate the moment ₫ is chosen.
 
 The calculator's own params are read and written by `src/logic/urlState.ts`.
 Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.

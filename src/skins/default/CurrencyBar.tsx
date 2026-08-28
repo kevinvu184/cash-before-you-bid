@@ -130,12 +130,13 @@ function RateLine({ field }: { field: ExchangeRateField }) {
       </div>
       {editing ? (
         <form className="rateedit" id={formId} onSubmit={apply}>
-          <label htmlFor={`${formId}-input`}>
-            {t(field.actionKeys.overrideLabel, { base })}
-          </label>
+          {/* The stable id the view model hands every skin, so label and
+              control pair the same way here as in the plain skin. formId
+              stays the form's own, for the aria-controls reference above. */}
+          <label htmlFor={field.controlId}>{t(field.actionKeys.overrideLabel, { base })}</label>
           <div className="re-row">
             <input
-              id={`${formId}-input`}
+              id={field.controlId}
               ref={input}
               // Text with a decimal keypad, not type="number": a vi reader
               // types the separators of their own locale, and a number input
