@@ -80,12 +80,14 @@ describe('calculate — default scenario ($750k, scheme, 5%, metro, FHB, PPR)', 
     ])
   })
 
-  it('shows only the serviceability flag', () => {
-    expect(r.flags).toHaveLength(1)
-    expect(r.flags[0].kind).toBe('ok')
-    expect(r.flags[0].code).toBe('serviceability')
-    expect(r.flags[0].params?.assessed).toBeCloseTo(5835.764302891407, 6)
-    expect(r.flags[0].params?.ratePct).toBeCloseTo(9.2, 10)
+  it('shows the serviceability flag, and the unrun finance check', () => {
+    // The defaults carry no pre-approval, so the finance check is suppressed
+    // and says so rather than silently passing.
+    expect(r.flags.map((f) => f.code)).toEqual(['serviceability', 'noPreApproval'])
+    const serviceability = r.flags[0]
+    expect(serviceability.kind).toBe('ok')
+    expect(serviceability.params?.assessed).toBeCloseTo(5835.764302891407, 6)
+    expect(serviceability.params?.ratePct).toBeCloseTo(9.2, 10)
   })
 
   it('does not mutate its input', () => {
@@ -114,7 +116,8 @@ describe('calculate — LMI route', () => {
     const r = calculate(inputs({ route: 'lmi', depositPct: 10 }))
     expect(r.totals.lmiPremium).toBeCloseTo(16_706.25, 6)
     expect(r.totals.totalCash).toBeCloseTo(156_138.38679288252, 6)
-    expect(r.flags.map((f) => f.kind)).toEqual(['ok'])
+    expect(r.flags.map((f) => f.kind)).toEqual(['ok', 'note'])
+    expect(r.flags.map((f) => f.code)).toEqual(['serviceability', 'noPreApproval'])
   })
 
   it('capitalises LMI into the loan when asked', () => {

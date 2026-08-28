@@ -21,6 +21,15 @@ export interface CalculatorInputs {
   movingCosts: number
   bufferMonths: number
   capitaliseLmi: boolean
+  /** Cash the bidder can actually reach. Never negative. */
+  savings: number
+  /**
+   * A pre-approved loan amount, or `null` for "not yet pre-approved".
+   * `null` is not zero: it suppresses the finance check rather than failing
+   * it, because a bidder without a pre-approval has not been told no — they
+   * have not asked yet.
+   */
+  preApprovedLoan: number | null
 }
 
 export type FlagKind = 'warn' | 'note' | 'ok'
@@ -40,6 +49,9 @@ export type FlagCode =
   | 'fhogPriceCap'
   | 'genuineSavings'
   | 'serviceability'
+  // Why the finance check matters at an auction, and why it was not run.
+  | 'financeUnconditional'
+  | 'noPreApproval'
 
 export interface Flag {
   kind: FlagKind
@@ -158,10 +170,54 @@ export interface CalculationTotals {
   grant: number
 }
 
+/**
+ * Which pocket a check draws on. The two are not interchangeable: a home loan
+ * funds the balance of the purchase price and nothing else, so a cash gap and
+ * a loan gap have different remedies and are never netted against each other.
+ */
+export type VerdictPocket = 'cash' | 'loan'
+
+export type VerdictCheckCode = 'auctionDayCash' | 'settlementCash' | 'settlementLoan'
+
+export interface PocketCheck {
+  code: VerdictCheckCode
+  pocket: VerdictPocket
+  /** What this moment demands of that pocket. */
+  required: number
+  /** What the user has told us is in it. */
+  available: number
+  /** `required - available`, or 0 when the pocket covers it. */
+  shortfall: number
+}
+
+/** The two moments a bidder has to survive. */
+export type VerdictCode = 'auctionDay' | 'atSettlement'
+
+export interface Verdict {
+  code: VerdictCode
+  /** The timing band this verdict reads its requirement from. */
+  band: TimingBand
+  checks: readonly PocketCheck[]
+  covered: boolean
+  /** The sum of this verdict's shortfalls; 0 when covered. */
+  shortfall: number
+}
+
+export interface Readiness {
+  /** Two verdicts, in the order the purchase runs. Never merged into one. */
+  verdicts: readonly Verdict[]
+  /**
+   * False when no pre-approval was entered. The finance check is then absent
+   * from the settlement verdict rather than failing it.
+   */
+  financeChecked: boolean
+}
+
 export interface CalculationResult {
   appliedDepositPct: number
   flags: Flag[]
   tiles: CalculationTiles
   rows: TableRow[]
   totals: CalculationTotals
+  readiness: Readiness
 }

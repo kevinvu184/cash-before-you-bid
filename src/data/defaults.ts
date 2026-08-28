@@ -19,4 +19,9 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   movingCosts: 4000,
   bufferMonths: 3,
   capitaliseLmi: false,
+  // No plausible default exists for someone else's bank balance, and inventing
+  // one would tell a bidder they are covered on a figure they never entered.
+  savings: 0,
+  // Null, not 0: "not yet pre-approved" suppresses the finance check.
+  preApprovedLoan: null,
 }

@@ -37,6 +37,10 @@
     "otpHint": "Chỉ áp dụng cho căn hộ/nhà phố strata; giảm giá trị chịu thuế. Nhập 0 cho nhà đã xây xong.",
     "foreign": "Không phải công dân hoặc thường trú nhân Úc (thuế người mua nước ngoài +8%)",
     "rate": "Lãi suất (%/năm)",
+    "savings": "Tiền tiết kiệm hiện có ($)",
+    "savingsHint": "Số tiền mặt bạn thực sự lấy ra được: tiền đặt cọc trừ vào đây trong ngày đấu giá, còn tất toán trừ vào phần còn lại.",
+    "preApprovedLoan": "Khoản vay đã được duyệt trước ($) — không bắt buộc",
+    "preApprovedLoanHint": "Để trống nếu bạn chưa được duyệt trước; khi đó phần kiểm tra tài chính sẽ không chạy chứ không bị coi là không đạt.",
     "assumptions": "Các chi phí ước tính (sửa nếu bạn có báo giá)",
     "conveyancing": "Phí pháp lý chuyển nhượng, gồm chi phí phát sinh (AUD)",
     "buildingAndPest": "Phí kiểm tra công trình và mối mọt (AUD)",
@@ -67,6 +71,7 @@
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",
     "statsHeading": "Tóm tắt",
+    "verdictsHeading": "Bạn có đủ tiền không?",
     "linesHeading": "Chi tiết từng dòng"
   },
   "money": {
@@ -91,7 +96,9 @@
     "fhbResidency": "Miễn hoặc giảm thuế trước bạ cho người mua nhà lần đầu yêu cầu công dân Úc hoặc thường trú nhân — thuế được tính theo mức thông thường.",
     "fhogPriceCap": "Không được nhận First Home Owner Grant: giá cao hơn 750.000 AUD.",
     "genuineSavings": "LVR trên 90%: hầu hết ngân hàng yêu cầu 5% giá nhà là tiền tiết kiệm thực sự đã giữ từ 3 tháng trở lên.",
-    "serviceability": "Kiểm tra khả năng trả nợ: ngân hàng sẽ thẩm định ở mức {{assessed}}/tháng với lãi suất {{rate}}. Nếu con số đó vượt khoảng 35–40% thu nhập sau thuế của bạn, khoản vay có thể bị cắt giảm."
+    "serviceability": "Kiểm tra khả năng trả nợ: ngân hàng sẽ thẩm định ở mức {{assessed}}/tháng với lãi suất {{rate}}. Nếu con số đó vượt khoảng 35–40% thu nhập sau thuế của bạn, khoản vay có thể bị cắt giảm.",
+    "financeUnconditional": "Hợp đồng đấu giá là vô điều kiện: không có điều khoản tài chính và không có thời gian cân nhắc (cooling-off). Được duyệt trước không có nghĩa là đã có khoản vay — nếu khoản vay không tất toán được thì bạn đã vi phạm hợp đồng, chứ không chỉ là mất căn nhà, và tiền đặt cọc có nguy cơ mất.",
+    "noPreApproval": "Bạn chưa nhập khoản vay được duyệt trước, nên phần kiểm tra tài chính chưa chạy — điều đó không có nghĩa là đã đạt. Hợp đồng đấu giá là vô điều kiện: không có điều khoản tài chính và không có thời gian cân nhắc, nên được duyệt vô điều kiện trước khi trả giá mới là thứ bảo vệ tiền đặt cọc của bạn."
   },
   "stats": {
     "totalLabel": "Tổng tiền mặt trước khi trả giá",
@@ -124,6 +131,21 @@
     "subtotalAuctionDay": "Tổng phụ — ngày đấu giá",
     "subtotalAtSettlement": "Tổng phụ — khi tất toán",
     "subtotalAfterSettlement": "Tổng phụ — sau khi tất toán"
+  },
+  "verdicts": {
+    "covered": "Đủ",
+    "short": "Thiếu",
+    "auctionDayLabel": "Trong ngày đấu giá",
+    "atSettlementLabel": "Khi tất toán",
+    "auctionDayCovered": "Tiền tiết kiệm của bạn đủ cho khoản đặt cọc {{required}} phải trả ngay khi búa gõ.",
+    "auctionDayShort": "Thiếu {{shortfall}} cho khoản đặt cọc {{required}} phải trả ngay khi búa gõ.",
+    "atSettlementCovered": "Phần tiền tiết kiệm còn lại đủ cho {{required}} phải trả khi tất toán, và khoản vay được duyệt trước đủ cho phần còn lại của giá mua.",
+    "atSettlementShort": "Thiếu {{shortfall}} khi tất toán.",
+    "atSettlementShortMultiple": "Thiếu ở cả hai nguồn khi tất toán. Phần thiếu tiền mặt và phần thiếu khoản vay là hai vấn đề riêng biệt — khoản vay lớn hơn không trả được thuế, và tiết kiệm nhiều hơn cũng không làm khoản vay tăng lên.",
+    "shortAuctionDayCash": "Tiền mặt: thiếu {{shortfall}}. Tiền đặt cọc là {{required}} còn bạn có {{available}}. Hãy tiết kiệm thêm, hoặc trả giá thấp hơn.",
+    "shortSettlementCash": "Tiền mặt: thiếu {{shortfall}}. Tất toán cần {{required}} mà chỉ còn {{available}} sau khi trừ tiền đặt cọc. Khoản vay không trả được thuế và phí — phần thiếu này phải là tiền mặt.",
+    "shortSettlementLoan": "Khoản vay: thiếu {{shortfall}}. Phần còn lại của giá mua là {{required}} còn khoản vay được duyệt trước của bạn là {{available}}. Hãy đề nghị ngân hàng duyệt thêm, hoặc trả giá thấp hơn.",
+    "financeNotChecked": "Chưa kiểm tra tài chính: bạn chưa nhập khoản vay được duyệt trước. Phần còn lại của giá mua vẫn phải lấy từ đâu đó."
   },
   "rows": {
     "deposit": "Tiền đặt cọc",

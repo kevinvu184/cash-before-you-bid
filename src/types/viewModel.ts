@@ -1,7 +1,15 @@
 import type { Lang } from '../logic/lang'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { ModePreference } from '../logic/urlState'
-import type { DepositRoute, Flag, Region, RowCode, RowHow, TimingBand } from './calculator'
+import type {
+  DepositRoute,
+  Flag,
+  Region,
+  RowCode,
+  RowHow,
+  TimingBand,
+  VerdictCode,
+} from './calculator'
 
 /**
  * The contract between the headless core and every skin.
@@ -62,6 +70,8 @@ export type InputFieldId =
   | 'offThePlanConstruction'
   | 'foreignPurchaser'
   | 'interestRatePct'
+  | 'savings'
+  | 'preApprovedLoan'
   | 'assumptions'
   | 'conveyancing'
   | 'buildingAndPest'
@@ -97,9 +107,17 @@ export type LineFieldId =
   | 'lineSubtotalAfterSettlement'
   | 'lineTotal'
 
+export type VerdictFieldId = 'verdictAuctionDay' | 'verdictAtSettlement'
+
 export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
 
-export type FieldId = ChromeFieldId | InputFieldId | StatFieldId | LineFieldId | ResultsFieldId
+export type FieldId =
+  | ChromeFieldId
+  | InputFieldId
+  | StatFieldId
+  | VerdictFieldId
+  | LineFieldId
+  | ResultsFieldId
 
 /**
  * The exhaustive id set, as a `Record<FieldId, true>` so that adding a member
@@ -125,6 +143,8 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   offThePlanConstruction: true,
   foreignPurchaser: true,
   interestRatePct: true,
+  savings: true,
+  preApprovedLoan: true,
   assumptions: true,
   conveyancing: true,
   buildingAndPest: true,
@@ -140,6 +160,8 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   statCosts: true,
   statLoan: true,
   statRepayment: true,
+  verdictAuctionDay: true,
+  verdictAtSettlement: true,
   lineDeposit: true,
   lineStampDuty: true,
   lineForeignDuty: true,
@@ -213,8 +235,12 @@ export interface TextField extends Field<null> {
  * A numeric input. `draft` is the raw text the field is holding — half-typed
  * figures and locale separators included — so the skin never has to parse or
  * format anything; it renders `draft` and reports keystrokes back.
+ *
+ * `value` is `null` only on an optional field the user has left empty, where
+ * "not answered" is a state of its own and not a zero. A skin renders `draft`
+ * either way, so nullability changes nothing about how one is drawn.
  */
-export interface NumberInputField extends Field<number> {
+export interface NumberInputField extends Field<number | null> {
   kind: 'money' | 'number' | 'percent'
   /** Stable DOM id, so every skin pairs label and control the same way. */
   controlId: string
@@ -262,6 +288,43 @@ export interface StatField extends Field<number> {
   kind: 'money'
   /** The supporting line under the figure; null when there is nothing to say. */
   detail: TextRef | null
+}
+
+/**
+ * One of the two verdicts: covered, or short.
+ *
+ * `value` is the verdict's total shortfall, and is 0 exactly when it is
+ * covered — that is what it is for. It is not a figure to headline when more
+ * than one pocket is short, because it would then be a cash gap added to a
+ * loan gap; `summary` already picks copy that quotes no such total, and the
+ * per-pocket figures are in `details`.
+ *
+ * The core states the outcome and hands over the sentences that say it, each
+ * as a key plus its numbers; the skin decides what "covered" and "short" look
+ * like. Nothing here is a formatted string, and the two verdicts are never
+ * merged — a cash gap and a loan gap have different remedies.
+ */
+export interface VerdictField extends Field<number> {
+  kind: 'money'
+  code: VerdictCode
+  status: VerdictStatus
+  /** The one word for `status`, so no skin has to name the states itself. */
+  statusKey: string
+  /** The headline: what this moment demands, and how it stands. */
+  summary: TextRef
+  /**
+   * The supporting lines: one per pocket that is short, naming the pocket, and
+   * a line for the finance check when no pre-approval was entered to run it.
+   * Empty when the verdict is covered and nothing was left unchecked.
+   */
+  details: readonly TextRef[]
+}
+
+export type VerdictStatus = 'covered' | 'short'
+
+export const VERDICT_FIELD_ID: Readonly<Record<VerdictCode, VerdictFieldId>> = {
+  auctionDay: 'verdictAuctionDay',
+  atSettlement: 'verdictAtSettlement',
 }
 
 export interface LineField extends Field<number> {
@@ -340,6 +403,10 @@ export interface InputsViewModel {
   offThePlanConstruction: NumberInputField
   foreignPurchaser: BooleanInputField
   interestRatePct: NumberInputField
+  /** What the bidder has. Primary: the verdict cannot be reached without it. */
+  savings: NumberInputField
+  /** Optional; an empty draft means "not yet pre-approved", and `value` null. */
+  preApprovedLoan: NumberInputField
   assumptions: GroupField
   foot: TextField
 }
@@ -357,6 +424,10 @@ export interface ResultsViewModel {
   /** Section headings a skin may use for grouping; not fields. */
   statsHeadingKey: string
   stats: readonly StatField[]
+  /** Section heading for the verdicts; not a field. */
+  verdictsHeadingKey: string
+  /** Always two, in the order the purchase runs. */
+  verdicts: readonly VerdictField[]
   linesHeadingKey: string
   tableHeadingKeys: TableHeadingKeys
   /**

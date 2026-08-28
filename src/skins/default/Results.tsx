@@ -11,6 +11,7 @@ import type {
   SourcesValue,
   StatField,
   TextRef,
+  VerdictField,
 } from '../../types/viewModel'
 import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
 
@@ -45,6 +46,51 @@ function FlagList({
         </p>
       ))}
     </div>
+  )
+}
+
+/**
+ * The answer the bidder came for: covered, or short by this much, at each of
+ * the two moments that can sink a purchase. Two blocks, never one — a cash gap
+ * and a loan gap are closed differently, so they are never added together.
+ *
+ * `data-status` carries the outcome for the stylesheet; the word beside the
+ * label carries it for everyone reading rather than looking.
+ */
+function Verdicts({
+  headingKey,
+  verdicts,
+}: {
+  headingKey: string
+  verdicts: readonly VerdictField[]
+}) {
+  const { t, i18n } = useTranslation()
+  return (
+    <section className="verdicts">
+      <h2 className="section-mark">{t(headingKey)}</h2>
+      {verdicts.map((verdict) => (
+        <div
+          className="verdict"
+          key={verdict.id}
+          data-field={verdict.id}
+          data-importance={verdict.importance}
+          data-status={verdict.status}
+        >
+          <div className="verdict-head">
+            <span className="verdict-label">{t(verdict.labelKey)}</span>
+            <span className="verdict-status">{t(verdict.statusKey)}</span>
+          </div>
+          <p className="verdict-summary">{refText(verdict.summary, t, i18n.language)}</p>
+          {verdict.details.length > 0 ? (
+            <ul className="verdict-details">
+              {verdict.details.map((detail) => (
+                <li key={detail.key}>{refText(detail, t, i18n.language)}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ))}
+    </section>
   )
 }
 
@@ -277,6 +323,7 @@ function RulesNotes({
 export function Results({ results }: { results: ResultsViewModel }) {
   return (
     <main className="results">
+      <Verdicts headingKey={results.verdictsHeadingKey} verdicts={results.verdicts} />
       <FlagList field={results.flags} regionLabelKey={results.flagsRegionLabelKey} />
       <div className="stats">
         {results.stats.map((stat) => (

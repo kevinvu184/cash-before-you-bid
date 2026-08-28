@@ -99,6 +99,10 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
         assessed: estimateMoney(p.assessed, locale),
         rate: formatPercent(p.ratePct, locale),
       })
+    case 'financeUnconditional':
+      return t('flags.financeUnconditional')
+    case 'noPreApproval':
+      return t('flags.noPreApproval')
   }
 }
 

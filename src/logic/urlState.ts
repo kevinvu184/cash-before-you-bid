@@ -16,8 +16,8 @@ import {
 // short and stable. The full table (name, type, allowed values, default) is
 // documented in README.md.
 //
-//   adj bp bufm caplmi conv dep fhb foreign ins lang lender move newhome otp
-//   ppr price rate region route
+//   adj bp bufm caplmi conv dep fhb foreign ins lang lender loan move newhome
+//   otp ppr price rate region route save
 //
 // Params equal to their default are omitted; keys are emitted alphabetically
 // so the same state always produces the same URL. Booleans are 1/0.
@@ -42,6 +42,10 @@ export const COST_MAX = 1_000_000
 export const RATE_MAX = 25
 export const PCT_MAX = 100
 export const BUFFER_MONTHS_MAX = 24
+// Savings and a pre-approval are both money the bidder holds, so they share
+// the price ceiling rather than the per-cost one.
+export const SAVINGS_MAX = PRICE_MAX
+export const PRE_APPROVED_LOAN_MAX = PRICE_MAX
 
 function readNumber(
   params: URLSearchParams,
@@ -54,6 +58,25 @@ function readNumber(
   if (raw === null || raw.trim() === '') return fallback
   const n = Number(raw)
   if (!Number.isFinite(n)) return fallback
+  return Math.min(max, Math.max(min, n))
+}
+
+/**
+ * An optional figure: absent or blank reads as `null` ("not answered"), which
+ * is not the same as a `0` the user actually typed. Anything unparseable is
+ * treated as absent rather than as zero, so a mangled link never invents a
+ * pre-approval of nothing and fails the finance check on it.
+ */
+function readOptionalNumber(
+  params: URLSearchParams,
+  name: string,
+  min: number,
+  max: number,
+): number | null {
+  const raw = params.get(name)
+  if (raw === null || raw.trim() === '') return null
+  const n = Number(raw)
+  if (!Number.isFinite(n)) return null
   return Math.min(max, Math.max(min, n))
 }
 
@@ -98,6 +121,8 @@ export function parseParams(searchParams: URLSearchParams): AppState {
     movingCosts: readNumber(searchParams, 'move', d.movingCosts, 0, COST_MAX),
     bufferMonths: readNumber(searchParams, 'bufm', d.bufferMonths, 0, BUFFER_MONTHS_MAX),
     capitaliseLmi: readBoolean(searchParams, 'caplmi', d.capitaliseLmi),
+    savings: readNumber(searchParams, 'save', d.savings, 0, SAVINGS_MAX),
+    preApprovedLoan: readOptionalNumber(searchParams, 'loan', 0, PRE_APPROVED_LOAN_MAX),
     lang: readEnum(searchParams, 'lang', LANGS, DEFAULT_LANG),
   }
   return { ...inputs, depositPct: clampDepositPct(inputs.route, inputs.depositPct) }
@@ -126,6 +151,9 @@ export function serialiseParams(state: AppState): URLSearchParams {
   num('ins', state.buildingInsurance, d.buildingInsurance)
   str('lang', state.lang, DEFAULT_LANG)
   num('lender', state.lenderFees, d.lenderFees)
+  // Omitted when it is null, which is the default: an absent `loan` param is
+  // exactly "not yet pre-approved".
+  if (state.preApprovedLoan !== null) entries.push(['loan', String(state.preApprovedLoan)])
   num('move', state.movingCosts, d.movingCosts)
   bool('newhome', state.newHome, d.newHome)
   num('otp', state.offThePlanConstruction, d.offThePlanConstruction)
@@ -133,6 +161,7 @@ export function serialiseParams(state: AppState): URLSearchParams {
   num('price', state.price, d.price)
   num('rate', state.interestRatePct, d.interestRatePct)
   str('region', state.region, d.region)
+  num('save', state.savings, d.savings)
   str('route', state.route, d.route)
   entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
   return new URLSearchParams(entries)

@@ -67,15 +67,27 @@ Everything the user can change lives in the query string, so a link reproduces
 the exact view. Params equal to their default are omitted and keys are sorted,
 so the same state always produces the same URL.
 
-| Param  | Values             | Default    | Meaning                            |
-| ------ | ------------------ | ---------- | ---------------------------------- |
-| `skin` | `default`, `plain` | `default`  | Which skin renders the screen      |
-| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS |
-| `lang` | `en`, `vi`         | `vi`       | UI language                        |
+| Param  | Values             | Default    | Meaning                                |
+| ------ | ------------------ | ---------- | -------------------------------------- |
+| `skin` | `default`, `plain` | `default`  | Which skin renders the screen          |
+| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS     |
+| `lang` | `en`, `vi`         | `vi`       | UI language                            |
+| `save` | `0`–`100000000`    | `0`        | Savings available; clamped on read     |
+| `loan` | `0`–`100000000`    | _(absent)_ | Pre-approved loan; absent = not yet    |
 
-The calculator's own params (`price`, `route`, `dep`, `region`, `fhb`, `ppr`,
+`loan` is the one param whose absence is not the same as `0`. Absent — or
+blank, or unparseable — means "not yet pre-approved", and the finance check is
+not run at all; `loan=0` is a figure the user entered, and the check runs and
+fails on it. Both readings are clamped into range, and neither figure is
+written to the query string at its default.
+
+The calculator's other params (`price`, `route`, `dep`, `region`, `fhb`, `ppr`,
 `newhome`, `otp`, `foreign`, `rate`, `conv`, `bp`, `lender`, `adj`, `ins`,
 `move`, `bufm`, `caplmi`) are read and written by `src/logic/urlState.ts`.
+
+**A shared link carries whatever was typed into `save` and `loan`.** Nothing
+leaves the browser — the query string is the whole persistence layer — but a
+link pasted into a chat carries the sender's savings balance with it.
 
 An unknown `?skin=` falls back to `plain` — the baseline that always renders —
 and the URL is rewritten with `replace`. An unknown `?mode=` falls back to

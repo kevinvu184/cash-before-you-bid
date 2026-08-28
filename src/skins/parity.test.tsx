@@ -60,7 +60,14 @@ const numericDrafts = (vm: AppViewModel): Map<FieldId, string> => {
     if (field.draft !== undefined) drafts.set(field.id, field.draft)
   }
   const i = vm.inputs
-  for (const field of [i.price, i.depositPct, i.offThePlanConstruction, i.interestRatePct])
+  for (const field of [
+    i.price,
+    i.depositPct,
+    i.offThePlanConstruction,
+    i.interestRatePct,
+    i.savings,
+    i.preApprovedLoan,
+  ])
     collect(field)
   for (const field of i.assumptions.value) collect(field)
   return drafts

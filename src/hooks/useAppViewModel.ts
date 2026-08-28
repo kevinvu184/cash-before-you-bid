@@ -14,6 +14,7 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
+import { buildVerdictFields } from '../logic/verdictFields'
 import {
   type AppViewModel,
   type BooleanInputField,
@@ -25,7 +26,7 @@ import {
   type TextRef,
 } from '../types/viewModel'
 import type { UseCalculatorResult } from './useCalculator'
-import { useNumericDraft } from './useNumericDraft'
+import { useNumericDraft, useOptionalNumericDraft } from './useNumericDraft'
 import { useTranslationNotice } from './useTranslationNotice'
 
 // Every field the app can show, assembled once, above the skin boundary. The
@@ -72,7 +73,7 @@ interface NumericSpec {
 
 function numberField(
   spec: NumericSpec,
-  value: number,
+  value: number | null,
   draft: string,
   onDraftChange: (raw: string) => void,
   hintKey: string | null,
@@ -230,6 +231,14 @@ export function useAppViewModel(
   const insurance = useNumericDraft(inputs.buildingInsurance, set('buildingInsurance'), locale)
   const moving = useNumericDraft(inputs.movingCosts, set('movingCosts'), locale)
   const bufferMonths = useNumericDraft(inputs.bufferMonths, set('bufferMonths'), locale)
+  const savings = useNumericDraft(inputs.savings, set('savings'), locale)
+  // Optional: an empty field reports null, which suppresses the finance check
+  // rather than failing it on a zero the user never entered.
+  const preApprovedLoan = useOptionalNumericDraft(
+    inputs.preApprovedLoan,
+    set('preApprovedLoan'),
+    locale,
+  )
 
   const assumptionFields = [
     numberField(
@@ -517,6 +526,32 @@ export function useAppViewModel(
         rate.onDraftChange,
         null,
       ),
+      savings: numberField(
+        {
+          id: 'savings',
+          controlId: 'save',
+          labelKey: 'inputs.savings',
+          kind: 'money',
+          importance: 'primary',
+        },
+        inputs.savings,
+        savings.draft,
+        savings.onDraftChange,
+        'inputs.savingsHint',
+      ),
+      preApprovedLoan: numberField(
+        {
+          id: 'preApprovedLoan',
+          controlId: 'loan',
+          labelKey: 'inputs.preApprovedLoan',
+          kind: 'money',
+          importance: 'primary',
+        },
+        inputs.preApprovedLoan,
+        preApprovedLoan.draft,
+        preApprovedLoan.onDraftChange,
+        'inputs.preApprovedLoanHint',
+      ),
       assumptions: {
         id: 'assumptions',
         labelKey: 'inputs.assumptions',
@@ -543,6 +578,8 @@ export function useAppViewModel(
       },
       statsHeadingKey: 'results.statsHeading',
       stats: buildStats(result.tiles),
+      verdictsHeadingKey: 'results.verdictsHeading',
+      verdicts: buildVerdictFields(result.readiness),
       linesHeadingKey: 'results.linesHeading',
       tableHeadingKeys: {
         line: 'table.line',

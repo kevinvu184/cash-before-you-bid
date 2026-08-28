@@ -1,6 +1,7 @@
 import { APRA_ASSESSMENT_BUFFER, BUFFER_BASE_AMOUNT, FHOG_PRICE_CAP } from '../data/constants'
 import type {
   CalculationResult,
+  CalculationTotals,
   CalculatorInputs,
   Flag,
   FlagCode,
@@ -16,6 +17,7 @@ import { mortgageRegistrationFee, pexaFees, transferRegistrationFee } from './fe
 import { firstHomeOwnerGrant } from './grant'
 import { lmiRate } from './lmi'
 import { monthlyRepayment } from './loan'
+import { assessReadiness } from './verdict'
 
 // Mirrors the original's `+value || 0` guard for cleared/invalid inputs.
 const orZero = (n: number): number => (Number.isFinite(n) ? n : 0)
@@ -38,6 +40,11 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   const movingCosts = orZero(inputs.movingCosts)
   const bufferMonths = orZero(inputs.bufferMonths)
   const capitaliseLmi = inputs.capitaliseLmi
+  const savings = Math.max(0, orZero(inputs.savings))
+  // Null is "not yet pre-approved", which is not the same as zero: it
+  // suppresses the finance check instead of failing it.
+  const preApprovedLoan =
+    inputs.preApprovedLoan === null ? null : Math.max(0, orZero(inputs.preApprovedLoan))
 
   const flags: Flag[] = []
   const flag = (kind: FlagKind, code: FlagCode, params?: Record<string, number>) =>
@@ -178,29 +185,48 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
       ratePct: (rate + APRA_ASSESSMENT_BUFFER) * 100,
     })
 
+  const totals: CalculationTotals = {
+    deposit,
+    purchaseCosts: costs,
+    loan: loanFinal,
+    // Reported against the final loan so it stays consistent with `loan`
+    // when LMI is capitalised; the pre-capitalisation `lvr` above is what
+    // prices the LMI and drives the flags, matching the original.
+    lvrPct: price > 0 ? (loanFinal / price) * 100 : 0,
+    monthlyRepayment: rep,
+    assessedRepayment: repAssessed,
+    buffer,
+    totalCash: total,
+    governmentEquity: price * govEq,
+    lmiPremium: lmi,
+    lmiCash,
+    stampDuty: duty,
+    dutiableValue,
+    grant,
+  }
+
+  const readiness = assessReadiness({ rows, totals }, { savings, preApprovedLoan })
+
+  // The finance check's reason for existing, carried as a flag so the UI owns
+  // the words: an auction contract has no finance clause and no cooling-off
+  // period, so a loan that does not come through is a defaulted contract.
+  if (totals.loan > 0) {
+    if (preApprovedLoan === null) {
+      flag('note', 'noPreApproval')
+    } else {
+      const loanShort = readiness.verdicts.some((verdict) =>
+        verdict.checks.some((check) => check.pocket === 'loan' && check.shortfall > 0),
+      )
+      flag(loanShort ? 'warn' : 'note', 'financeUnconditional')
+    }
+  }
+
   return {
     appliedDepositPct: depositPct,
     flags,
     tiles,
     rows,
-    totals: {
-      deposit,
-      purchaseCosts: costs,
-      loan: loanFinal,
-      // Reported against the final loan so it stays consistent with `loan`
-      // when LMI is capitalised; the pre-capitalisation `lvr` above is what
-      // prices the LMI and drives the flags, matching the original.
-      lvrPct: price > 0 ? (loanFinal / price) * 100 : 0,
-      monthlyRepayment: rep,
-      assessedRepayment: repAssessed,
-      buffer,
-      totalCash: total,
-      governmentEquity: price * govEq,
-      lmiPremium: lmi,
-      lmiCash,
-      stampDuty: duty,
-      dutiableValue,
-      grant,
-    },
+    totals,
+    readiness,
   }
 }

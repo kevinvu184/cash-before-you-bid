@@ -1,5 +1,7 @@
 import { rowBand } from '../logic/bands'
 import { buildLineFields } from '../logic/lineFields'
+import { assessReadiness } from '../logic/verdict'
+import { buildVerdictFields } from '../logic/verdictFields'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { Lang } from '../logic/lang'
 import {
@@ -20,7 +22,7 @@ import {
   SKIN_OPTIONS,
   SOURCES,
 } from '../logic/fieldLabels'
-import type { RowCode } from '../types/calculator'
+import type { CalculationTotals, RowCode, TableRow } from '../types/calculator'
 
 /**
  * A fixed view model that carries every FieldId at once, so the parity test can
@@ -176,16 +178,51 @@ const LINE_SOURCE: ReadonlyArray<[RowCode, number, LineField['how'], boolean]> =
   ['total', 199_354, { code: 'total' }, true],
 ]
 
+const ROWS: readonly TableRow[] = LINE_SOURCE.map(([code, value, how, emphasis]) => ({
+  code,
+  amount: value,
+  how,
+  emphasis,
+  band: rowBand(code),
+}))
+
 // Banded and subtotalled through the same builder the live view model uses,
 // so the fixture cannot drift from what a skin actually receives.
-const LINES = buildLineFields(
-  LINE_SOURCE.map(([code, value, how, emphasis]) => ({
-    code,
-    amount: value,
-    how,
-    emphasis,
-    band: rowBand(code),
-  })),
+const LINES = buildLineFields(ROWS)
+
+/**
+ * Only the totals the verdict reads. The rest are zeroed: this fixture exists
+ * to carry every field at once, not to be a coherent calculation.
+ */
+const TOTALS: CalculationTotals = {
+  deposit: 41_000,
+  purchaseCosts: 138_741,
+  loan: 779_000,
+  lvrPct: 95,
+  monthlyRepayment: 4771,
+  assessedRepayment: 6402,
+  buffer: 15_313,
+  totalCash: 199_354,
+  governmentEquity: 246_000,
+  lmiPremium: 31_218,
+  lmiCash: 31_218,
+  stampDuty: 44_820,
+  dutiableValue: 820_000,
+  grant: 10_000,
+}
+
+/**
+ * Savings that cover the deposit but not settlement, against a pre-approval
+ * below the loan needed: one covered verdict, one short in both pockets, so a
+ * skin that drops the covered case or the second shortfall line is caught.
+ * Run through the live assessor and builder, so the fixture cannot drift from
+ * what a skin actually receives.
+ */
+const VERDICTS = buildVerdictFields(
+  assessReadiness(
+    { rows: ROWS, totals: TOTALS },
+    { savings: 60_000, preApprovedLoan: 700_000 },
+  ),
 )
 
 export interface FixtureOptions {
@@ -317,6 +354,24 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       ),
       foreignPurchaser: boolean('foreignPurchaser', 'foreign', 'inputs.foreign', true),
       interestRatePct: number('interestRatePct', 'rate', 'inputs.rate', 6.2, 'percent'),
+      savings: number(
+        'savings',
+        'save',
+        'inputs.savings',
+        60_000,
+        'money',
+        'inputs.savingsHint',
+        'primary',
+      ),
+      preApprovedLoan: number(
+        'preApprovedLoan',
+        'loan',
+        'inputs.preApprovedLoan',
+        700_000,
+        'money',
+        'inputs.preApprovedLoanHint',
+        'primary',
+      ),
       assumptions: {
         id: 'assumptions',
         labelKey: 'inputs.assumptions',
@@ -360,6 +415,8 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       },
       statsHeadingKey: 'results.statsHeading',
       stats: STATS,
+      verdictsHeadingKey: 'results.verdictsHeading',
+      verdicts: VERDICTS,
       linesHeadingKey: 'results.linesHeading',
       tableHeadingKeys: {
         line: 'table.line',
