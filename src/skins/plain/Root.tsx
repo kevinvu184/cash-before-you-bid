@@ -16,6 +16,7 @@ import type {
   ScenarioEntry,
   ScenariosViewModel,
   StatField,
+  VerdictField,
   SunkCostViewModel,
 } from '../../types/viewModel'
 import {
@@ -151,6 +152,8 @@ function Inputs({ inputs }: { inputs: InputsViewModel }) {
       <NumberRow field={inputs.offThePlanConstruction} />
       <CheckboxRow field={inputs.foreignPurchaser} />
       <NumberRow field={inputs.interestRatePct} />
+      <NumberRow field={inputs.savings} />
+      <NumberRow field={inputs.preApprovedLoan} />
 
       {/* No disclosure: nothing here is hidden behind an interaction. */}
       <section data-field={inputs.assumptions.id} data-importance={inputs.assumptions.importance}>
@@ -177,6 +180,27 @@ function Stat({ stat }: { stat: StatField }) {
         {stat.detail === null ? null : <span>{refText(stat.detail, t, i18n.language)}</span>}
       </dd>
     </div>
+  )
+}
+
+function Verdict({ verdict }: { verdict: VerdictField }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <section data-field={verdict.id} data-importance={verdict.importance}>
+      <h3>
+        {t(verdict.labelKey)}
+        {': '}
+        {t(verdict.statusKey)}
+      </h3>
+      <p>{refText(verdict.summary, t, i18n.language)}</p>
+      {verdict.details.length > 0 ? (
+        <ul>
+          {verdict.details.map((detail) => (
+            <li key={detail.key}>{refText(detail, t, i18n.language)}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
   )
 }
 
@@ -241,6 +265,13 @@ function Results({ results }: { results: ResultsViewModel }) {
   const { t, i18n } = useTranslation()
   return (
     <main>
+      <section>
+        <h2>{t(results.verdictsHeadingKey)}</h2>
+        {results.verdicts.map((verdict) => (
+          <Verdict key={verdict.id} verdict={verdict} />
+        ))}
+      </section>
+
       <section
         aria-label={t(results.flagsRegionLabelKey)}
         data-field={results.flags.id}

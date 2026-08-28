@@ -410,6 +410,83 @@
   color: var(--color-text-muted);
 }
 
+/* ── the verdict ────────────────────────────────────────────────────────── */
+
+/* The answer, before the arithmetic that produced it: one block per moment,
+   ruled apart like every other section rather than boxed or tinted. Status is
+   carried by the word in the head, not by colour alone — the accent on the
+   rule is a second signal, never the only one. */
+
+[data-skin='default'] .verdicts {
+  margin: 0 0 20px;
+}
+
+[data-skin='default'] .verdict {
+  margin: 12px 0 0;
+  padding: 12px 0 14px;
+  border-top: var(--border-strong-width) solid var(--color-hairline-strong);
+}
+
+[data-skin='default'] .verdict[data-status='short'] {
+  border-top-color: var(--color-error);
+}
+
+[data-skin='default'] .verdict[data-status='covered'] {
+  border-top-color: var(--color-success);
+}
+
+[data-skin='default'] .verdict-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+[data-skin='default'] .verdict-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-base);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .verdict-status {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-stat);
+  line-height: var(--line-height-tight);
+  color: var(--color-text);
+}
+
+[data-skin='default'] .verdict[data-status='short'] .verdict-status {
+  color: var(--color-error);
+}
+
+[data-skin='default'] .verdict[data-status='covered'] .verdict-status {
+  color: var(--color-success);
+}
+
+[data-skin='default'] .verdict-summary {
+  margin: 6px 0 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+}
+
+[data-skin='default'] .verdict-details {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-skin='default'] .verdict-details li {
+  margin: 6px 0 0;
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
 /* ── flags ──────────────────────────────────────────────────────────────── */
 
 [data-skin='default'] .flags {

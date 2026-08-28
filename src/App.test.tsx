@@ -433,3 +433,89 @@ describe('timing bands in the line table', () => {
     )
   })
 })
+
+describe('the verdict', () => {
+  const renderEnglish = async (query = '') => {
+    window.history.replaceState(null, '', `/?lang=en${query}`)
+    await renderApp()
+    await waitFor(() => expect(screen.getByText('Can you cover it?')).toBeTruthy())
+  }
+
+  const verdict = (id: string) =>
+    document.querySelector(`[data-field='${id}']`) as HTMLElement | null
+
+  it('asks for savings and a pre-approval as primary fields, in front of the assumptions', async () => {
+    await renderEnglish()
+    // Both are outside the disclosure: the verdict is not reachable without
+    // them, so they are not an assumption to be edited if you have quotes.
+    expect(document.querySelector('details')?.contains(input('save'))).toBe(false)
+    expect(document.querySelector('details')?.contains(input('loan'))).toBe(false)
+    // The decimal keypad, not type=number, so a vi user can type separators.
+    expect(input('save').getAttribute('inputmode')).toBe('decimal')
+    expect(input('loan').getAttribute('inputmode')).toBe('decimal')
+    // Labels are visible and bound, not placeholders.
+    expect(document.querySelector("label[for='save']")?.textContent).toContain('Savings')
+    expect(document.querySelector("label[for='loan']")?.textContent).toContain('Pre-approved')
+  })
+
+  it('reports both moments short when nothing has been entered', async () => {
+    await renderEnglish()
+    expect(verdict('verdictAuctionDay')?.dataset.status).toBe('short')
+    expect(verdict('verdictAtSettlement')?.dataset.status).toBe('short')
+    // The deposit on the default $750,000 at 5%.
+    expect(verdict('verdictAuctionDay')?.textContent).toContain(
+      formatMoney(37_500, APP_CURRENCY, 'en'),
+    )
+  })
+
+  it('turns the day covered once the savings reach the deposit', async () => {
+    await renderEnglish('&save=40000')
+    expect(verdict('verdictAuctionDay')?.dataset.status).toBe('covered')
+    expect(verdict('verdictAuctionDay')?.textContent).toContain('Covered')
+    // Settlement is still short: the loan does not fund duty and fees.
+    expect(verdict('verdictAtSettlement')?.dataset.status).toBe('short')
+  })
+
+  it('leaves the finance check unrun, and says so, with no pre-approval', async () => {
+    await renderEnglish('&save=200000')
+    const settlement = verdict('verdictAtSettlement')
+    expect(settlement?.textContent).toContain('Finance not checked')
+    expect(document.querySelector('.flags')?.textContent).toMatch(
+      /no pre-approved loan amount entered/i,
+    )
+  })
+
+  it('runs the finance check once a pre-approval is entered, and names the loan pocket', async () => {
+    await renderEnglish('&save=200000&loan=600000')
+    const settlement = verdict('verdictAtSettlement')
+    expect(settlement?.textContent).not.toContain('Finance not checked')
+    expect(settlement?.textContent).toContain('Loan:')
+    // The reason it matters at an auction rides along as a flag.
+    expect(document.querySelector('.flags')?.textContent).toMatch(
+      /no finance clause and no cooling-off period/i,
+    )
+  })
+
+  it('writes both figures to the query string and reads them back', async () => {
+    await renderEnglish()
+    vi.useFakeTimers()
+    fireEvent.change(input('save'), { target: { value: '95000' } })
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+    expect(window.location.search).toBe('?lang=en&save=95000')
+    fireEvent.change(input('loan'), { target: { value: '700000' } })
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+    expect(window.location.search).toBe('?lang=en&loan=700000&save=95000')
+
+    // Clearing the pre-approval drops the param rather than writing a zero.
+    fireEvent.change(input('loan'), { target: { value: '' } })
+    act(() => {
+      vi.advanceTimersByTime(300)
+    })
+    expect(window.location.search).toBe('?lang=en&save=95000')
+    expect(input('loan').value).toBe('')
+  })
+})

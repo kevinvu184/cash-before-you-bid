@@ -1,7 +1,14 @@
 import type { Lang } from './lang'
 import type { ColorMode, SkinId } from './skins'
 import type { ModePreference } from './urlState'
-import type { DepositRoute, Region, RowCode, TimingBand } from '../types/calculator'
+import type {
+  DepositRoute,
+  Region,
+  RowCode,
+  TimingBand,
+  VerdictCheckCode,
+  VerdictCode,
+} from '../types/calculator'
 import type {
   ChoiceOption,
   GuidanceField,
@@ -9,6 +16,7 @@ import type {
   NoteEntry,
   NotePart,
   SourcesValue,
+  VerdictStatus,
 } from '../types/viewModel'
 
 // Translation keys — never translations. The core names the string a field
@@ -63,6 +71,63 @@ export const BAND_SUBTOTAL_LABEL_KEY: Readonly<Record<TimingBand, string>> = {
   afterSettlement: 'bands.subtotalAfterSettlement',
 }
 
+// ── the verdict ──────────────────────────────────────────────────────────────
+//
+// Each verdict names its own moment and each shortfall names its own pocket,
+// rather than interpolating one key into another: a translator gets a whole
+// sentence to work with, and a screen reader reading the block out gets one
+// too.
+
+export const VERDICT_LABEL_KEY: Readonly<Record<VerdictCode, string>> = {
+  auctionDay: 'verdicts.auctionDayLabel',
+  atSettlement: 'verdicts.atSettlementLabel',
+}
+
+/** The one word for the state, so both skins say the same thing. */
+export const VERDICT_STATUS_KEY: Readonly<Record<VerdictStatus, string>> = {
+  covered: 'verdicts.covered',
+  short: 'verdicts.short',
+}
+
+export interface VerdictSummaryKeys extends Readonly<Record<VerdictStatus, string>> {
+  /**
+   * Used when the verdict is covered but the loan check did not run — no
+   * pre-approval to test, or no loan needed at all. The ordinary covered copy
+   * says the pre-approval covers the balance of the price, which would be an
+   * assertion about a check that never happened.
+   */
+  coveredUnchecked?: string
+  /**
+   * Used when more than one pocket is short, so the headline never quotes a
+   * figure that adds a cash gap to a loan gap — the two are closed differently
+   * and one does not make up for the other. Only the settlement verdict has
+   * more than one pocket to be short in.
+   */
+  shortMultiple?: string
+}
+
+export const VERDICT_SUMMARY_KEY: Readonly<Record<VerdictCode, VerdictSummaryKeys>> = {
+  auctionDay: {
+    covered: 'verdicts.auctionDayCovered',
+    short: 'verdicts.auctionDayShort',
+  },
+  atSettlement: {
+    covered: 'verdicts.atSettlementCovered',
+    coveredUnchecked: 'verdicts.atSettlementCoveredCashOnly',
+    short: 'verdicts.atSettlementShort',
+    shortMultiple: 'verdicts.atSettlementShortMultiple',
+  },
+}
+
+/** One sentence per pocket, because cash and a loan have different remedies. */
+export const VERDICT_SHORTFALL_KEY: Readonly<Record<VerdictCheckCode, string>> = {
+  auctionDayCash: 'verdicts.shortAuctionDayCash',
+  settlementCash: 'verdicts.shortSettlementCash',
+  settlementLoan: 'verdicts.shortSettlementLoan',
+}
+
+/** Said when no pre-approval was entered, so the finance check did not run. */
+export const VERDICT_FINANCE_NOT_CHECKED_KEY = 'verdicts.financeNotChecked'
 /**
  * What the money in a band has to look like, for the bands that have anything
  * to say. Auction day is the one that catches people out: the figure is only
@@ -98,7 +163,6 @@ const guidanceField = (
 export const BAND_GUIDANCE: Readonly<Partial<Record<TimingBand, GuidanceField>>> = {
   auctionDay: guidanceField('guidanceAuctionDay', 'guidance.auctionDay', AUCTION_DAY_POINTS),
 }
-
 export const ROUTE_OPTIONS: readonly ChoiceOption<DepositRoute>[] = [
   { value: 'scheme', labelKey: 'routes.scheme' },
   { value: 'lmi', labelKey: 'routes.lmi' },

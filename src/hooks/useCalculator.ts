@@ -57,8 +57,11 @@ export function useCalculator(): UseCalculatorResult {
       next.depositPct = clampDepositPct(next.route, next.depositPct)
       // Numeric fields are continuous inputs (typing), so the URL update is
       // debounced and replaces the current entry; everything else is a
-      // discrete choice the back button should step through.
-      setState({ ...state, app: next }, typeof value === 'number' ? 'replace' : 'push')
+      // discrete choice the back button should step through. `null` is the
+      // cleared state of an optional numeric field — still typing, so still a
+      // replace.
+      const typing = typeof value === 'number' || value === null
+      setState({ ...state, app: next }, typing ? 'replace' : 'push')
     },
     [inputs, setState, state],
   )

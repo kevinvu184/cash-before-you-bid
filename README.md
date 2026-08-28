@@ -91,6 +91,8 @@ Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.
 | `otp`     | number          | 0 – 100,000,000                      | 0        |
 | `foreign` | boolean         | `1`, `0`                             | `0`      |
 | `rate`    | number (% p.a.) | 0 – 25                               | 6.2      |
+| `save`    | number          | 0 – 100,000,000                      | 0        |
+| `loan`    | number          | 0 – 100,000,000                      | _absent_ |
 | `conv`    | number          | 0 – 1,000,000                        | 1600     |
 | `bp`      | number          | 0 – 1,000,000                        | 550      |
 | `bids`    | number          | 1 – 50                               | 1        |
@@ -106,6 +108,15 @@ Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.
 
 `bids` is the number of properties bid on before winning one. It multiplies the
 pre-auction costs (`conv`, `bp`) and nothing else — see `src/logic/sunkCost.ts`.
+
+`loan` is the one param whose absence is not the same as `0`. Absent — or blank,
+or unparseable — means "not yet pre-approved", and the finance check is not run
+at all; `loan=0` is a figure the user entered, and the check runs and fails on
+it. See `src/logic/verdict.ts`.
+
+**A shared link carries whatever was typed into `save` and `loan`.** Nothing
+leaves the browser — the query string is the whole persistence layer — but a
+link pasted into a chat carries the sender's savings balance with it.
 
 An unknown `?skin=` falls back to `plain` — the baseline that always renders —
 and the URL is rewritten with `replace`. An unknown `?mode=` falls back to

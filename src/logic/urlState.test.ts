@@ -13,6 +13,21 @@ describe('serialiseParams', () => {
     expect(serialiseParams(state).toString()).toBe('price=900000&route=lmi')
   })
 
+  it('omits savings at zero and the pre-approval when there is none', () => {
+    expect(serialiseParams(DEFAULT_APP_STATE).toString()).toBe('')
+    expect(
+      serialiseParams({ ...DEFAULT_APP_STATE, savings: 95_000 }).toString(),
+    ).toBe('save=95000')
+    // A pre-approval of zero is a figure the user entered, so it is written.
+    expect(
+      serialiseParams({ ...DEFAULT_APP_STATE, preApprovedLoan: 0 }).toString(),
+    ).toBe('loan=0')
+    expect(
+      serialiseParams({ ...DEFAULT_APP_STATE, savings: 95_000, preApprovedLoan: 700_000 })
+        .toString(),
+    ).toBe('loan=700000&save=95000')
+  })
+
   it('sorts keys alphabetically so equal states produce identical URLs', () => {
     const state: AppState = {
       ...DEFAULT_APP_STATE,
@@ -61,6 +76,8 @@ describe('serialiseParams', () => {
       movingCosts: 8000,
       bufferMonths: 12,
       capitaliseLmi: true,
+      savings: 250_000,
+      preApprovedLoan: 9_876_543,
       propertiesConsidered: 8,
       lang: 'en',
     }
@@ -76,8 +93,8 @@ describe('parseParams', () => {
   it('reads every param', () => {
     const parsed = parse(
       'adj=900&bids=4&bp=600&bufm=6&caplmi=1&conv=1800&dep=12&fhb=0&foreign=1&ins=1600' +
-        '&lang=en&lender=350&move=4500&newhome=1&otp=50000&ppr=0&price=820000&rate=5.9' +
-        '&region=regional&route=lmi',
+        '&lang=en&lender=350&loan=700000&move=4500&newhome=1&otp=50000&ppr=0&price=820000' +
+        '&rate=5.9&region=regional&route=lmi&save=95000',
     )
     expect(parsed).toEqual({
       price: 820_000,
@@ -98,9 +115,28 @@ describe('parseParams', () => {
       movingCosts: 4500,
       bufferMonths: 6,
       capitaliseLmi: true,
+      savings: 95_000,
+      preApprovedLoan: 700_000,
       propertiesConsidered: 4,
       lang: 'en',
     })
+  })
+
+  it('reads an absent, blank or unparseable pre-approval as not pre-approved', () => {
+    // Null, never 0: a suppressed finance check is not a failed one.
+    expect(parse('').preApprovedLoan).toBeNull()
+    expect(parse('loan=').preApprovedLoan).toBeNull()
+    expect(parse('loan=abc').preApprovedLoan).toBeNull()
+    expect(parse('loan=NaN').preApprovedLoan).toBeNull()
+    expect(parse('loan=0').preApprovedLoan).toBe(0)
+    expect(parse('loan=700000').preApprovedLoan).toBe(700_000)
+  })
+
+  it('clamps savings and the pre-approval into range', () => {
+    expect(parse('save=-1').savings).toBe(0)
+    expect(parse('save=999999999999').savings).toBe(100_000_000)
+    expect(parse('loan=-1').preApprovedLoan).toBe(0)
+    expect(parse('loan=999999999999').preApprovedLoan).toBe(100_000_000)
   })
 
   it('falls back to the default for non-numeric numbers', () => {
@@ -210,10 +246,20 @@ describe('round-trip', () => {
         movingCosts: 6000,
         bufferMonths: 12,
         capitaliseLmi: true,
+        savings: 180_000,
+        preApprovedLoan: 640_000,
         propertiesConsidered: 6,
         lang: 'en',
       },
     ],
+    [
+      'savings entered but no pre-approval',
+      { ...DEFAULT_APP_STATE, savings: 95_000, preApprovedLoan: null },
+    ],
+    ['a pre-approval of zero, which is not the same as none', {
+      ...DEFAULT_APP_STATE,
+      preApprovedLoan: 0,
+    }],
   ]
 
   it.each(states)('parse(serialise(x)) === x for %s', (_name, state) => {

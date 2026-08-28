@@ -115,6 +115,11 @@ export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
       <CheckboxRow field={inputs.foreignPurchaser} />
       <NumberRow field={inputs.interestRatePct} />
 
+      {/* What you have, not what it costs. Primary fields, in front of the
+          disclosure: without them there is no verdict to show. */}
+      <NumberRow field={inputs.savings} />
+      <NumberRow field={inputs.preApprovedLoan} />
+
       {/* Progressive disclosure: the fields stay in the document when closed,
           so the parity contract holds whether or not it has been opened. */}
       <details

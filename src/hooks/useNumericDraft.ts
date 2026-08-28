@@ -12,6 +12,9 @@ export interface NumericDraft {
   onDraftChange: (raw: string) => void
 }
 
+const formatOrEmpty = (value: number | null, locale: string): string =>
+  value === null ? '' : formatNumberInput(value, locale)
+
 /**
  * Keeps the raw keystrokes a number field is holding, so a half-typed figure
  * survives a round trip through state: `6.` would otherwise come back as `6`
@@ -39,6 +42,33 @@ export function useNumericDraft(
 
   return {
     draft: parseDraft(draft, locale) === value ? draft : formatNumberInput(value, locale),
+    onDraftChange,
+  }
+}
+
+/**
+ * The same draft, for a field where empty is an answer rather than a zero: an
+ * unentered pre-approved loan means "not yet pre-approved", and the finance
+ * check is not run at all. Clearing the field must therefore report `null`,
+ * not the `0` that would fail the check on a figure the user never gave.
+ *
+ * Unparseable text reports `null` for the same reason — a half-typed or
+ * mistyped figure leaves the check unrun rather than silently failing it.
+ */
+export function useOptionalNumericDraft(
+  value: number | null,
+  onChange: (next: number | null) => void,
+  locale: string,
+): NumericDraft {
+  const [draft, setDraft] = useState(() => formatOrEmpty(value, locale))
+
+  const onDraftChange = (raw: string) => {
+    setDraft(raw)
+    onChange(parseLocaleNumber(raw, locale))
+  }
+
+  return {
+    draft: parseLocaleNumber(draft, locale) === value ? draft : formatOrEmpty(value, locale),
     onDraftChange,
   }
 }

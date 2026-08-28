@@ -21,6 +21,15 @@ export interface CalculatorInputs {
   movingCosts: number
   bufferMonths: number
   capitaliseLmi: boolean
+  /** Cash the bidder can actually reach. Never negative. */
+  savings: number
+  /**
+   * A pre-approved loan amount, or `null` for "not yet pre-approved".
+   * `null` is not zero: it suppresses the finance check rather than failing
+   * it, because a bidder without a pre-approval has not been told no — they
+   * have not asked yet.
+   */
+  preApprovedLoan: number | null
   propertiesConsidered: number
 }
 
@@ -41,6 +50,9 @@ export type FlagCode =
   | 'fhogPriceCap'
   | 'genuineSavings'
   | 'serviceability'
+  // Why the finance check matters at an auction, and why it was not run.
+  | 'financeUnconditional'
+  | 'noPreApproval'
 
 export interface Flag {
   kind: FlagKind
@@ -160,6 +172,56 @@ export interface CalculationTotals {
 }
 
 /**
+ * Which pocket a check draws on. The two are not interchangeable: a home loan
+ * funds the balance of the purchase price and nothing else, so a cash gap and
+ * a loan gap have different remedies and are never netted against each other.
+ */
+export type VerdictPocket = 'cash' | 'loan'
+
+export type VerdictCheckCode = 'auctionDayCash' | 'settlementCash' | 'settlementLoan'
+
+export interface PocketCheck {
+  code: VerdictCheckCode
+  pocket: VerdictPocket
+  /** What this moment demands of that pocket. */
+  required: number
+  /** What the user has told us is in it. */
+  available: number
+  /** `required - available`, or 0 when the pocket covers it. */
+  shortfall: number
+}
+
+/** The two moments a bidder has to survive. */
+export type VerdictCode = 'auctionDay' | 'atSettlement'
+
+export interface Verdict {
+  code: VerdictCode
+  /** The timing band this verdict reads its requirement from. */
+  band: TimingBand
+  checks: readonly PocketCheck[]
+  covered: boolean
+  /** The sum of this verdict's shortfalls; 0 when covered. */
+  shortfall: number
+}
+
+export interface Readiness {
+  /** Two verdicts, in the order the purchase runs. Never merged into one. */
+  verdicts: readonly Verdict[]
+  /**
+   * Whether this purchase needs a loan at all. False on a 100% deposit, where
+   * there is no balance to fund and so nothing for a finance check to ask.
+   */
+  loanRequired: boolean
+  /**
+   * True only when the loan check actually ran — a loan is needed *and* a
+   * pre-approval was entered to test it against. False leaves the check absent
+   * from the settlement verdict rather than failing it, and the UI must not
+   * let that absence read as a pass.
+   */
+  financeChecked: boolean
+}
+
+/**
  * The pre-auction spend, per property and across a whole search. See
  * src/logic/sunkCost.ts for which rows count and why.
  */
@@ -180,5 +242,6 @@ export interface CalculationResult {
   tiles: CalculationTiles
   rows: TableRow[]
   totals: CalculationTotals
+  readiness: Readiness
   sunkCost: SunkCostSummary
 }

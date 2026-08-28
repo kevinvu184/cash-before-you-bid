@@ -31,6 +31,10 @@
     "otpHint": "Strata apartments/townhouses only; reduces dutiable value. 0 for established homes.",
     "foreign": "Not a citizen or permanent resident (foreign purchaser duty +8%)",
     "rate": "Interest rate (% p.a.)",
+    "savings": "Savings available ($)",
+    "savingsHint": "Cash you can actually reach: the deposit comes out of this on the day, and settlement out of what is left.",
+    "preApprovedLoan": "Pre-approved loan amount ($) — optional",
+    "preApprovedLoanHint": "Leave empty if you are not pre-approved yet; the finance check is then not run rather than failed.",
     "assumptions": "Cost assumptions (edit if you have quotes)",
     "conveyancing": "Conveyancing incl. disbursements ($)",
     "buildingAndPest": "Building and pest inspection ($)",
@@ -63,6 +67,7 @@
   "results": {
     "flagsLabel": "Warnings and notes",
     "statsHeading": "Summary",
+    "verdictsHeading": "Can you cover it?",
     "linesHeading": "Line by line"
   },
   "money": {
@@ -87,7 +92,9 @@
     "fhbResidency": "The first home buyer duty exemption and concession require an Australian citizen or permanent resident — duty charged at the standard rates instead.",
     "fhogPriceCap": "First Home Owner Grant not available: price above $750,000.",
     "genuineSavings": "LVR above 90%: most lenders want 5% of the price as genuine savings held for 3+ months.",
-    "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut."
+    "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut.",
+    "financeUnconditional": "An auction contract is unconditional: there is no finance clause and no cooling-off period. A pre-approval is not the loan — if it does not settle you have defaulted on the contract, not merely missed out on the property, and the deposit is at risk.",
+    "noPreApproval": "No pre-approved loan amount entered, so the finance check has not been run — this is not the same as passing it. An auction contract is unconditional: there is no finance clause and no cooling-off period, so unconditional approval before you bid is what protects your deposit."
   },
   "stats": {
     "totalLabel": "Total cash before you bid",
@@ -132,6 +139,22 @@
     "subtotalAuctionDay": "Subtotal — on auction day",
     "subtotalAtSettlement": "Subtotal — at settlement",
     "subtotalAfterSettlement": "Subtotal — after settlement"
+  },
+  "verdicts": {
+    "covered": "Covered",
+    "short": "Short",
+    "auctionDayLabel": "On the day",
+    "atSettlementLabel": "At settlement",
+    "auctionDayCovered": "Your savings cover the {{required}} deposit due the moment the hammer falls.",
+    "auctionDayShort": "Short {{shortfall}} for the {{required}} deposit due the moment the hammer falls.",
+    "atSettlementCovered": "What is left of your savings covers the {{required}} due at settlement, and your pre-approval covers the balance of the price.",
+    "atSettlementCoveredCashOnly": "What is left of your savings covers the {{required}} due at settlement.",
+    "atSettlementShort": "Short {{shortfall}} at settlement.",
+    "atSettlementShortMultiple": "Short at settlement in both pockets. The cash gap and the loan gap are separate problems — a bigger pre-approval does not pay duty, and more savings do not enlarge the loan.",
+    "shortAuctionDayCash": "Cash: short {{shortfall}}. The deposit is {{required}} and you have {{available}}. Save more, or bid less.",
+    "shortSettlementCash": "Cash: short {{shortfall}}. Settlement needs {{required}} and {{available}} is left after the deposit. A loan does not fund duty and fees — this gap has to be cash.",
+    "shortSettlementLoan": "Loan: short {{shortfall}}. The balance of the price is {{required}} and your pre-approval is {{available}}. Ask your lender for more, or bid less.",
+    "financeNotChecked": "Finance not checked: no pre-approved loan amount entered. The balance of the price still has to come from somewhere."
   },
   "guidance": {
     "auctionDay": "Paying the deposit on the day",
