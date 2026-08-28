@@ -216,12 +216,13 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
 }
 
 /**
- * The day a scenario was saved, in the active locale. A stored timestamp of 0
- * means the payload carried no usable date (hand-edited, or written by a
- * version that did not record one); the caller shows nothing rather than
- * 1 January 1970.
+ * The day a scenario was saved, in the active locale — or null when the stored
+ * payload carried no usable date (hand-edited, or written by a version that
+ * did not record one). Null rather than a guard at every call site: a skin
+ * that forgot the check would print 1 January 1970.
  */
-export function savedDate(timestamp: number, locale: string): string {
+export function savedDate(timestamp: number, locale: string): string | null {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return null
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',

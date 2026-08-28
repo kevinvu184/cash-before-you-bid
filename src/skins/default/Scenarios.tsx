@@ -69,6 +69,7 @@ function DeleteRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioAction
 
 function IdleRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
   const { t, i18n } = useTranslation()
+  const date = savedDate(entry.savedAt, i18n.language)
   return (
     <li className="scenario">
       <button
@@ -78,11 +79,7 @@ function IdleRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKe
         onClick={entry.onLoad}
       >
         <span className="scenario-name">{entry.name}</span>
-        {entry.savedAt > 0 ? (
-          <span className="scenario-date">
-            {t(keys.savedAt, { date: savedDate(entry.savedAt, i18n.language) })}
-          </span>
-        ) : null}
+        {date === null ? null : <span className="scenario-date">{t(keys.savedAt, { date })}</span>}
       </button>
       <Actions>
         <button

@@ -60,6 +60,19 @@ describe('useSavedScenarios', () => {
     expect(result.current.scenarios.map((s) => s.name)).toEqual(['second', 'first'])
   })
 
+  it('composes two writes issued before a re-render, rather than dropping one', () => {
+    // Both calls see the same `result.current`, so anything reading the list
+    // out of render state would build the second write on the pre-first list
+    // and silently lose a scenario.
+    const { result } = renderHook(() => useSavedScenarios())
+    act(() => {
+      result.current.save('first', QUERY)
+      result.current.save('second', QUERY)
+    })
+    expect(result.current.scenarios.map((s) => s.name)).toEqual(['second', 'first'])
+    expect(readBack().map((s) => s.name)).toEqual(['second', 'first'])
+  })
+
   it('reads what a previous visit stored', () => {
     const first = renderHook(() => useSavedScenarios())
     act(() => {

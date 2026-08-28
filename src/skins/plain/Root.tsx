@@ -284,6 +284,7 @@ function Results({ results }: { results: ResultsViewModel }) {
 
 function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
   const { t, i18n } = useTranslation()
+  const date = savedDate(entry.savedAt, i18n.language)
 
   if (entry.mode === 'renaming') {
     return (
@@ -334,9 +335,7 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
       >
         {entry.name}
       </button>
-      {entry.savedAt > 0 ? (
-        <span>{t(keys.savedAt, { date: savedDate(entry.savedAt, i18n.language) })}</span>
-      ) : null}
+      {date === null ? null : <span>{t(keys.savedAt, { date })}</span>}
       <button
         type="button"
         aria-label={t(keys.renameNamed, { name: entry.name })}

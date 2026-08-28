@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   MAX_SCENARIOS,
   SCENARIOS_KEY,
@@ -59,22 +59,30 @@ function isQuotaError(error: unknown): boolean {
 
 export function useSavedScenarios(): UseSavedScenariosResult {
   const [state, setState] = useState<StoreState>(readInitial)
+  // What is actually in storage, which render state has not necessarily caught
+  // up with: two actions dispatched before the next render — a save and a
+  // delete in one batch, a future "save all" — must compose rather than the
+  // second building on the list as it stood before the first, which would
+  // silently drop somebody's scenario.
+  const stored = useRef<readonly SavedScenario[]>(state.scenarios)
 
   const commit = useCallback((next: readonly SavedScenario[]): boolean => {
     try {
       window.localStorage.setItem(SCENARIOS_KEY, serialiseScenarios(next))
+      stored.current = next
       setState({ scenarios: next, error: null })
       return true
     } catch (error) {
-      // The in-memory list deliberately does not move: the panel must show
-      // what is actually stored, not what the user hoped to store.
-      setState((prev) => ({
-        scenarios: prev.scenarios,
+      // The list deliberately does not move: the panel must show what is
+      // actually stored, not what the user hoped to store.
+      const kept = stored.current
+      setState({
+        scenarios: kept,
         // A quota error on the first write is not a full disk — it is Safari's
         // private mode, which reports a zero-byte quota for everything. Only
         // once something has been stored successfully does "full" mean full.
-        error: isQuotaError(error) && prev.scenarios.length > 0 ? 'full' : 'unavailable',
-      }))
+        error: isQuotaError(error) && kept.length > 0 ? 'full' : 'unavailable',
+      })
       return false
     }
   }, [])
@@ -83,8 +91,9 @@ export function useSavedScenarios(): UseSavedScenariosResult {
     (name: string, query: string): boolean => {
       const trimmed = normaliseName(name)
       if (trimmed === '') return false
-      if (state.scenarios.length >= MAX_SCENARIOS) {
-        setState((prev) => ({ scenarios: prev.scenarios, error: 'full' }))
+      const current = stored.current
+      if (current.length >= MAX_SCENARIOS) {
+        setState({ scenarios: current, error: 'full' })
         return false
       }
       const scenario: SavedScenario = {
@@ -94,26 +103,26 @@ export function useSavedScenarios(): UseSavedScenariosResult {
         savedAt: Date.now(),
       }
       // Newest first: the scenario just saved is the one being looked at.
-      return commit([scenario, ...state.scenarios])
+      return commit([scenario, ...current])
     },
-    [commit, state.scenarios],
+    [commit],
   )
 
   const rename = useCallback(
     (id: string, name: string): boolean => {
       const trimmed = normaliseName(name)
       if (trimmed === '') return false
-      const next = state.scenarios.map((scenario) =>
+      const next = stored.current.map((scenario) =>
         scenario.id === id ? { ...scenario, name: trimmed } : scenario,
       )
       return commit(next)
     },
-    [commit, state.scenarios],
+    [commit],
   )
 
   const remove = useCallback(
-    (id: string): boolean => commit(state.scenarios.filter((scenario) => scenario.id !== id)),
-    [commit, state.scenarios],
+    (id: string): boolean => commit(stored.current.filter((scenario) => scenario.id !== id)),
+    [commit],
   )
 
   return { scenarios: state.scenarios, error: state.error, save, rename, remove }

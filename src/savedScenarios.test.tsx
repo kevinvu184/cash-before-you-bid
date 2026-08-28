@@ -145,6 +145,29 @@ describe('restoring a scenario', () => {
   })
 })
 
+describe('a scenario with no usable date', () => {
+  it('renders the row without printing 1 January 1970', async () => {
+    // savedAt 0 is what a hand edit, or a version that did not record one,
+    // leaves behind. The row is still worth showing; the date is not.
+    seed([
+      { id: 'dated', name: 'has a date', query: 'price=820000', savedAt: 1_756_000_000_000 },
+      { id: 'undated', name: 'no date', query: 'price=690000', savedAt: 0 },
+    ])
+    await renderApp()
+
+    const rows = panel('scenarioList').querySelectorAll('li')
+    expect(rows).toHaveLength(2)
+    expect(rows[0].querySelector('.scenario-date')).not.toBeNull()
+    expect(rows[1].querySelector('.scenario-date')).toBeNull()
+    expect(rows[1].textContent).toContain('no date')
+    expect(panel('scenarioList').textContent).not.toContain('1970')
+
+    // And it still loads.
+    fireEvent.click(rowButtons()[3])
+    await waitFor(() => expect(window.location.search).toBe('?price=690000'))
+  })
+})
+
 describe('renaming and deleting', () => {
   it('renames from the row, and keeps the query untouched', async () => {
     window.history.replaceState(null, '', '/?price=820000')
