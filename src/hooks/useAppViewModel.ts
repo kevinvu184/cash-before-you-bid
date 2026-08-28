@@ -156,7 +156,9 @@ function buildStats(tiles: CalculationTiles): readonly StatField[] {
         key: 'stats.depositSub',
         params: {
           pct: percent(tiles.deposit.pct),
-          price: money(tiles.deposit.price),
+          // The price is the user's own input, so it is quoted exactly; only
+          // the deposit derived from it is an estimate.
+          price: moneyExact(tiles.deposit.price),
         },
       },
       'secondary',

@@ -192,6 +192,25 @@ describe('rounded estimates', () => {
     ).toBe(formatMoney(total.value, APP_CURRENCY, 'vi'))
   })
 
+  it('quotes the entered price exactly in the deposit subtitle, but estimates the deposit', async () => {
+    // 820,550 rounds up to 820,600 for display, so an estimate and an exact
+    // rendering of the same price cannot be confused for one another.
+    window.history.replaceState(null, '', '/?price=820550')
+    await renderApp()
+    const stat = document.querySelector('[data-field="statDeposit"]')
+    const exactPrice = formatMoney(820_550, APP_CURRENCY, 'vi', { round: false })
+    const roundedPrice = formatMoney(820_550, APP_CURRENCY, 'vi')
+    expect(roundedPrice).not.toBe(exactPrice)
+    // The price is the user's own input, so the subtitle quotes it exactly...
+    expect(stat?.querySelector('.stat-sub')?.textContent).toContain(exactPrice)
+    expect(stat?.querySelector('.stat-sub')?.textContent).not.toContain(roundedPrice)
+    // ...while the deposit derived from it is a rounded estimate.
+    const { deposit } = calculate(parseParams(new URLSearchParams('price=820550'))).tiles
+    expect(stat?.querySelector('.stat-value')?.textContent).toBe(
+      formatMoney(deposit.value, APP_CURRENCY, 'vi'),
+    )
+  })
+
   it('renders negative rows with a typographic minus and no estimate marker', async () => {
     // The First Home Owner Grant row is -10,000 with a new home at the
     // default price. Estimates carry no per-figure "~"; the disclaimer says it.
