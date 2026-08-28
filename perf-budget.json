@@ -18,8 +18,9 @@
     {
       "name": "Preloaded fonts",
       "select": "preloaded-fonts",
+      "allowEmpty": true,
       "maxGzipBytes": 51200,
-      "why": "Whatever index.html preloads with as=\"font\", read out of the built HTML so this cannot drift from it. These bytes are on the critical path ahead of the bundle. woff2 is already compressed, so the gzip figure is close to the raw one."
+      "why": "Whatever index.html preloads with as=\"font\", read out of the built HTML so this cannot drift from it. These bytes are on the critical path ahead of the bundle. woff2 is already compressed, so the gzip figure is close to the raw one. allowEmpty because preloading nothing is a real choice, not a broken selector: this measures zero and passes instead of failing the build."
     }
   ]
 }

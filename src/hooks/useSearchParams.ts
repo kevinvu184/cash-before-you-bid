@@ -54,6 +54,13 @@ export function useSearchParams(): [URLSearchParams, SetSearchParams] {
   const setSearchParams = useCallback<SetSearchParams>((next, options) => {
     const query = next.toString()
     const url = `${window.location.pathname}${query === '' ? '' : `?${query}`}${window.location.hash}`
+    // The two calls treat history.state differently on purpose. A replace
+    // edits the entry the reader is standing on — only its query string is
+    // changing — so that entry keeps whatever state it already had. A push
+    // creates a new entry, and a new entry has no prior state to carry: null
+    // is what the History API gives it either way. Nothing in this app reads
+    // history.state today; this is written down so that if something ever
+    // does, the behaviour it meets is the deliberate one.
     if (options?.replace === true) {
       window.history.replaceState(window.history.state, '', url)
     } else {

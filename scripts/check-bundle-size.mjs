@@ -86,7 +86,14 @@ function main() {
 
   for (const budget of budgets) {
     const matched = selectFiles(budget, files)
-    if (matched.length === 0) fail(`Budget "${budget.name}" matched no files in dist/.`)
+    // Matching nothing is a broken selector far more often than an empty
+    // truth — a renamed output directory would otherwise report 0 KiB and
+    // pass, which is the exact false green this whole check exists to stop.
+    // So it fails by default, and a budget whose set can honestly be empty
+    // (preloading no fonts is a real choice) opts out with allowEmpty.
+    if (matched.length === 0 && budget.allowEmpty !== true) {
+      fail(`Budget "${budget.name}" matched no files in dist/.`)
+    }
     const total = matched.reduce((sum, file) => sum + gzipBytes(file), 0)
     const headroom = budget.maxGzipBytes - total
     if (headroom < 0) over.push(budget.name)
