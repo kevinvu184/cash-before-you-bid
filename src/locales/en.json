@@ -177,6 +177,18 @@
     "shortSettlementLoan": "Loan: short {{shortfall}}. The balance of the price is {{required}} and your pre-approval is {{available}}. Ask your lender for more, or bid less.",
     "financeNotChecked": "Finance not checked: no pre-approved loan amount entered. The balance of the price still has to come from somewhere."
   },
+  "safeMaxBid": {
+    "heading": "How high can you go?",
+    "label": "Safe maximum bid",
+    "bound": "Bid up to this and you can still pay the deposit when the hammer falls and everything due at settlement.",
+    "boundCash": "Bid up to this and you can still pay the deposit when the hammer falls and everything due at settlement. Cash is what stops you here — every extra dollar you save raises it.",
+    "boundLoan": "Bid up to this and you can still pay the deposit when the hammer falls and everything due at settlement. Your pre-approval is what stops you here — only a larger loan raises it.",
+    "boundBoth": "Bid up to this and you can still pay the deposit when the hammer falls and everything due at settlement. Your cash and your pre-approval run out together, so raising one alone will not move it.",
+    "rounding": "Rounded down to the nearest {{unit}}, so it is a figure you can call out. It assumes every other number on this page stays as it is.",
+    "noFigures": "Enter your savings — and your pre-approved loan, once you have one — and this becomes the highest price you can call out and still settle.",
+    "unaffordable": "There is no price you can cover yet: the costs that do not change with the price already come to more than your savings. The verdict below says by how much.",
+    "unbounded": "Nothing in your figures caps a bid below {{price}}, the highest price this calculator takes."
+  },
   "guidance": {
     "auctionDay": "Paying the deposit on the day",
     "hammerTerm": "Due on the fall of the hammer.",

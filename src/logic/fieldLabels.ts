@@ -7,6 +7,7 @@ import type {
   DepositRoute,
   Region,
   RowCode,
+  SafeMaxBidBinding,
   TimingBand,
   VerdictCheckCode,
   VerdictCode,
@@ -132,6 +133,41 @@ export const VERDICT_SHORTFALL_KEY: Readonly<Record<VerdictCheckCode, string>> =
 
 /** Said when no pre-approval was entered, so the finance check did not run. */
 export const VERDICT_FINANCE_NOT_CHECKED_KEY = 'verdicts.financeNotChecked'
+
+// ── the safe maximum bid ─────────────────────────────────────────────────────
+//
+// One sentence per outcome, each a whole sentence for the same reason the
+// verdict's are: a translator can work with it, and a screen reader reads it
+// out as one thing rather than a headline stitched to a fragment.
+
+export const SAFE_MAX_BID_LABEL_KEY = 'safeMaxBid.label'
+
+/**
+ * What stops the bid there, and therefore which lever moves it. A bounded
+ * answer always has a pocket that ran out — the next price up is short by
+ * definition — so `none` is unreachable here; it is mapped to the sentence
+ * that claims least rather than left to fall through to one that would name
+ * the wrong lever.
+ */
+export const SAFE_MAX_BID_BOUND_KEY: Readonly<Record<SafeMaxBidBinding, string>> = {
+  cash: 'safeMaxBid.boundCash',
+  loan: 'safeMaxBid.boundLoan',
+  both: 'safeMaxBid.boundBoth',
+  none: 'safeMaxBid.bound',
+}
+
+/** The conservative-rounding disclosure that belongs to this figure alone. */
+export const SAFE_MAX_BID_ROUNDING_KEY = 'safeMaxBid.rounding'
+
+/** Savings entered, but the costs that do not move with the price outrun them. */
+export const SAFE_MAX_BID_UNAFFORDABLE_KEY = 'safeMaxBid.unaffordable'
+
+/** Nothing entered yet: an invitation, not a verdict. */
+export const SAFE_MAX_BID_NO_FIGURES_KEY = 'safeMaxBid.noFigures'
+
+/** Nothing in the figures caps the bid below the highest price on offer. */
+export const SAFE_MAX_BID_UNBOUNDED_KEY = 'safeMaxBid.unbounded'
+
 /**
  * What the money in a band has to look like, for the bands that have anything
  * to say. Auction day is the one that catches people out: the figure is only

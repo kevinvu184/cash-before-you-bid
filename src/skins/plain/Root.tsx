@@ -14,6 +14,7 @@ import type {
   LineField,
   NumberInputField,
   ResultsViewModel,
+  SafeMaxBidField,
   ScenarioActionKeys,
   ScenarioEntry,
   ScenariosViewModel,
@@ -192,6 +193,28 @@ function Stat({ stat }: { stat: StatField }) {
   )
 }
 
+/**
+ * The safe maximum bid, spelled out. Same rule as everywhere else in this
+ * skin: no ornament, and nothing hidden — but still no figure where the core
+ * says there is no ceiling to state, because printing a price there would be
+ * inventing one.
+ */
+function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxBidField }) {
+  const { t } = useTranslation()
+  const display = useDisplay()
+  return (
+    <section data-field={field.id} data-importance={field.importance}>
+      <h2>{t(headingKey)}</h2>
+      <h3>{t(field.labelKey)}</h3>
+      {field.status === 'bound' ? (
+        <p className="plain-figure">{estimateMoney(field.value, display)}</p>
+      ) : null}
+      <p>{refText(field.summary, t, display)}</p>
+      {field.detail === null ? null : <p>{refText(field.detail, t, display)}</p>}
+    </section>
+  )
+}
+
 function Verdict({ verdict }: { verdict: VerdictField }) {
   const { t } = useTranslation()
   const display = useDisplay()
@@ -353,12 +376,15 @@ function Results({
   return (
     <main>
       {/* The currency the figures below are written in, and the switch for it,
-          before the figures rather than after them. The switch carries the
-          section's name itself, so there is no heading repeating it. */}
+          before the figures rather than after them — including the bid ceiling
+          right under it. The switch carries the section's name itself, so
+          there is no heading repeating it. */}
       <section className="plain-currency" aria-label={t(displayVm.currency.labelKey)}>
         <Choice field={displayVm.currency} />
         {displayVm.rate === null ? null : <ExchangeRate field={displayVm.rate} />}
       </section>
+
+      <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
 
       <section>
         <h2>{t(results.verdictsHeadingKey)}</h2>

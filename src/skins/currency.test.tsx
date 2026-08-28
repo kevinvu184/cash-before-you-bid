@@ -7,6 +7,7 @@ import { estimateMoney } from './shared/text'
 import type { Display } from '../logic/display'
 import { viewModelFixture } from '../testing/viewModelFixture'
 import type { SkinModule } from '../types/skin'
+import type { AppViewModel, FieldId } from '../types/viewModel'
 import { SKINS } from './registry'
 
 // The mixed-currency guard, in every skin and both locales.
@@ -24,12 +25,33 @@ import { SKINS } from './registry'
 const SKIN_LIST = Object.values(SKINS)
 const modules = new Map<string, SkinModule>()
 
-// Everything that carries a figure: the tiles, the table rows, the verdicts
-// and the flags — labels, values, subtitles and workings alike. `td.m` catches
-// the default skin's phone layout, where a row's working is in a continuation
-// row beside the field rather than inside it.
+// Everything that carries a figure: the tiles, the table rows, the verdicts,
+// the bid ceiling and the flags — labels, values, subtitles and workings
+// alike. `td.m` catches the default skin's phone layout, where a row's working
+// is in a continuation row beside the field rather than inside it.
+//
+// The list below is held honest by `covers every money field the core states`:
+// a results field the view model calls money and this selector does not reach
+// fails that test, so the guard cannot quietly stop covering the page.
 const MONEY_SURFACE =
-  '[data-field^="line"], [data-field^="stat"], [data-field^="verdict"], [data-field="flags"], td.m'
+  '[data-field^="line"], [data-field^="stat"], [data-field^="verdict"], [data-field="safeMaxBid"], [data-field="flags"], td.m'
+
+/**
+ * Every field in the results the core declares to be money. Inputs are money
+ * too, and are deliberately not here: they are what the reader typed, in the
+ * currency they typed it, and they say AUD on purpose.
+ */
+function moneyFieldIds(vm: AppViewModel): FieldId[] {
+  const fields = [
+    ...vm.results.stats,
+    ...vm.results.sunkCost.stats,
+    ...vm.results.lines,
+    vm.results.total,
+    ...vm.results.verdicts,
+    vm.results.safeMaxBid,
+  ]
+  return fields.filter((field) => field.kind === 'money').map((field) => field.id)
+}
 
 const DOLLAR_MARKER = /AUD|A\$/
 
@@ -63,6 +85,21 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('skin %s, converting', (skinId
     expect(written.some((text) => text.includes('₫'))).toBe(true)
     for (const text of written) {
       expect(text).not.toMatch(DOLLAR_MARKER)
+    }
+  })
+
+  it('covers every money field the core states, so the guard cannot go stale', async () => {
+    const { container, vm } = await renderSkin(skinId, 'en')
+    const covered = new Set(
+      [...container.querySelectorAll(MONEY_SURFACE)].flatMap((element) => [
+        element.getAttribute('data-field'),
+        ...[...element.querySelectorAll('[data-field]')].map((child) =>
+          child.getAttribute('data-field'),
+        ),
+      ]),
+    )
+    for (const id of moneyFieldIds(vm)) {
+      expect({ id, covered: covered.has(id) }).toEqual({ id, covered: true })
     }
   })
 

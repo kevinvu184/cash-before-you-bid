@@ -57,6 +57,9 @@ function expectedText(vm: AppViewModel, id: FieldId, locale: string): string | n
   if (stat) return estimateMoney(stat.value, display)
   const line = vm.results.lines.find((candidate) => candidate.id === id)
   if (line) return estimateRowAmount(line.value, display)
+  // The fixture's safe maximum bid is a bounded one, so every skin has to show
+  // the figure and not only the sentence around it.
+  if (id === vm.results.safeMaxBid.id) return estimateMoney(vm.results.safeMaxBid.value, display)
   return null
 }
 

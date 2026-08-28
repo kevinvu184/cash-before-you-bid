@@ -53,6 +53,7 @@ export const meta: SkinMeta = {
     statCosts: true,
     statLoan: true,
     statRepayment: true,
+    safeMaxBid: true,
     verdictAuctionDay: true,
     verdictAtSettlement: true,
     statSunkPerProperty: true,
