@@ -137,9 +137,13 @@ describe('the service worker', () => {
     expect(paths.sort()).toEqual(expected.sort())
   })
 
-  it('answers a navigation with the document its own directory holds', () => {
+  // Which document each URL gets is behaviour, and it is asserted as
+  // behaviour in src/serviceWorkerRouting.test.ts, which runs this file. All
+  // that is left here is that navigations are routed at all rather than being
+  // answered with the root shell unconditionally, as they were.
+  it('routes a navigation through shellFor rather than assuming the root', () => {
     expect(code).toMatch(/networkFirst\(shellFor\(url\)\)/)
-    expect(code).toMatch(/SHELLS\.includes\(directory\) \? directory : SHELL/)
+    expect(code).toMatch(/function shellFor\(url\)/)
   })
 
   it('precaches every locale’s document, so either launches offline', () => {

@@ -86,7 +86,7 @@ function documentFor(template, { lang, body, title, description }, replaceHead, 
  * only wrong once deployed. So the build checks its own work rather than
  * leaving that to a test that would have to run a build first.
  */
-function verify(html, { lang, title }, canonical) {
+function verify(html, { lang, title, description }, canonical, escapeHtml) {
   const problems = []
   if (!html.includes(`<html lang="${lang}" data-doc-lang="${lang}">`)) {
     problems.push('the document does not declare its own language')
@@ -94,8 +94,14 @@ function verify(html, { lang, title }, canonical) {
   if (!html.includes(`<link rel="canonical" href="${canonical}" />`)) {
     problems.push(`the canonical link is not ${canonical}`)
   }
-  if (!html.includes(`<title>${title}</title>`) && !html.includes('<title>')) {
-    problems.push('there is no title')
+  // Against the escaped forms, because that is what the head generator wrote.
+  // Looking for the raw string would be a check that quietly matches nothing
+  // the moment a title or a description contains an ampersand.
+  if (!html.includes(`<title>${escapeHtml(title)}</title>`)) {
+    problems.push(`the title is not this locale's: ${title}`)
+  }
+  if (!html.includes(`<meta name="description" content="${escapeHtml(description)}" />`)) {
+    problems.push("the description is not this locale's")
   }
   if (/<div id="root">\s*<\/div>/.test(html)) problems.push('the shell was not rendered into it')
   if (!html.includes('rel="stylesheet"')) problems.push('no stylesheet is linked')
@@ -113,7 +119,7 @@ async function main() {
   try {
     const { LANGS, DEFAULT_LANG } = await server.ssrLoadModule('/src/logic/lang.ts')
     const { localeDocument, localeUrl } = await server.ssrLoadModule('/src/logic/site.ts')
-    const { headMarkup, replaceHead, HEAD_START, HEAD_END } =
+    const { headMarkup, replaceHead, escapeHtml, HEAD_START, HEAD_END } =
       await server.ssrLoadModule('/src/prerender/head.ts')
     const { robotsTxt, sitemapXml } = await server.ssrLoadModule('/src/prerender/siteFiles.ts')
     const { renderLocale } = await server.ssrLoadModule('/src/prerender/entry.ts')
@@ -126,7 +132,7 @@ async function main() {
     for (const lang of LANGS) {
       const locale = await renderLocale(lang)
       const html = documentFor(template, locale, replaceHead, skinAssets)
-      verify(html, locale, localeUrl(lang))
+      verify(html, locale, localeUrl(lang), escapeHtml)
       const file = join(DIST, localeDocument(lang))
       mkdirSync(dirname(file), { recursive: true })
       writeFileSync(file, html)

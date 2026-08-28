@@ -53,10 +53,19 @@ const SHELLS = [SHELL, ...LOCALE_SHELLS]
 
 /** The document a navigation should be answered with: its own, or the root. */
 function shellFor(url) {
-  // A navigation carries the app's whole state in its query string, so the
-  // directory is the only part of it that selects a document.
-  const directory = new URL('./', url).toString()
-  return SHELLS.includes(directory) ? directory : SHELL
+  // Matched on the path, with and without the trailing slash. Resolving the
+  // request's directory instead would read '/en' as a file inside the scope
+  // root and hand it the default locale's document — and the host's redirect
+  // to '/en/' would never correct it, because a worker that responds to the
+  // navigation is why the request never reaches the host at all. A navigation
+  // carries the app's whole state in its query string, so the path is the only
+  // part of the URL that selects a document.
+  const path = url.pathname
+  for (const shell of SHELLS) {
+    const shellPath = new URL(shell).pathname
+    if (path === shellPath || `${path}/` === shellPath) return shell
+  }
+  return SHELL
 }
 
 // Enough to launch from the home screen with no network on the first run, in

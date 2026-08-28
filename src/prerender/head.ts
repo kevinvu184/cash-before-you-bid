@@ -28,7 +28,12 @@ const OG_LOCALE: Readonly<Record<Lang, string>> = {
 /** The site name is the brand, not a translated string; it is the same in both. */
 const SITE_NAME = 'Cash Before You Bid'
 
-const escape = (value: string) =>
+/**
+ * Exported because scripts/prerender.mjs checks its own output against these
+ * strings: a title written here escaped and looked for there raw is a check
+ * that silently matches nothing.
+ */
+export const escapeHtml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -47,10 +52,10 @@ const INDENT = '    '
 export function headMarkup({ lang, title, description }: HeadFacts): string {
   const canonical = localeUrl(lang)
   const meta = (attr: 'name' | 'property', key: string, content: string) =>
-    `<meta ${attr}="${key}" content="${escape(content)}" />`
+    `<meta ${attr}="${key}" content="${escapeHtml(content)}" />`
 
   const lines = [
-    `<title>${escape(title)}</title>`,
+    `<title>${escapeHtml(title)}</title>`,
     meta('name', 'description', description),
 
     // One canonical per locale, each pointing at its own path, so the two
