@@ -75,6 +75,21 @@ export function parseQuote(payload: unknown, currency: CurrencyCode): Quote | nu
   return { rate, updatedAt }
 }
 
+/**
+ * A rate at the precision it is ever shown at: whole display-currency units.
+ * A rate carried to six decimals reads as precision this conversion does not
+ * have, and the đồng has no minor unit to spend them on.
+ *
+ * It lives here rather than in the formatter because two places need to agree
+ * on it — the override box seeds its draft with the rate as shown, and the
+ * core decides whether applying that draft back changed anything. Rounding in
+ * one and comparing in the other let a click on Apply pin an override the
+ * reader never typed.
+ */
+export function rateAsShown(rate: number): number {
+  return Math.round(rate)
+}
+
 /** Converts a base-currency amount into the display currency. */
 export function convert(amount: number, currency: CurrencyCode, rate: number): number {
   if (currency === BASE_CURRENCY) return amount

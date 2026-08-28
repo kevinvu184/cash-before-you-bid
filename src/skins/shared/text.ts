@@ -17,6 +17,7 @@ import {
   TRANSFER_FEE_UNIT,
 } from '../../data/constants'
 import { BASE_CURRENCY } from '../../logic/currencyConfig'
+import { rateAsShown } from '../../logic/exchangeRate'
 import { displayMoney, displayRowAmount, displayUnit, type Display } from '../../logic/display'
 import { formatNumber, formatNumberInput, formatPercent } from '../../logic/format'
 import type { Flag, RowHow } from '../../types/calculator'
@@ -81,17 +82,15 @@ export function exactMoney(amount: number, display: Display): string {
 
 /**
  * The exchange rate itself, as the rate line quotes it: one base unit written
- * in the display currency. Whole units — a rate carried to six decimals reads
- * as precision this conversion does not have, and the đồng has no minor unit
- * to spend them on.
+ * in the display currency, at the precision rateAsShown fixes.
  */
 export function quotedRate(rate: number, display: Display): string {
-  return displayUnit(Math.round(rate), display)
+  return displayUnit(rateAsShown(rate), display)
 }
 
 /** The same rate, serialised for editing in the override field. */
 export function rateDraft(rate: number, display: Display): string {
-  return formatNumberInput(Math.round(rate), display.locale)
+  return formatNumberInput(rateAsShown(rate), display.locale)
 }
 
 /**

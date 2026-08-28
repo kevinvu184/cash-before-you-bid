@@ -19,7 +19,7 @@ import {
   CURRENCY_ROUNDING,
   type DisplayCurrency,
 } from '../logic/currencyConfig'
-import { isValidRate, RATE_PROVIDER } from '../logic/exchangeRate'
+import { isValidRate, rateAsShown, RATE_PROVIDER } from '../logic/exchangeRate'
 import { parseLocaleNumber } from '../logic/format'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
@@ -340,10 +340,16 @@ export function useAppViewModel(
           onOverride: (raw) => {
             const parsed = parseLocaleNumber(raw, locale)
             // An unusable figure changes nothing rather than raising: the rate
-            // on screen is still a working one. Nor does re-applying the rate
-            // already in force, which would push an identical history entry.
+            // on screen is still a working one.
             if (parsed === null || !isValidRate(parsed)) return
-            if (parsed !== presentation.manualRate) setManualRate(parsed)
+            // Nor does applying the rate already in force. Compared at the
+            // precision it is shown at, because that is what the box was
+            // seeded with: opening the override and pressing Apply without
+            // editing is not an edit, and must not pin a live quote as the
+            // reader's own rate — still less nudge it, which comparing the
+            // whole-unit draft against an unrounded live quote would do.
+            if (rateAsShown(parsed) === rateAsShown(activeRate)) return
+            setManualRate(parsed)
           },
           onReset: () => setManualRate(null),
         }

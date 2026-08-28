@@ -576,10 +576,13 @@ export interface ExchangeRateField extends Field<number> {
    */
   noteKey: string
   /**
-   * Applies a rate the reader typed, in their own locale's separators. An
-   * unusable figure — and one that is already in force — is ignored rather
-   * than raising: the rate on screen is still a working one, and re-applying
-   * it would push an identical history entry.
+   * Applies a rate the reader typed, in their own locale's separators.
+   *
+   * Ignored rather than raising: an unusable figure — the rate on screen is
+   * still a working one — and one that matches the rate already in force at
+   * the precision it is shown at. The latter is what makes opening the
+   * override and pressing Apply unedited a no-op rather than a MANUAL
+   * override the reader never asked for.
    */
   onOverride(raw: string): void
   /** Drops the override; the fetched rate takes over again. */

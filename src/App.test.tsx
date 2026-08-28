@@ -752,6 +752,44 @@ describe('the exchange rate', () => {
     await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=20500'))
   })
 
+  it('treats opening the override and applying it unedited as no edit at all', async () => {
+    // The box is seeded with the rate as shown — whole units — while the live
+    // quote has decimals. Applying that back must not pin the provider's rate
+    // as the reader's own, nor nudge every figure by the rounding.
+    await renderApp()
+    switchTo(DONG)
+    await waitFor(() => expect(rateLine()).toContain('exchangerate-api.com'))
+    const before = total()
+    const entries = window.history.length
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+
+    await waitFor(() => expect(document.querySelector('.rateedit')).toBeNull())
+    expect(window.location.search).toBe('?cur=VND')
+    expect(window.history.length).toBe(entries)
+    expect(document.querySelector('.rateline .tag')).toBeNull()
+    expect(rateLine()).toContain('exchangerate-api.com')
+    expect(total()).toBe(before)
+  })
+
+  it('still applies an override that differs from the rate on screen', async () => {
+    // The guard above must not swallow a real edit: one đồng away from the
+    // seeded figure is a deliberate, if pointless, change.
+    await renderApp()
+    switchTo(DONG)
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    fireEvent.change(document.querySelector('.re-row input') as HTMLInputElement, {
+      target: { value: '18709' },
+    })
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=18709'))
+    expect(document.querySelector('.rateline .tag')?.textContent).toBe('THỦ CÔNG')
+  })
+
   it('ignores an unusable override rather than pricing anything at zero', async () => {
     await renderApp()
     switchTo(DONG)
