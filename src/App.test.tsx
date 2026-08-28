@@ -8,8 +8,9 @@ import { calculate } from './logic/calculate'
 import { BASE_CURRENCY } from './logic/currencyConfig'
 import { formatMoney } from './logic/format'
 import { roundForDisplay } from './logic/rounding'
+import { FHB_CONCESSION_CEILING, FHB_EXEMPTION_CEILING } from './data/rates'
 import { displayMoney } from './logic/display'
-import { parseParams } from './logic/urlState'
+import { PRICE_MAX, parseParams } from './logic/urlState'
 import { SKINS } from './skins/registry'
 
 // Skins are React.lazy, so the first render resolves a dynamic import before
@@ -546,6 +547,96 @@ describe('the verdict', () => {
     })
     expect(window.location.search).toBe('?lang=en&save=95000')
     expect(input('loan').value).toBe('')
+  })
+})
+
+describe('the price slider and its duty cliffs', () => {
+  const slider = () => input('price-slider')
+
+  // Read from the rate config, never written here: a threshold that moves in
+  // src/data/rates.ts must move these assertions with it, or the suite would
+  // fail on a config change the feature is designed to follow.
+  const threshold = (value: number) =>
+    formatMoney(value, BASE_CURRENCY, 'en', { round: false })
+
+  const renderAt = async (query: string) => {
+    window.history.replaceState(null, '', query)
+    await renderApp()
+  }
+
+  it('starts on the same price the number field holds', async () => {
+    await renderAt('/?lang=en&price=620000')
+
+    expect(slider().value).toBe('620000')
+    expect(input('price').value).toBe('620000')
+  })
+
+  it('moves the price, and the field and the duty follow it', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=745000')
+    const underTheCliff = field('lineStampDuty')?.textContent
+
+    // Across the concession ceiling, inside then above the band the markers
+    // exist to show: the duty the page reports has to move with the slider.
+    fireEvent.change(slider(), { target: { value: '755000' } })
+
+    expect(input('price').value).toBe('755000')
+    expect(field('lineStampDuty')?.textContent).not.toBe(underTheCliff)
+  })
+
+  it('does not fight a half-typed figure', async () => {
+    await renderAt('/?lang=en&price=620000')
+    // A price on its way to 749,000: the draft is what the user typed, and the
+    // slider tracks the value it currently parses to rather than rewriting it.
+    fireEvent.change(input('price'), { target: { value: '74' } })
+
+    expect(input('price').value).toBe('74')
+    fireEvent.change(input('price'), { target: { value: '749000' } })
+    expect(input('price').value).toBe('749000')
+    expect(slider().value).toBe('749000')
+  })
+
+  it('parks at its own end for a price the track cannot reach, and leaves the field alone', async () => {
+    await renderAt('/?lang=en&price=620000')
+    // Above PRICE_MAX, which the field accepts and does not snap.
+    fireEvent.change(input('price'), { target: { value: '200000000' } })
+
+    expect(input('price').value).toBe('200000000')
+    // The control states its own limit rather than leaving the browser to
+    // clamp a value it was handed out of range.
+    expect(slider().value).toBe(String(PRICE_MAX))
+    expect(slider().max).toBe(String(PRICE_MAX))
+  })
+
+  it('shows both cliffs to an eligible first home buyer', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=620000')
+    const cliffs = field('priceSlider')?.textContent ?? ''
+
+    expect(cliffs).toContain('Exemption ends.')
+    expect(cliffs).toContain('Concession ends.')
+    expect(cliffs).toContain(threshold(FHB_EXEMPTION_CEILING))
+    expect(cliffs).toContain(threshold(FHB_CONCESSION_CEILING))
+  })
+
+  it.each([
+    ['a foreign purchaser', '/?lang=en&fhb=1&ppr=1&foreign=1&price=620000'],
+    ['someone who is not a first home buyer', '/?lang=en&fhb=0&ppr=1&price=620000'],
+    ['someone not buying to live in it', '/?lang=en&fhb=1&ppr=0&price=620000'],
+  ])('shows no first home buyer cliffs to %s', async (_case, query) => {
+    await renderAt(query)
+    const cliffs = field('priceSlider')?.textContent ?? ''
+
+    expect(slider()).not.toBeNull()
+    expect(cliffs).not.toContain('Exemption ends.')
+    expect(cliffs).not.toContain(threshold(FHB_EXEMPTION_CEILING))
+  })
+
+  it('takes the cliffs away the moment the purchaser stops being eligible', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=620000')
+    expect(field('priceSlider')?.textContent).toContain('Exemption ends.')
+
+    fireEvent.click(input('foreign'))
+
+    expect(field('priceSlider')?.textContent).not.toContain('Exemption ends.')
   })
 })
 

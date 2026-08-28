@@ -60,6 +60,15 @@ From the auction-day deposit guidance (`guidance.*`) and the deposit hints
 - "thông lệ phổ biến" for "common practice", in the line that keeps the note
   descriptive rather than advisory.
 
+From the price slider's duty cliffs (`cliffs.*`, `inputs.priceSlider`):
+
+- "Hết miễn thuế" / "Hết giảm thuế" for the two thresholds ending — chosen for
+  brevity, since each is the lead-in to the sentence that follows it. A
+  reviewer may prefer "Ngưỡng miễn thuế" / "Ngưỡng giảm thuế" ("exemption
+  threshold"), which names the boundary rather than its end.
+- "thang trượt" for the sliding scale the concession is charged on.
+- "Điều chỉnh giá" as the label on the slider itself.
+
 From the page title (`app.pageTitle`), which is not shown on screen — it is
 the browser tab, the bookmark, and the line a search result is titled with:
 
@@ -108,6 +117,21 @@ From the display-currency switch (`currency.*`):
   past its 12 hours and could not be renewed.
 - "bản quy đổi để xem" for "a display conversion", in the note that tells the
   reader the fields still want Australian dollars.
+
+From the accessibility copy (`a11y.*`, `results.label`) — three strings, none
+of them on screen for a sighted reader, which is exactly why they are easy to
+get wrong and hard to notice:
+
+- "Chuyển đến kết quả" for the skip link. It is the first thing a keyboard or
+  screen reader user meets, and it has to read as an action rather than a
+  heading; "Bỏ qua tới kết quả" is the more literal alternative.
+- "Kết quả" as the name of the results landmark, announced when a reader moves
+  into it.
+- `a11y.verdictAnnouncement` and `a11y.resultsAnnouncement` are punctuation
+  around figures the app interpolates, not prose. What a reviewer should check
+  is that a screen reader pauses where the sentence intends: the full stop
+  after each verdict is what separates "On the day" from "At settlement" when
+  the whole thing is read as one utterance.
 
 ## Submitting corrections
 

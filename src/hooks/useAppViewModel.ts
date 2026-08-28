@@ -27,6 +27,7 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
+import { buildPriceSliderField } from '../logic/priceMarkers'
 import { PRIVACY_STATEMENT } from '../logic/privacy'
 import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { buildVerdictFields } from '../logic/verdictFields'
@@ -641,6 +642,20 @@ export function useAppViewModel(
         price.onDraftChange,
         null,
       ),
+      // The same price on a track, so the duty cliffs can be crossed
+      // deliberately rather than stumbled over. It writes the value, never the
+      // draft above, so being there cannot rewrite a half-typed figure; and it
+      // shows first home buyer markers only to a purchaser the rate config
+      // says those thresholds apply to.
+      priceSlider: buildPriceSliderField(
+        inputs.price,
+        {
+          firstHomeBuyer: inputs.firstHomeBuyer,
+          ownerOccupier: inputs.ownerOccupier,
+          foreignPurchaser: inputs.foreignPurchaser,
+        },
+        set('price'),
+      ),
       route: {
         id: 'route',
         controlId: 'route',
@@ -767,6 +782,7 @@ export function useAppViewModel(
       },
     },
     results: {
+      regionLabelKey: 'results.label',
       flagsRegionLabelKey: 'results.flagsLabel',
       flags: {
         id: 'flags',

@@ -29,7 +29,10 @@ describe('the prerendered shell', () => {
     // rather than equality on purpose: Root has the results and the scenarios
     // as well, and this is asserting that the shell invented nothing.
     const masthead = shell.slice(shell.indexOf('<header'), shell.indexOf('</header>') + 9)
-    const panel = shell.slice(shell.indexOf('<aside'), shell.indexOf('</aside>') + 8)
+    const panel = shell.slice(shell.indexOf('<section'), shell.indexOf('</section>') + 10)
+    // Both are the guard that keeps this from becoming a test of two empty
+    // strings when a tag name changes — which is how the move of the inputs
+    // panel from <aside> to <section> was caught rather than waved through.
     expect(masthead.length).toBeGreaterThan(200)
     expect(panel.length).toBeGreaterThan(200)
     expect(page).toContain(masthead)
@@ -40,7 +43,7 @@ describe('the prerendered shell', () => {
     const vm = viewModelFixture()
     const shell = renderToStaticMarkup(createElement(Shell, { vm }))
     const page = renderToStaticMarkup(createElement(Root, { vm }))
-    for (const wrapper of ['<div class="page">', '<div class="columns">']) {
+    for (const wrapper of ['<div class="page">', '<main>', '<div class="columns">']) {
       expect(shell).toContain(wrapper)
       expect(page).toContain(wrapper)
     }

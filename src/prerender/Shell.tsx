@@ -5,6 +5,7 @@ import { DEFAULT_SKIN_ID } from '../logic/skins'
 import type { AppViewModel } from '../types/viewModel'
 import { InputsPanel } from '../skins/default/Inputs'
 import { Masthead } from '../skins/default/Masthead'
+import { DisplayProvider } from '../skins/shared/DisplayProvider'
 
 /**
  * What the served HTML paints before the bundle has parsed.
@@ -18,17 +19,26 @@ import { Masthead } from '../skins/default/Masthead'
  *     prerender is by definition rendered before the URL is known.
  *   - Saved scenarios come out of localStorage, which no build has.
  *
- * The wrappers here (`page`, `columns`) are the only markup stated twice; the
- * drift test in prerender.test.tsx holds this file to the skin's Root.
+ * The wrappers here (`page`, `main`, `columns`) and the display context are
+ * the only things stated twice; the drift test in shell.test.tsx holds this
+ * file to the skin's Root.
  */
 export function Shell({ vm }: { vm: AppViewModel }) {
   return (
-    <div className="page">
-      <Masthead vm={vm} />
-      <div className="columns">
-        <InputsPanel inputs={vm.inputs} />
+    <DisplayProvider settings={vm.display.settings}>
+      <div className="page">
+        <Masthead vm={vm} />
+        {/* The main landmark is the skin's, and it is here for the same reason
+            the rest is: a first paint without one, followed by one appearing
+            at hydration, is a landmark that moves under anyone navigating by
+            them. */}
+        <main>
+          <div className="columns">
+            <InputsPanel inputs={vm.inputs} />
+          </div>
+        </main>
       </div>
-    </div>
+    </DisplayProvider>
   )
 }
 

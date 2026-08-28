@@ -140,14 +140,18 @@
   background: var(--color-ink);
 }
 
+/* The border stays as a second cue, but the ring is the indicator: a pressed
+   option is filled with ink, so an accent border drawn inside it sits at
+   2.76:1 in light mode and 2.26:1 in dark, under the 3:1 WCAG 1.4.11 wants of
+   a focus indicator. The shared ring in index.css is drawn outside the button,
+   on paper, where the same accent clears it. */
 [data-skin='default'] .choice-option:focus-visible {
-  outline: none;
   border-color: var(--color-accent);
 }
 
 @media (hover: hover) {
   [data-skin='default'] .choice-option[aria-pressed='false']:hover {
-    border-color: var(--color-hairline-strong);
+    border-color: var(--color-control-border);
   }
 }
 
@@ -185,8 +189,9 @@
   touch-action: manipulation;
 }
 
+/* Same reasoning as .choice-option above: border as a second cue, ring as the
+   indicator. */
 [data-skin='default'] .translation-notice-dismiss:focus-visible {
-  outline: none;
   border-color: var(--color-accent);
 }
 
@@ -304,7 +309,7 @@
   color: var(--color-text);
   caret-color: var(--color-accent);
   background: var(--color-bg);
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   /* Clears the sticky total strip when the on-screen keyboard scrolls a
@@ -328,6 +333,150 @@
   [data-skin='default'] .field select:hover {
     border-color: var(--color-border-hover);
   }
+}
+
+/* ── price slider and its duty cliffs ─────────────────────────────────────
+   The price on a track, so the two thresholds that dominate first home buyer
+   duty can be aimed at rather than stumbled over. The thumb is 24px on a 44px
+   row: the track's tap area is the whole row, per CLAUDE.md, and the ticks
+   below it are inset by half a thumb so a marker's percentage lands exactly
+   where the thumb's centre does. */
+
+[data-skin='default'] .price-slider {
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+[data-skin='default'] .price-slider input[type='range'] {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  /* The 300ms tap delay has no business on a control that is dragged. */
+  touch-action: manipulation;
+  /* Both tracks and both thumbs are drawn below; the UA's own chrome would
+     otherwise sit under them at different heights per engine. */
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+[data-skin='default'] .price-slider input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-slider input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-slider input[type='range']::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  /* Centres the 24px thumb on the 4px track. */
+  margin-top: -10px;
+  background: var(--color-accent);
+  border: var(--border-strong-width) solid var(--color-bg);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+[data-skin='default'] .price-slider input[type='range']::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--color-accent);
+  border: var(--border-strong-width) solid var(--color-bg);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+/* The ring goes on the control, not the thumb pseudo-element: a ring drawn on
+   the thumb is clipped by the track in more than one engine. */
+[data-skin='default'] .price-slider input[type='range']:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .price-cliff-rail {
+  position: relative;
+  /* Half a thumb in from each end, so 0% and 100% are where the thumb's centre
+     actually reaches. */
+  margin: -4px 12px 0;
+  /* Holds the row open for the absolutely positioned ticks: one row per
+     marker, at the row height set below. */
+  min-height: 36px;
+  /* A threshold near the end of the track would otherwise push its label past
+     the panel; clipped is better than a page that scrolls sideways. */
+  overflow: hidden;
+}
+
+[data-skin='default'] .price-cliff {
+  position: absolute;
+  top: 0;
+  /* One row down per marker, so cliffs close together on the track do not
+     collide at 360px. --cliff-row is the marker's index, set by the skin; the
+     padding is what the tick line above the label spans. */
+  padding-top: calc(var(--cliff-row) * 16px + 6px);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Labels alternate sides of their own tick — the first ends at it, the second
+   starts at it — so a label never runs across the next cliff's tick line. In
+   Vietnamese the amount reads "600.000 AUD", wide enough that two centred
+   labels would collide outright on a 360px track. */
+[data-skin='default'] .price-cliff:nth-child(odd) {
+  transform: translateX(-100%);
+  padding-right: 5px;
+}
+
+[data-skin='default'] .price-cliff:nth-child(even) {
+  padding-left: 5px;
+}
+
+/* The tick itself: a hairline from the track down to its own label, drawn on
+   whichever edge of the label sits at the threshold. */
+[data-skin='default'] .price-cliff::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: var(--border-strong-width);
+  height: calc(var(--cliff-row) * 16px + 6px);
+  background: var(--color-accent);
+}
+
+[data-skin='default'] .price-cliff:nth-child(odd)::before {
+  right: 0;
+}
+
+[data-skin='default'] .price-cliff:nth-child(even)::before {
+  left: 0;
+}
+
+[data-skin='default'] .price-cliff-notes {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .price-cliff-notes strong {
+  font-weight: var(--font-weight-strong);
+  color: var(--color-text);
 }
 
 [data-skin='default'] .field-hint {
@@ -699,24 +848,30 @@
 /* ── line table ─────────────────────────────────────────────────────────── */
 
 /* Base is the phone layout: two columns, the working behind a per-row
-   disclosure. The table never scrolls sideways. */
+   disclosure. The table never scrolls sideways.
+
+   It is laid out as a table rather than as a block-and-grid, which is what it
+   used to be. Two columns and a full-width row is what a table with a colspan
+   already does, so the grid bought nothing — and a <table> laid out as a block
+   is a table only by markup: the display type is what several engines read the
+   row and cell relationships off, and dropping it drops the association
+   between a figure and the column heading that says what it is. The widths
+   come out the same: the label column takes what is left, and the figure
+   column shrinks to its own text because it never wraps. */
 [data-skin='default'] .lines {
-  display: block;
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-compact);
 }
 
-[data-skin='default'] .lines thead,
-[data-skin='default'] .lines tbody {
-  display: block;
-}
-
-[data-skin='default'] .lines tr {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  column-gap: 12px;
+/* `width: 1%` is the shrink-to-fit idiom under auto table layout: the figure
+   column takes exactly its own (never-wrapping) text, and the label column
+   takes everything left, which is what the grid's `minmax(0, 1fr) auto` did.
+   The padding was the grid's `column-gap`. */
+[data-skin='default'] .lines th.n,
+[data-skin='default'] .lines td.n {
+  width: 1%;
+  padding-left: 12px;
 }
 
 [data-skin='default'] .lines th {
@@ -760,7 +915,6 @@
    the label column, so the gloss underneath has the whole line to wrap into on
    a 360px screen. */
 [data-skin='default'] .lines tr.band-head {
-  display: block;
   border-bottom: 0;
 }
 
@@ -877,8 +1031,11 @@
   display: none;
 }
 
+/* table-row, not block: a <tr> laid out as a block stops being a row, and
+   with it the cell inside stops being a cell — the working would then be
+   loose text inside a table in whichever engines follow the display type. */
 [data-skin='default'] .lines tr.formula.shown {
-  display: block;
+  display: table-row;
   border-bottom: var(--border-width) solid var(--color-hairline);
 }
 
@@ -1034,7 +1191,7 @@
   color: var(--color-text);
   caret-color: var(--color-accent);
   background: var(--color-bg);
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
@@ -1064,7 +1221,7 @@
   text-transform: var(--text-transform-label);
   color: var(--color-text);
   background: none;
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   touch-action: manipulation;
@@ -1240,27 +1397,18 @@
     margin-top: 2px;
   }
 
-  [data-skin='default'] .lines {
-    display: table;
-  }
-
-  [data-skin='default'] .lines thead {
-    display: table-header-group;
-  }
-
-  [data-skin='default'] .lines tbody {
-    display: table-row-group;
-  }
-
-  [data-skin='default'] .lines tr {
-    display: table-row;
-  }
-
   [data-skin='default'] .lines th,
   [data-skin='default'] .lines td {
-    display: table-cell;
     padding: 10px 8px 8px 0;
     vertical-align: top;
+  }
+
+  /* Three columns are separated by each cell's own right padding here, so the
+     phone layout's left gap on the figure column has to come back off — it
+     outranks the rule above on specificity. */
+  [data-skin='default'] .lines th.n,
+  [data-skin='default'] .lines td.n {
+    padding-left: 0;
   }
 
   [data-skin='default'] .lines thead tr,
@@ -1281,12 +1429,8 @@
     border-top: var(--border-strong-width) solid var(--color-text);
   }
 
-  /* Back to real table rows: the band heading spans all three columns and the
-     ink rule under `.lines th` belongs to the column headings only. */
-  [data-skin='default'] .lines tr.band-head {
-    display: table-row;
-  }
-
+  /* The band heading spans all three columns, and the ink rule under
+     `.lines th` belongs to the column headings only. */
   [data-skin='default'] .lines tr.band-head th {
     padding: var(--space-6) var(--space-2) var(--space-1) 0;
     border-bottom: 0;

@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RESULTS_ANCHOR_ID } from '../../a11y/anchors'
 import { MAX_NAME_LENGTH } from '../../logic/scenarioStore'
 import type { FlagKind } from '../../types/calculator'
 import type {
@@ -13,6 +14,7 @@ import type {
   InputsViewModel,
   LineField,
   NumberInputField,
+  PriceSliderField,
   PrivacyField,
   ResultsViewModel,
   SafeMaxBidField,
@@ -25,10 +27,12 @@ import type {
 } from '../../types/viewModel'
 import { DisplayProvider } from '../shared/DisplayProvider'
 import { useDisplay } from '../shared/display'
+import { useFocusAfterRemoval, useRowModeFocus } from '../shared/scenarioFocus'
 import {
   estimateMoney,
   estimateRowAmount,
   flagText,
+  inputMoney,
   howText,
   quotedRate,
   rateDraft,
@@ -48,6 +52,9 @@ import './skin.css'
  * It is deliberately boring. It is also the fallback when another skin fails
  * to load, which is why it has nothing in it that can fail.
  */
+
+/** Names the line table through the heading above it; see Results below. */
+const LINES_HEADING_ID = 'plain-lines-heading'
 
 const KIND_KEYS: Record<FlagKind, string> = {
   warn: 'flagKinds.warn',
@@ -99,6 +106,47 @@ function NumberRow({ field }: { field: NumberInputField }) {
       />
       {field.hintKey ? <span id={hintId}>{t(field.hintKey)}</span> : null}
     </p>
+  )
+}
+
+/**
+ * The price slider, spelled out. Same rule as everywhere in this skin: no
+ * ornament, and nothing hidden — so the cliffs are a plain list of thresholds
+ * under the track rather than ticks drawn on it, which says the same thing
+ * without a position to read. The list is absent, not empty, when the rate
+ * config says these thresholds do not apply to this purchaser.
+ */
+function PriceSlider({ field }: { field: PriceSliderField }) {
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const hasMarkers = field.markers.length > 0
+  const notesId = hasMarkers ? `plain-${field.controlId}-cliffs` : undefined
+
+  return (
+    <div className="plain-field" data-field={field.id} data-importance={field.importance}>
+      <label htmlFor={field.controlId}>{t(field.labelKey)}</label>
+      <input
+        id={field.controlId}
+        type="range"
+        min={field.min}
+        max={field.max}
+        step={field.step}
+        value={field.value}
+        aria-valuetext={inputMoney(field.value, display.locale)}
+        aria-describedby={notesId}
+        onChange={(event) => field.onChange(Number(event.target.value))}
+      />
+      {hasMarkers ? (
+        <ul id={notesId} aria-label={t(field.markersLabelKey)}>
+          {field.markers.map((marker) => (
+            <li key={marker.id}>
+              <strong>{t(marker.labelKey)}</strong>
+              {refText(marker.description, t, display)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   )
 }
 
@@ -177,6 +225,7 @@ function Inputs({ inputs }: { inputs: InputsViewModel }) {
         {t(inputs.heading.labelKey)}
       </h2>
       <NumberRow field={inputs.price} />
+      <PriceSlider field={inputs.priceSlider} />
       <SelectRow field={inputs.route} />
       <NumberRow field={inputs.depositPct} />
       <SelectRow field={inputs.region} />
@@ -401,7 +450,14 @@ function Results({
   const { t } = useTranslation()
   const display = useDisplay()
   return (
-    <main>
+    // Named region, not <main>: the inputs are main content too, so the main
+    // landmark is in Root, above both. `tabindex="-1"` is what lets the
+    // shell's skip link put focus here and not merely scroll to it.
+    <section
+      id={RESULTS_ANCHOR_ID}
+      tabIndex={-1}
+      aria-label={t(results.regionLabelKey)}
+    >
       {/* The currency the figures below are written in, and the switch for it,
           before the figures rather than after them — including the bid ceiling
           right under it. The switch carries the section's name itself, so
@@ -445,9 +501,12 @@ function Results({
       </section>
 
       <section>
-        <h2>{t(results.linesHeadingKey)}</h2>
+        {/* The table is named by the heading that already introduces it, so
+            this skin adds no caption of its own — nothing hidden, nothing
+            said twice. */}
+        <h2 id={LINES_HEADING_ID}>{t(results.linesHeadingKey)}</h2>
         <div className="plain-table-scroll">
-          <table className="plain-lines">
+          <table className="plain-lines" aria-labelledby={LINES_HEADING_ID}>
             <thead>
               <tr>
                 <th scope="col">{t(results.tableHeadingKeys.line)}</th>
@@ -521,19 +580,28 @@ function Results({
           {t(results.sources.value.afterKey)}
         </p>
       </section>
-    </main>
+    </section>
   )
 }
 
+/**
+ * Rename and delete replace the row's controls, which unmounts whichever one
+ * was activated. `useRowModeFocus` marks where focus belongs in each shape so
+ * a keyboard reader stays on the row instead of being handed back to the top
+ * of the document.
+ */
 function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
   const { t, i18n } = useTranslation()
+  const focusRef = useRowModeFocus(entry.mode)
   const date = savedDate(entry.savedAt, i18n.language)
+  const questionId = `${entry.controlId}-question`
 
   if (entry.mode === 'renaming') {
     return (
       <li>
         <label htmlFor={entry.controlId}>{t(keys.renameLabel)}</label>
         <input
+          ref={focusRef}
           id={entry.controlId}
           type="text"
           autoComplete="off"
@@ -558,8 +626,13 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
   if (entry.mode === 'confirmingDelete') {
     return (
       <li>
-        <span>{t(keys.removeQuestion, { name: entry.name })}</span>
-        <button type="button" onClick={entry.onDeleteConfirm}>
+        <span id={questionId}>{t(keys.removeQuestion, { name: entry.name })}</span>
+        <button
+          ref={focusRef}
+          type="button"
+          aria-describedby={questionId}
+          onClick={entry.onDeleteConfirm}
+        >
           {t(keys.remove)}
         </button>
         <button type="button" onClick={entry.onCancel}>
@@ -580,6 +653,7 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
       </button>
       {date === null ? null : <span>{t(keys.savedAt, { date })}</span>}
       <button
+        ref={focusRef}
         type="button"
         aria-label={t(keys.renameNamed, { name: entry.name })}
         onClick={entry.onRenameStart}
@@ -600,6 +674,7 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
 function Scenarios({ scenarios }: { scenarios: ScenariosViewModel }) {
   const { t } = useTranslation()
   const { heading, save, list, privacy } = scenarios
+  useFocusAfterRemoval(list.value.length, save.controlId)
 
   // No disclosure, as everywhere in this skin: the panel is simply on the page.
   return (
@@ -677,9 +752,12 @@ export function Root({ vm }: { vm: AppViewModel }) {
           <Choice field={vm.controls.skin} />
         </header>
 
-        <Inputs inputs={vm.inputs} />
-        <Scenarios scenarios={vm.scenarios} />
-        <Results display={vm.display} results={vm.results} />
+        {/* The calculator, inputs included — one main landmark over all of it. */}
+        <main>
+          <Inputs inputs={vm.inputs} />
+          <Scenarios scenarios={vm.scenarios} />
+          <Results display={vm.display} results={vm.results} />
+        </main>
       </div>
     </DisplayProvider>
   )
