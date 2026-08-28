@@ -39,10 +39,11 @@ import { PRICE_MAX } from './urlState'
  * ## Rounding
  *
  * The solve runs to the cent, then rounds **down** to `SAFE_MAX_BID_UNIT`.
- * Costs round up and this rounds down, for the same reason: an auction
- * contract is unconditional, so the error has to fall on the safe side. The
- * answer also has to be a number a bidder can call out over the noise, which
- * a figure like $847,312.46 is not.
+ * Costs round up and this rounds down, for the same reason — round in
+ * whichever direction leaves the user with more margin; the rule is stated
+ * once, in `src/data/rates.ts`, and this is the one figure it sends the other
+ * way. The answer also has to be a number a bidder can call out over the
+ * noise, which a figure like $847,312.46 is not.
  */
 
 /**
