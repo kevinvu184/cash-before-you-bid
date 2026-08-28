@@ -31,7 +31,12 @@ describe('foreignPurchaserDuty', () => {
 })
 
 describe('stampDuty', () => {
-  const base = { offThePlanConstruction: 0, firstHomeBuyer: true, ownerOccupier: true }
+  const base = {
+    offThePlanConstruction: 0,
+    firstHomeBuyer: true,
+    ownerOccupier: true,
+    foreignPurchaser: false,
+  }
 
   it('exempts first home buyers up to $600k', () => {
     const r = stampDuty({ ...base, price: 550_000 })
@@ -69,6 +74,30 @@ describe('stampDuty', () => {
     const r = stampDuty({ ...base, firstHomeBuyer: false, ownerOccupier: false, price: 500_000 })
     expect(r.duty).toBeCloseTo(25_070, 6)
     expect(r.how.code).toBe('dutyGeneral')
+    expect(r.how.params).toEqual({ dutiableValue: 500_000 })
+  })
+
+  // The first home buyer exemption and concession require an Australian
+  // citizen or permanent resident, so a foreign purchaser gets neither — the
+  // 8% foreign purchaser additional duty is added separately by calculate().
+  it('withholds the exemption from a foreign first home buyer at $600k', () => {
+    const r = stampDuty({ ...base, foreignPurchaser: true, price: 600_000 })
+    expect(r.duty).toBeCloseTo(31_070, 6)
+    expect(r.how.code).toBe('dutyGeneral')
+    expect(r.how.params).toEqual({ dutiableValue: 600_000 })
+  })
+
+  it('withholds the concession from a foreign first home buyer at $700k', () => {
+    const r = stampDuty({ ...base, foreignPurchaser: true, price: 700_000 })
+    expect(r.duty).toBeCloseTo(37_070, 6)
+    expect(r.how.code).toBe('dutyGeneral')
+    expect(r.how.params).toEqual({ dutiableValue: 700_000 })
+  })
+
+  it('still gives a foreign first home buyer the PPR concession up to $550k', () => {
+    const r = stampDuty({ ...base, foreignPurchaser: true, price: 500_000 })
+    expect(r.duty).toBeCloseTo(21_970, 6)
+    expect(r.how.code).toBe('dutyPpr')
     expect(r.how.params).toEqual({ dutiableValue: 500_000 })
   })
 

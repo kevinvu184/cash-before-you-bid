@@ -25,6 +25,7 @@ export interface StampDutyInput {
   offThePlanConstruction: number
   firstHomeBuyer: boolean
   ownerOccupier: boolean
+  foreignPurchaser: boolean
 }
 
 // The working is data — a code plus the numbers that go into it — so the UI
@@ -42,17 +43,22 @@ export interface StampDutyResult {
 }
 
 export function stampDuty(input: StampDutyInput): StampDutyResult {
-  const { price, firstHomeBuyer, ownerOccupier } = input
+  const { price, firstHomeBuyer, ownerOccupier, foreignPurchaser } = input
   const otp = Math.min(input.offThePlanConstruction, price)
   const dutiableValue = Math.max(0, price - otp)
+  // The first home buyer exemption and concession require at least one
+  // purchaser to be an Australian citizen or permanent resident. A foreign
+  // purchaser falls back to the PPR or general rates — and still pays the
+  // foreign purchaser additional duty on top, which the caller adds.
+  const firstHomeConcessional = firstHomeBuyer && ownerOccupier && !foreignPurchaser
   const base =
-    ownerOccupier && !firstHomeBuyer && dutiableValue <= 550_000
+    ownerOccupier && !firstHomeConcessional && dutiableValue <= 550_000
       ? pprDuty(dutiableValue)
       : generalDuty(dutiableValue)
   let duty = base
   let code: DutyHowCode
   let params: Record<string, number> = { dutiableValue }
-  if (firstHomeBuyer && ownerOccupier) {
+  if (firstHomeConcessional) {
     if (dutiableValue <= 600_000) {
       duty = 0
       code = 'dutyFhbExempt'

@@ -80,6 +80,7 @@
     "htbCitizenship": "Help to Buy requires Australian citizenship.",
     "htbDetails": "Help to Buy: income caps $103,000 single / $165,000 couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
     "guarantorGap": "Under 20% deposit without LMI needs a family guarantor pledging the gap; shown with no LMI.",
+    "fhbResidency": "The first home buyer duty exemption and concession require an Australian citizen or permanent resident — duty charged at the standard rates instead.",
     "fhogPriceCap": "First Home Owner Grant not available: price above $750,000.",
     "genuineSavings": "LVR above 90%: most lenders want 5% of the price as genuine savings held for 3+ months.",
     "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut."

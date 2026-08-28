@@ -36,6 +36,7 @@ export type FlagCode =
   | 'htbCitizenship'
   | 'htbDetails'
   | 'guarantorGap'
+  | 'fhbResidency'
   | 'fhogPriceCap'
   | 'genuineSavings'
   | 'serviceability'
