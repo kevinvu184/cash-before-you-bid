@@ -71,6 +71,40 @@ const stripComments = (source: string): string =>
 
 const NETWORK_APIS = /\b(fetch\s*\(|XMLHttpRequest|sendBeacon|EventSource|WebSocket)\b/
 
+/** A hostname, with at least one dot so that `// a comment` is not one. */
+const HOST = String.raw`[a-z0-9-]+(?:\.[a-z0-9-]+)+`
+
+/**
+ * Absolute and protocol-relative alike: `//fonts.example/x` reaches a third
+ * party exactly as `https://fonts.example/x` does.
+ */
+const ABSOLUTE_URL = new RegExp(String.raw`(?:https?:)?//(${HOST})`, 'gi')
+
+/**
+ * The places a URL is fetched without anyone clicking anything — an image
+ * source, a stylesheet, a CSS `url()`. A bare `href` is deliberately absent:
+ * `<a href>` is a navigation the reader chooses, which is why the SRO and
+ * roadmap links are not requests this page makes. `<link href>` is here,
+ * because that one does fetch.
+ */
+const AUTO_FETCH: readonly RegExp[] = [
+  /\bsrc\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\bsrcset\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\bposter\s*[=:]\s*["'`]([^"'`]*)/gi,
+  /\burl\(\s*["']?([^)"']*)/gi,
+  /@import\s+(?:url\(\s*)?["']([^"']*)/gi,
+  /<link\b[^>]*?\bhref\s*=\s*["']([^"']*)/gi,
+]
+
+const hostsIn = (text: string): string[] =>
+  [...text.matchAll(ABSOLUTE_URL)].map((match) => match[1].toLowerCase())
+
+const autoFetchHosts = (source: string): string[] =>
+  AUTO_FETCH.flatMap((pattern) => [...source.matchAll(pattern)].flatMap((m) => hostsIn(m[1])))
+
+const undeclared = (hosts: readonly string[]): string[] =>
+  [...new Set(hosts)].filter((host) => !Object.hasOwn(THIRD_PARTY_HOSTS, host))
+
 describe('the privacy statement', () => {
   it('says something in both locales, from keys and never sentences', () => {
     for (const key of statementKeys()) {
@@ -143,14 +177,25 @@ describe('the privacy statement', () => {
 
 describe('what the sources say the page will contact', () => {
   it('references no host in index.html that privacy.ts has not declared', () => {
-    const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
-    const hosts = [...html.matchAll(/https?:\/\/([^/"'\s>]+)/g)].map((match) => match[1])
-    const undeclared = [...new Set(hosts)].filter(
-      (host) => !Object.hasOwn(THIRD_PARTY_HOSTS, host),
-    )
-    // Adding a host here means editing privacy.ts, where privacy.thirdPartyBody
-    // sits — which is the point. Declare it, then make the wording true again.
-    expect(undeclared).toEqual([])
+    // index.html is head content end to end — no anchors, nothing a reader
+    // navigates to — so every host named anywhere in it is one the page
+    // reaches on its own, and a broad scan has nothing to false-positive on.
+    // Adding one means editing privacy.ts, where privacy.thirdPartyBody sits:
+    // declare it, then make the wording true again.
+    expect(undeclared(hostsIn(readFileSync(join(ROOT, 'index.html'), 'utf8')))).toEqual([])
+  })
+
+  it('fetches no host from a component or stylesheet without declaring it', () => {
+    // The narrow scan above would miss a tracking pixel dropped into a skin —
+    // `<img src="https://…">` is a request to a third party that no `fetch(`
+    // appears for — and would miss a `url()` or `@import` in a stylesheet. So
+    // every source file is read for URLs in positions the browser fetches on
+    // its own, protocol-relative ones included.
+    const offenders = sourceFiles(ROOT)
+      .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+      .filter(([name]) => notATest(name))
+      .flatMap(([name, source]) => undeclared(autoFetchHosts(source)).map((h) => `${name}: ${h}`))
+    expect(offenders).toEqual([])
   })
 
   it('opens a connection from no file privacy.ts has not declared', () => {
