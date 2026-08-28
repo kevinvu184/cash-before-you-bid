@@ -14,10 +14,18 @@ import type { NotePart, PrivacyField } from '../types/viewModel'
  * survives the audit beats a broad one with an asterisk.
  *
  * `THIRD_PARTY_HOSTS` below is the other half. It is the audited list of hosts
- * the built page contacts on its own, and `privacy.test.ts` holds the shipped
- * build to it — so a new outbound request cannot be added without editing this
- * file, which is where the wording lives. That is the mechanism behind the
- * last sentence of `privacy.thirdPartyBody`: the statement changes first.
+ * the built page contacts on its own, established by loading `dist/` in a
+ * browser — the audit is in the pull request that added this file. What keeps
+ * it current is `privacy.test.ts`, which holds this repository's sources to
+ * it: `index.html` may reference no host declared nowhere here, and no source
+ * file may open a connection this file does not name. So a new outbound
+ * request cannot be added without an edit landing next to the wording. That is
+ * the mechanism behind the last sentence of `privacy.thirdPartyBody`.
+ *
+ * Its limit, stated rather than glossed: that is a check on the build's
+ * inputs, not on its output. A request arriving through a dependency or a
+ * build plugin would pass it, and only re-running the audit would catch one —
+ * which is what to do after a dependency bump or a build-config change.
  */
 
 /**

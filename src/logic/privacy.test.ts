@@ -6,15 +6,25 @@ import en from '../locales/en.json'
 import vi from '../locales/vi.json'
 import { NETWORK_CALLERS, PRIVACY_STATEMENT, THIRD_PARTY_HOSTS } from './privacy'
 
-// The statement claims something about the shipped build, so this file checks
-// the build rather than the sentence. It is the half of #24 that can go wrong:
-// wording drifts from reality silently, and a claim that has quietly become
-// false is worse than no claim at all.
+// The half of #24 that can go wrong: wording drifts from reality silently, and
+// a claim that has quietly become false is worse than no claim at all. So this
+// file checks code rather than the sentence.
 //
-// Two tripwires, both pointed at privacy.ts, which is where the wording lives:
-// a host index.html contacts must be declared there, and a file that opens a
-// connection must be declared there. Neither can be satisfied without reading
-// the copy sitting next to the declaration.
+// What it checks, exactly: the sources the build is made from — `index.html`,
+// `src/`, `public/` — not `dist/`. Two tripwires, both pointed at privacy.ts,
+// which is where the wording lives. A host `index.html` references must be
+// declared there, and a file that opens a connection must be declared there.
+// Neither can be satisfied without reading the copy next to the declaration,
+// which is the whole mechanism: someone adding a request has to walk past the
+// sentence it would falsify.
+//
+// What it does not check, and what covers that instead. Nothing here inspects
+// build output or `node_modules`, so it would not catch a request introduced
+// by a dependency or injected by a build plugin. Only loading the built page
+// catches those, which is a manual audit — recorded in the pull request that
+// added this file, and the thing to repeat before believing the claim again
+// after a dependency or build-config change. Treat these tests as the guard
+// on everyday edits, not as proof about the deployed bundle.
 
 const SRC = dirname(dirname(fileURLToPath(import.meta.url)))
 const ROOT = dirname(SRC)
@@ -30,15 +40,20 @@ const statementKeys = (): string[] => [
   ...PRIVACY_STATEMENT.value.flatMap((point) => [point.termKey, point.bodyKey]),
 ]
 
-// Every file that ships, source and static asset alike. node_modules, the git
-// directory and build output are not part of what a visitor loads.
+// The build's inputs: source and static asset alike. `dist/` is skipped even
+// though it is precisely what a visitor loads — it is generated, absent in a
+// fresh checkout, and stale whenever it is present, so asserting against it
+// would pass or fail on whether someone had run a build rather than on what
+// the repository says. The manual audit covers the output; this covers the
+// inputs. node_modules is out of scope for the same reason it is out of the
+// claim's reach: see the header.
 const SKIP = new Set(['node_modules', '.git', 'dist', 'coverage'])
 
-function shippedFiles(dir: string): string[] {
+function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     if (SKIP.has(entry.name)) return []
     const path = join(dir, entry.name)
-    if (entry.isDirectory()) return shippedFiles(path)
+    if (entry.isDirectory()) return sourceFiles(path)
     if (/\.(ts|tsx|js|mjs|css|html|webmanifest)$/.test(entry.name)) return [path]
     return []
   })
@@ -46,8 +61,8 @@ function shippedFiles(dir: string): string[] {
 
 const repoPath = (file: string): string => relative(ROOT, file).split(sep).join('/')
 
-/** Test files name the things they forbid; none of them reaches a visitor. */
-const ships = (name: string): boolean => !/\.test\.(ts|tsx)$/.test(name)
+/** Test files name the things they forbid, and none of them is bundled. */
+const notATest = (name: string): boolean => !/\.test\.(ts|tsx)$/.test(name)
 
 // Comments describe requests in prose — this file and sw.js both do — so only
 // code is scanned.
@@ -112,20 +127,22 @@ describe('the privacy statement', () => {
   })
 
   it('names no analytics, because there are none to name', () => {
-    // Requirement 5 of the ticket, as a fact about the build rather than a
-    // sentence: nothing here reports a page view, an event or an input value.
+    // Requirement 5 of the ticket, as a fact about the sources rather than a
+    // sentence: nothing we wrote reports a page view, an event or an input
+    // value. A vendor pulled in transitively would not show up here — see the
+    // header on what this does and does not reach.
     const analytics =
       /gtag|googletagmanager|google-analytics|plausible|posthog|mixpanel|segment\.(io|com)|hotjar|sentry|amplitude|matomo|clarity\.ms/i
-    const offenders = shippedFiles(ROOT)
+    const offenders = sourceFiles(ROOT)
       .map(repoPath)
-      .filter(ships)
+      .filter(notATest)
       .filter((name) => analytics.test(stripComments(readFileSync(join(ROOT, name), 'utf8'))))
     expect(offenders).toEqual([])
   })
 })
 
-describe('what the shipped page actually contacts', () => {
-  it('reaches no host index.html has not declared in privacy.ts', () => {
+describe('what the sources say the page will contact', () => {
+  it('references no host in index.html that privacy.ts has not declared', () => {
     const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
     const hosts = [...html.matchAll(/https?:\/\/([^/"'\s>]+)/g)].map((match) => match[1])
     const undeclared = [...new Set(hosts)].filter(
@@ -137,9 +154,9 @@ describe('what the shipped page actually contacts', () => {
   })
 
   it('opens a connection from no file privacy.ts has not declared', () => {
-    const offenders = shippedFiles(ROOT)
+    const offenders = sourceFiles(ROOT)
       .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
-      .filter(([name]) => ships(name) && !Object.hasOwn(NETWORK_CALLERS, name))
+      .filter(([name]) => notATest(name) && !Object.hasOwn(NETWORK_CALLERS, name))
       .filter(([, source]) => NETWORK_APIS.test(stripComments(source)))
       .map(([name]) => name)
     expect(offenders).toEqual([])
