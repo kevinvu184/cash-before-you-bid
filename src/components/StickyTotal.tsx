@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useDisplay } from '../hooks/useDisplay'
 import { approxMoney } from './resultText'
 
 interface StickyTotalProps {
@@ -14,11 +15,12 @@ interface StickyTotalProps {
  * where the stat row is already beside the inputs.
  */
 export function StickyTotal({ total, shown }: StickyTotalProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <div className={shown ? 'sticky-total shown' : 'sticky-total'} aria-hidden="true">
       <span className="sticky-total-label">{t('stats.totalLabel')}</span>
-      <span className="sticky-total-value">{approxMoney(total, t, i18n.language)}</span>
+      <span className="sticky-total-value">{approxMoney(total, t, display)}</span>
     </div>
   )
 }

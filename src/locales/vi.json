@@ -73,6 +73,26 @@
     "disclaimerSmall": "Số tiền dưới {{threshold}} được làm tròn đến {{smallUnit}} gần nhất.",
     "roundingNote": "Các khoản cộng lại có thể không khớp với tổng do làm tròn."
   },
+  "currency": {
+    "label": "Tiền tệ",
+    "switcherLabel": "Tiền tệ hiển thị",
+    "symbolAud": "$",
+    "symbolVnd": "₫",
+    "nameAud": "Đô la Úc",
+    "nameVnd": "Đồng Việt Nam",
+    "rateLine": "1 {{base}} = {{quoted}}",
+    "sourceLive": "{{provider}}",
+    "sourceStale": "{{provider}}, không làm mới được",
+    "sourceLoading": "đang lấy tỷ giá…",
+    "sourceFallback": "tỷ giá tham khảo, ngoại tuyến",
+    "sourceManual": "tỷ giá của bạn",
+    "manualTag": "THỦ CÔNG",
+    "reset": "Đặt lại",
+    "overrideLabel": "Đổi tỷ giá: 1 {{base}} =",
+    "apply": "Áp dụng",
+    "cancel": "Hủy",
+    "note": "Các con số được tính bằng đô la Úc; {{currency}} chỉ là bản quy đổi để xem."
+  },
   "flagKinds": {
     "warn": "CẢNH BÁO",
     "note": "GHI CHÚ",
@@ -85,9 +105,9 @@
     "schemeOwnerOccupier": "Chương trình chỉ dành cho người mua để ở — LMI đã được áp dụng thay thế.",
     "htbCapExceeded": "Giá cao hơn mức trần {{cap}} của Help to Buy cho khu vực này.",
     "htbCitizenship": "Help to Buy yêu cầu quốc tịch Úc.",
-    "htbDetails": "Help to Buy: trần thu nhập 103.000 AUD (độc thân) / 165.000 AUD (cặp đôi); 10.000 suất mỗi năm; chỉ qua CBA và Bank Australia (06/2026). Phần vốn của chính phủ là {{share}} và được hoàn trả theo giá thị trường khi bán nhà.",
+    "htbDetails": "Help to Buy: trần thu nhập {{single}} độc thân / {{couple}} vợ chồng; 10.000 suất mỗi năm; chỉ CBA và Bank Australia (06/2026). Phần nhà nước góp là {{share}} và được hoàn theo giá thị trường khi bán.",
     "guarantorGap": "Đặt cọc dưới 20% mà không trả LMI thì cần người thân bảo lãnh phần còn thiếu; kết quả hiển thị không gồm LMI.",
-    "fhogPriceCap": "Không được nhận First Home Owner Grant: giá cao hơn 750.000 AUD.",
+    "fhogPriceCap": "Không được trợ cấp mua nhà lần đầu: giá trên {{cap}}.",
     "genuineSavings": "LVR trên 90%: hầu hết ngân hàng yêu cầu 5% giá nhà là tiền tiết kiệm thực sự đã giữ từ 3 tháng trở lên.",
     "serviceability": "Kiểm tra khả năng trả nợ: ngân hàng sẽ thẩm định ở mức {{assessed}}/tháng với lãi suất {{rate}}. Nếu con số đó vượt khoảng 35–40% thu nhập sau thuế của bạn, khoản vay có thể bị cắt giảm."
   },
@@ -107,7 +127,8 @@
   "table": {
     "line": "Khoản mục",
     "amount": "AUD",
-    "how": "Cách tính"
+    "how": "Cách tính",
+    "amountVnd": "₫"
   },
   "rows": {
     "deposit": "Tiền đặt cọc",
@@ -129,18 +150,18 @@
     "total": "Tổng tiền mặt trước khi trả giá"
   },
   "how": {
-    "dutyFhbExempt": "Miễn thuế cho người mua nhà lần đầu: giá trị chịu thuế {{dutiableValue}} ≤ 600.000 AUD → 0 AUD",
-    "dutyFhbConcession": "Thuế thông thường {{base}} × ({{dutiableValue}} − 600.000 AUD) ÷ 150.000 AUD",
-    "dutyFhbAboveCap": "Trên 750.000 AUD: không còn ưu đãi mua nhà lần đầu. 2.870 AUD + 6% × ({{dutiableValue}} − 130.000 AUD)",
+    "dutyFhbExempt": "Miễn thuế cho người mua nhà lần đầu: giá trị chịu thuế {{dutiableValue}} ≤ {{cap}} → {{zero}}",
+    "dutyFhbConcession": "Thuế thông thường {{base}} × ({{dutiableValue}} − {{cap}}) ÷ {{range}}",
+    "dutyFhbAboveCap": "Trên {{cap}}: không được ưu đãi mua nhà lần đầu. {{bandBase}} + 6% × ({{dutiableValue}} − {{bandThreshold}})",
     "dutyPpr": "Mức ưu đãi nhà để ở (PPR) trên {{dutiableValue}}",
     "dutyGeneral": "Mức thông thường trên {{dutiableValue}}",
     "dutyOffThePlan": "Mua nhà trên giấy: {{price}} − {{construction}} chi phí xây dựng = giá trị chịu thuế {{dutiableValue}}.",
     "foreignDuty": "8% × {{dutiableValue}}",
-    "transferFee": "104,30 AUD + 2,34 AUD × {{thousands}} (mỗi 1.000 AUD), tối đa 3.614 AUD, làm tròn lên",
+    "transferFee": "{{base}} + {{perThousand}} × {{thousands}} (mỗi {{unit}}), tối đa {{cap}}, làm tròn lên",
     "mortgageFeeLoan": "Land Services Victoria 2026-27",
     "mortgageFeeNoLoan": "Không có khoản vay",
-    "pexaBoth": "146,30 AUD chuyển nhượng + 74,14 AUD thế chấp",
-    "pexaTransferOnly": "146,30 AUD chuyển nhượng",
+    "pexaBoth": "{{transfer}} chuyển nhượng + {{mortgage}} thế chấp",
+    "pexaTransferOnly": "{{transfer}} chuyển nhượng",
     "lmiHtb": "Help to Buy: không LMI",
     "lmiScheme": "Chương trình đặt cọc 5%: chính phủ bảo lãnh 15%, không LMI",
     "lmiLvrUnder80": "LVR {{lvr}} ≤ 80%: không LMI",
@@ -150,10 +171,10 @@
     "yourFigure": "Số liệu của bạn",
     "settlementAdjustments": "Thuế địa phương, tiền nước, phí quản lý chung cư phân bổ đến ngày tất toán",
     "buildingInsurance": "Ngân hàng yêu cầu có bảo hiểm trước khi tất toán",
-    "grant": "Nhà mới ≤ 750.000 AUD, người mua nhà lần đầu đủ điều kiện; thường được trừ khi tất toán",
+    "grant": "Nhà mới ≤ {{cap}}, người mua nhà lần đầu đủ điều kiện; thường được trừ khi tất toán",
     "deposit": "{{pct}} × {{price}}",
     "costsSubtotal": "Tổng các dòng phía trên (không gồm tiền đặt cọc)",
-    "buffer_other": "{{count}} tháng × {{repayment}} + 1.000 AUD",
+    "buffer_other": "{{count}} tháng × {{repayment}} + {{base}}",
     "noBuffer": "Không có khoản dự phòng",
     "total": "Đặt cọc + chi phí + chuyển nhà + dự phòng"
   },

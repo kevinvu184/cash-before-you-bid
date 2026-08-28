@@ -1,5 +1,11 @@
 import { DEFAULT_INPUTS } from '../data/defaults'
+import {
+  DEFAULT_DISPLAY_CURRENCY,
+  DISPLAY_CURRENCIES,
+  type DisplayCurrency,
+} from './currencyConfig'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
+import { RATE_MAX as FX_RATE_MAX, RATE_MIN as FX_RATE_MIN } from './exchangeRate'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
 
@@ -8,19 +14,30 @@ import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
 // short and stable. The full table (name, type, allowed values, default) is
 // documented in README.md.
 //
-//   adj bp bufm caplmi conv dep fhb foreign ins lang lender move newhome otp
-//   ppr price rate region route
+//   adj bp bufm caplmi conv cur dep fhb foreign fx ins lang lender move
+//   newhome otp ppr price rate region route
 //
 // Params equal to their default are omitted; keys are emitted alphabetically
 // so the same state always produces the same URL. Booleans are 1/0.
 
 // The UI language rides in the same query string as the calculator inputs
-// (?lang=vi / ?lang=en) so a shared link keeps its language.
+// (?lang=vi / ?lang=en) so a shared link keeps its language. So do the display
+// currency (?cur=) and a manually overridden exchange rate (?fx=) — a link to
+// a converted view has to reproduce the figures the sender was looking at, and
+// the rate is half of what determines them.
 export interface AppState extends CalculatorInputs {
   lang: Lang
+  currency: DisplayCurrency
+  /** Rate the user typed in place of the fetched one; null means use the live rate. */
+  manualRate: number | null
 }
 
-export const DEFAULT_APP_STATE: AppState = { ...DEFAULT_INPUTS, lang: DEFAULT_LANG }
+export const DEFAULT_APP_STATE: AppState = {
+  ...DEFAULT_INPUTS,
+  lang: DEFAULT_LANG,
+  currency: DEFAULT_DISPLAY_CURRENCY,
+  manualRate: null,
+}
 
 const ROUTES: readonly DepositRoute[] = ['scheme', 'lmi', 'nolmi', 'htb']
 const REGIONS: readonly Region[] = ['metro', 'regional']
@@ -47,6 +64,25 @@ function readNumber(
   const n = Number(raw)
   if (!Number.isFinite(n)) return fallback
   return Math.min(max, Math.max(min, n))
+}
+
+/**
+ * A number that is absent by default rather than defaulting to a value. Out of
+ * range is treated as absent, not clamped: an override is a figure the user
+ * asserted, and silently swapping it for a boundary would show them a rate
+ * they never typed.
+ */
+function readOptionalNumber(
+  params: URLSearchParams,
+  name: string,
+  min: number,
+  max: number,
+): number | null {
+  const raw = params.get(name)
+  if (raw === null || raw.trim() === '') return null
+  const n = Number(raw)
+  if (!Number.isFinite(n) || n < min || n > max) return null
+  return n
 }
 
 function readBoolean(params: URLSearchParams, name: string, fallback: boolean): boolean {
@@ -91,6 +127,8 @@ export function parseParams(searchParams: URLSearchParams): AppState {
     bufferMonths: readNumber(searchParams, 'bufm', d.bufferMonths, 0, BUFFER_MONTHS_MAX),
     capitaliseLmi: readBoolean(searchParams, 'caplmi', d.capitaliseLmi),
     lang: readEnum(searchParams, 'lang', LANGS, DEFAULT_LANG),
+    currency: readEnum(searchParams, 'cur', DISPLAY_CURRENCIES, DEFAULT_DISPLAY_CURRENCY),
+    manualRate: readOptionalNumber(searchParams, 'fx', FX_RATE_MIN, FX_RATE_MAX),
   }
   return { ...inputs, depositPct: clampDepositPct(inputs.route, inputs.depositPct) }
 }
@@ -112,9 +150,11 @@ export function serialiseParams(state: AppState): URLSearchParams {
   num('bufm', state.bufferMonths, d.bufferMonths)
   bool('caplmi', state.capitaliseLmi, d.capitaliseLmi)
   num('conv', state.conveyancing, d.conveyancing)
+  str('cur', state.currency, DEFAULT_DISPLAY_CURRENCY)
   num('dep', state.depositPct, defaultDepositPctForRoute(state.route))
   bool('fhb', state.firstHomeBuyer, d.firstHomeBuyer)
   bool('foreign', state.foreignPurchaser, d.foreignPurchaser)
+  if (state.manualRate !== null) entries.push(['fx', String(state.manualRate)])
   num('ins', state.buildingInsurance, d.buildingInsurance)
   str('lang', state.lang, DEFAULT_LANG)
   num('lender', state.lenderFees, d.lenderFees)

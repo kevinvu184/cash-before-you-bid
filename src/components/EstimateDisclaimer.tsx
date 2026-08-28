@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
+import { useDisplay } from '../hooks/useDisplay'
+import { CURRENCY_ROUNDING } from '../logic/currencyConfig'
 import { formatMoney } from '../logic/format'
 
 /**
@@ -7,12 +8,15 @@ import { formatMoney } from '../logic/format'
  * currency's rounding unit, and the finer unit used below the threshold when
  * the currency defines one) and that independently rounded parts may not add
  * to the independently rounded total.
+ *
+ * The unit is the display currency's own — it is already a figure in that
+ * currency, so it is written straight rather than converted.
  */
 export function EstimateDisclaimer() {
-  const { t, i18n } = useTranslation()
-  const config = CURRENCY_ROUNDING[APP_CURRENCY]
-  const exact = (amount: number) =>
-    formatMoney(amount, APP_CURRENCY, i18n.language, { round: false })
+  const { t } = useTranslation()
+  const { currency, locale } = useDisplay()
+  const config = CURRENCY_ROUNDING[currency]
+  const exact = (amount: number) => formatMoney(amount, currency, locale, { round: false })
   const small =
     config.smallThreshold !== undefined && config.smallUnit !== undefined
       ? t('money.disclaimerSmall', {

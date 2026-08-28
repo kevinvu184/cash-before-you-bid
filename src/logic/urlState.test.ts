@@ -62,6 +62,8 @@ describe('serialiseParams', () => {
       bufferMonths: 12,
       capitaliseLmi: true,
       lang: 'en',
+      currency: 'VND',
+      manualRate: 17200,
     }
     expect(serialiseParams(state).toString().length).toBeLessThan(300)
   })
@@ -74,9 +76,9 @@ describe('parseParams', () => {
 
   it('reads every param', () => {
     const parsed = parse(
-      'adj=900&bp=600&bufm=6&caplmi=1&conv=1800&dep=12&fhb=0&foreign=1&ins=1600' +
-        '&lang=en&lender=350&move=4500&newhome=1&otp=50000&ppr=0&price=820000&rate=5.9' +
-        '&region=regional&route=lmi',
+      'adj=900&bp=600&bufm=6&caplmi=1&conv=1800&cur=VND&dep=12&fhb=0&foreign=1&fx=17200' +
+        '&ins=1600&lang=en&lender=350&move=4500&newhome=1&otp=50000&ppr=0&price=820000' +
+        '&rate=5.9&region=regional&route=lmi',
     )
     expect(parsed).toEqual({
       price: 820_000,
@@ -98,6 +100,8 @@ describe('parseParams', () => {
       bufferMonths: 6,
       capitaliseLmi: true,
       lang: 'en',
+      currency: 'VND',
+      manualRate: 17200,
     })
   })
 
@@ -195,6 +199,8 @@ describe('round-trip', () => {
         bufferMonths: 12,
         capitaliseLmi: true,
         lang: 'en',
+        currency: 'VND',
+        manualRate: 17200,
       },
     ],
   ]
