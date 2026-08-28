@@ -341,3 +341,11 @@
 [data-skin='plain'] .plain-scenarios p[role='status'] {
   font-weight: var(--font-weight-strong);
 }
+
+/* The live region stays in the document whether or not it has anything to say
+   — a status element inserted at the same moment as its text is not reliably
+   announced — so it is silenced by being empty, not by being removed. Without
+   this it would hold the paragraph margin open as a blank gap. */
+[data-skin='plain'] .plain-scenarios p[role='status']:empty {
+  margin: 0;
+}
