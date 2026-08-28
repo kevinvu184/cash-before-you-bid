@@ -24,6 +24,10 @@ first use): **Cash Before You Bid**, **AUD**, **LMI**, **LVR**, **PEXA**,
 **off-the-plan** (glossed as "mua nhà trên giấy"), **Land Services Victoria**,
 **CBA**, **Bank Australia**, place names.
 
+**State Revenue Office** is also kept in English, in the "rates current as at"
+line beside the results (`notes.ratesAsAt*`): it is the institution's own name
+and what a buyer will see on its website.
+
 Legislation is named in English, because that is what a buyer will see on the
 contract and what an agent or conveyancer will say: **Section 27** and
 **Sale of Land Act 1962** (in `guidance.bondBody`, kept together as

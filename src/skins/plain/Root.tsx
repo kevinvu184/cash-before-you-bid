@@ -31,6 +31,7 @@ import {
   quotedRate,
   rateDraft,
   rateStamp,
+  ratesAsAtDate,
   refText,
   savedDate,
 } from '../shared/text'
@@ -448,6 +449,19 @@ function Results({
             </li>
           ))}
         </ul>
+        <p data-field={results.ratesAsAt.id} data-importance={results.ratesAsAt.importance}>
+          {t(results.ratesAsAt.value.beforeKey, {
+            // The raw ISO date is the fallback: a date the reader can still
+            // act on beats dropping the line that says how current these are.
+            // display.locale is the active language: a date follows the words
+            // around it, not the currency the figures are written in.
+            date:
+              ratesAsAtDate(results.ratesAsAt.value.asAt, display.locale) ??
+              results.ratesAsAt.value.asAt,
+          })}
+          <a href={results.ratesAsAt.value.href}>{t(results.ratesAsAt.value.linkKey)}</a>
+          {t(results.ratesAsAt.value.afterKey)}
+        </p>
         <p data-field={results.sources.id} data-importance={results.sources.importance}>
           {t(results.sources.value.beforeKey)}
           <a href={results.sources.value.href}>{t(results.sources.value.linkKey)}</a>

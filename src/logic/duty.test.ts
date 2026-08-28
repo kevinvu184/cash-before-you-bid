@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { DUTY_BAND_BASE, DUTY_BAND_THRESHOLD } from '../data/constants'
 import { foreignPurchaserDuty, generalDuty, pprDuty, stampDuty } from './duty'
 
 describe('generalDuty', () => {
@@ -13,15 +12,6 @@ describe('generalDuty', () => {
     expect(generalDuty(1_600_000)).toBeCloseTo(88_000, 6)
     expect(generalDuty(2_000_000)).toBeCloseTo(110_000, 6)
     expect(generalDuty(2_500_000)).toBeCloseTo(142_500, 6)
-  })
-
-  it('meets its third band exactly at the figures the explanation quotes', () => {
-    // dutyFhbAboveCap states "$2,870 + 6% × (value − $130,000)" from these two
-    // constants. The bands are contiguous, so the rate reaching the threshold
-    // must arrive at the base — which it can only do while the arithmetic
-    // reads the same constants the sentence does.
-    expect(generalDuty(DUTY_BAND_THRESHOLD)).toBeCloseTo(DUTY_BAND_BASE, 6)
-    expect(generalDuty(DUTY_BAND_THRESHOLD + 100_000)).toBeCloseTo(DUTY_BAND_BASE + 6000, 6)
   })
 })
 

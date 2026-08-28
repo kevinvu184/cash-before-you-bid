@@ -9,6 +9,7 @@ import type {
   GuidanceField,
   LineField,
   NoteEntry,
+  RatesAsAtValue,
   ResultsViewModel,
   SourcesValue,
   StatField,
@@ -17,7 +18,14 @@ import type {
   VerdictField,
 } from '../../types/viewModel'
 import { useDisplay } from '../shared/display'
-import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
+import {
+  estimateMoney,
+  estimateRowAmount,
+  flagText,
+  howText,
+  ratesAsAtDate,
+  refText,
+} from '../shared/text'
 import { CurrencyBar } from './CurrencyBar'
 
 // Ledger has no alert or toast component, so the flags are rule-divided strips
@@ -372,14 +380,20 @@ function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
 function RulesNotes({
   headingKey,
   notes,
+  ratesAsAt,
   sources,
 }: {
   headingKey: string
   notes: Field<readonly NoteEntry[]>
+  ratesAsAt: Field<RatesAsAtValue>
   sources: Field<SourcesValue>
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const link = sources.value
+  const rates = ratesAsAt.value
+  // The raw ISO date is the fallback: a date the reader can still act on
+  // beats dropping the one line that says how current the figures are.
+  const asAt = ratesAsAtDate(rates.asAt, i18n.language) ?? rates.asAt
   return (
     <section className="notes">
       <h3>{t(headingKey)}</h3>
@@ -395,6 +409,11 @@ function RulesNotes({
           </li>
         ))}
       </ul>
+      <p className="small" data-field={ratesAsAt.id} data-importance={ratesAsAt.importance}>
+        {t(rates.beforeKey, { date: asAt })}
+        <a href={rates.href}>{t(rates.linkKey)}</a>
+        {t(rates.afterKey)}
+      </p>
       <p className="small" data-field={sources.id} data-importance={sources.importance}>
         {t(link.beforeKey)}
         <a href={link.href}>{t(link.linkKey)}</a>
@@ -427,6 +446,7 @@ export function Results({
       <RulesNotes
         headingKey={results.notesHeadingKey}
         notes={results.notes}
+        ratesAsAt={results.ratesAsAt}
         sources={results.sources}
       />
     </main>

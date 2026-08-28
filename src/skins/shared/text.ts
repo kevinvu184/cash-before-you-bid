@@ -1,11 +1,6 @@
 import type { TFunction } from 'i18next'
 import {
   BUFFER_BASE_AMOUNT,
-  DUTY_BAND_BASE,
-  DUTY_BAND_THRESHOLD,
-  FHB_DUTY_CONCESSION_CAP,
-  FHB_DUTY_CONCESSION_RANGE,
-  FHB_DUTY_EXEMPTION_CAP,
   FHOG_PRICE_CAP,
   HTB_INCOME_CAP_COUPLE,
   HTB_INCOME_CAP_SINGLE,
@@ -16,6 +11,13 @@ import {
   TRANSFER_FEE_PER_THOUSAND,
   TRANSFER_FEE_UNIT,
 } from '../../data/constants'
+import {
+  bracketFor,
+  FHB_CONCESSION_BAND,
+  FHB_CONCESSION_CEILING,
+  FHB_EXEMPTION_CEILING,
+  GENERAL_DUTY_BRACKETS,
+} from '../../data/rates'
 import { BASE_CURRENCY } from '../../logic/currencyConfig'
 import { rateAsShown } from '../../logic/exchangeRate'
 import { displayMoney, displayRowAmount, displayUnit, type Display } from '../../logic/display'
@@ -44,6 +46,20 @@ import type { TextParam, TextRef } from '../../types/viewModel'
 // This module is shared presentation, not core: it is the one place where a
 // key and its numbers become a sentence, so no skin has to own that mapping
 // and no two skins can disagree about it.
+
+/**
+ * The general-rate band the "above the concession cap" explanation is written
+ * about: the one the first home buyer concession ceiling sits in. Read from
+ * the rate table rather than written into the locale files, so the figures the
+ * sentence quotes are the figures the duty was charged at — and so they
+ * convert with everything else instead of staying dollar literals.
+ *
+ * The sentence assumes that band, which is right for the values it is shown
+ * at in practice. A dutiable value above the band's own ceiling is charged at
+ * a higher one and would be quoted this band's figures; that predates this
+ * change and belongs to the copy, not to the plumbing.
+ */
+const ABOVE_CAP_BAND = bracketFor(FHB_CONCESSION_CEILING, GENERAL_DUTY_BRACKETS)
 
 /** A computed figure: rounded to the display currency's unit. */
 export function estimateMoney(amount: number, display: Display): string {
@@ -193,7 +209,7 @@ export function howText(how: RowHow | null, t: TFunction, display: Display): str
     case 'dutyFhbExempt':
       text = t('how.dutyFhbExempt', {
         dutiableValue: estimateMoney(p.dutiableValue, display),
-        cap: exactMoney(FHB_DUTY_EXEMPTION_CAP, display),
+        cap: exactMoney(FHB_EXEMPTION_CEILING, display),
         zero: exactMoney(0, display),
       })
       break
@@ -201,16 +217,16 @@ export function howText(how: RowHow | null, t: TFunction, display: Display): str
       text = t('how.dutyFhbConcession', {
         base: estimateMoney(p.base, display),
         dutiableValue: estimateMoney(p.dutiableValue, display),
-        cap: exactMoney(FHB_DUTY_EXEMPTION_CAP, display),
-        range: exactMoney(FHB_DUTY_CONCESSION_RANGE, display),
+        cap: exactMoney(FHB_EXEMPTION_CEILING, display),
+        range: exactMoney(FHB_CONCESSION_BAND, display),
       })
       break
     case 'dutyFhbAboveCap':
       text = t('how.dutyFhbAboveCap', {
         dutiableValue: estimateMoney(p.dutiableValue, display),
-        cap: exactMoney(FHB_DUTY_CONCESSION_CAP, display),
-        bandBase: exactMoney(DUTY_BAND_BASE, display),
-        bandThreshold: exactMoney(DUTY_BAND_THRESHOLD, display),
+        cap: exactMoney(FHB_CONCESSION_CEILING, display),
+        bandBase: exactMoney(ABOVE_CAP_BAND.base, display),
+        bandThreshold: exactMoney(ABOVE_CAP_BAND.over, display),
       })
       break
     case 'dutyPpr':
@@ -320,6 +336,22 @@ export function howText(how: RowHow | null, t: TFunction, display: Display): str
     return `${prefix} ${text}`
   }
   return text
+}
+
+/**
+ * The date the rate config was last verified, in the active locale. Takes the
+ * ISO-8601 date the core holds and returns null if it is not one, so a
+ * hand-edited config cannot print "Invalid Date" beside the figures.
+ */
+export function ratesAsAtDate(iso: string, locale: string): string | null {
+  const parsed = new Date(`${iso}T00:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return null
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(parsed)
 }
 
 /**
