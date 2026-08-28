@@ -8,6 +8,7 @@ import { calculate } from './logic/calculate'
 import { APP_CURRENCY } from './logic/currencyConfig'
 import { formatMoney } from './logic/format'
 import { roundForDisplay } from './logic/rounding'
+import { FHB_CONCESSION_CEILING, FHB_EXEMPTION_CEILING } from './data/rates'
 import { PRICE_MAX, parseParams } from './logic/urlState'
 import { SKINS } from './skins/registry'
 
@@ -518,6 +519,12 @@ describe('the verdict', () => {
 describe('the price slider and its duty cliffs', () => {
   const slider = () => input('price-slider')
 
+  // Read from the rate config, never written here: a threshold that moves in
+  // src/data/rates.ts must move these assertions with it, or the suite would
+  // fail on a config change the feature is designed to follow.
+  const threshold = (value: number) =>
+    formatMoney(value, APP_CURRENCY, 'en', { round: false })
+
   const renderAt = async (query: string) => {
     window.history.replaceState(null, '', query)
     await renderApp()
@@ -572,8 +579,8 @@ describe('the price slider and its duty cliffs', () => {
 
     expect(cliffs).toContain('Exemption ends.')
     expect(cliffs).toContain('Concession ends.')
-    expect(cliffs).toContain('A$600,000')
-    expect(cliffs).toContain('A$750,000')
+    expect(cliffs).toContain(threshold(FHB_EXEMPTION_CEILING))
+    expect(cliffs).toContain(threshold(FHB_CONCESSION_CEILING))
   })
 
   it.each([
@@ -586,7 +593,7 @@ describe('the price slider and its duty cliffs', () => {
 
     expect(slider()).not.toBeNull()
     expect(cliffs).not.toContain('Exemption ends.')
-    expect(cliffs).not.toContain('A$600,000')
+    expect(cliffs).not.toContain(threshold(FHB_EXEMPTION_CEILING))
   })
 
   it('takes the cliffs away the moment the purchaser stops being eligible', async () => {

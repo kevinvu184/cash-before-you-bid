@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { FHB_EXEMPTION_CEILING } from '../data/rates'
 import i18n from '../i18n'
 import { LANGS, type Lang } from '../logic/lang'
 import { PRICE_SLIDER_STEP, buildPriceSliderField } from '../logic/priceMarkers'
@@ -112,6 +113,8 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('price slider in skin %s', (sk
     expect(input.type).toBe('range')
     expect(field.querySelectorAll('li')).toHaveLength(0)
     expect(input.getAttribute('aria-describedby')).toBeNull()
-    expect(field.textContent).not.toContain(exactMoney(600_000, 'en'))
+    // From the config, not a figure written here: this must keep testing the
+    // exemption ceiling wherever the config moves it to.
+    expect(field.textContent).not.toContain(exactMoney(FHB_EXEMPTION_CEILING, 'en'))
   })
 })
