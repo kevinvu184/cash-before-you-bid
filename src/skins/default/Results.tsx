@@ -10,6 +10,7 @@ import type {
   ResultsViewModel,
   SourcesValue,
   StatField,
+  SunkCostViewModel,
   TextRef,
 } from '../../types/viewModel'
 import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
@@ -239,6 +240,43 @@ function EstimateNote({ field }: { field: Field<readonly TextRef[]> }) {
   )
 }
 
+/**
+ * The pre-auction spend, under the table and above the estimate note. Its own
+ * section, not two more tiles in the stat row: the figures above are what
+ * buying this one property costs, and this money is spent whether or not the
+ * auction is won.
+ */
+function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
+  const { t, i18n } = useTranslation()
+  const research = sunk.research.value
+  return (
+    <section className="sunk">
+      <h3>{t(sunk.headingKey)}</h3>
+      <div className="stats">
+        {sunk.stats.map((stat) => (
+          <Stat key={stat.id} stat={stat} />
+        ))}
+      </div>
+      <p
+        className="small"
+        data-field={sunk.framing.id}
+        data-importance={sunk.framing.importance}
+      >
+        {refText(sunk.framing.value, t, i18n.language)}
+      </p>
+      <p
+        className="small"
+        data-field={sunk.research.id}
+        data-importance={sunk.research.importance}
+      >
+        {t(research.beforeKey)}
+        <a href={research.href}>{t(research.linkKey)}</a>
+        {t(research.afterKey)}
+      </p>
+    </section>
+  )
+}
+
 function RulesNotes({
   headingKey,
   notes,
@@ -284,6 +322,7 @@ export function Results({ results }: { results: ResultsViewModel }) {
         ))}
       </div>
       <LineTable results={results} />
+      <SunkCost sunk={results.sunkCost} />
       <EstimateNote field={results.estimateNote} />
       <RulesNotes
         headingKey={results.notesHeadingKey}

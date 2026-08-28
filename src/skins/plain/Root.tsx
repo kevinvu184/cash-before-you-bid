@@ -11,6 +11,7 @@ import type {
   NumberInputField,
   ResultsViewModel,
   StatField,
+  SunkCostViewModel,
 } from '../../types/viewModel'
 import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
 import './skin.css'
@@ -67,7 +68,7 @@ function NumberRow({ field }: { field: NumberInputField }) {
       <input
         id={field.controlId}
         type="text"
-        inputMode="decimal"
+        inputMode={field.keypad}
         autoComplete="off"
         value={field.draft}
         aria-describedby={hintId}
@@ -167,6 +168,29 @@ function Stat({ stat }: { stat: StatField }) {
   )
 }
 
+function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
+  const { t, i18n } = useTranslation()
+  const research = sunk.research.value
+  return (
+    <section>
+      <h2>{t(sunk.headingKey)}</h2>
+      <dl className="plain-stats">
+        {sunk.stats.map((stat) => (
+          <Stat key={stat.id} stat={stat} />
+        ))}
+      </dl>
+      <p data-field={sunk.framing.id} data-importance={sunk.framing.importance}>
+        {refText(sunk.framing.value, t, i18n.language)}
+      </p>
+      <p data-field={sunk.research.id} data-importance={sunk.research.importance}>
+        {t(research.beforeKey)}
+        <a href={research.href}>{t(research.linkKey)}</a>
+        {t(research.afterKey)}
+      </p>
+    </section>
+  )
+}
+
 function PlainRow({ line }: { line: LineField }) {
   const { t, i18n } = useTranslation()
   return (
@@ -238,6 +262,8 @@ function Results({ results }: { results: ResultsViewModel }) {
           </table>
         </div>
       </section>
+
+      <SunkCost sunk={results.sunkCost} />
 
       <p
         className="estimate-note"

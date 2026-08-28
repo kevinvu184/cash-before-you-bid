@@ -34,6 +34,8 @@
     "assumptions": "Cost assumptions (edit if you have quotes)",
     "conveyancing": "Conveyancing incl. disbursements ($)",
     "buildingAndPest": "Building and pest inspection ($)",
+    "properties": "Properties you bid on before you win",
+    "propertiesHint": "Each attempt costs an inspection and a contract review, win or lose. Leave at 1 for this property alone.",
     "lenderFees": "Lender fees: settlement + valuation ($)",
     "settlementAdjustments": "Settlement adjustments to vendor ($)",
     "buildingInsurance": "Building insurance, first year ($)",
@@ -99,6 +101,18 @@
     "loanSubWithEquity": "LVR {{lvr}} · government equity {{equity}}",
     "repaymentLabel": "Repayment / month",
     "repaymentSub": "at {{rate}} · assessed at {{assessedRate}}: {{assessed}}/mo"
+  },
+  "sunk": {
+    "heading": "Spent before the hammer falls",
+    "perPropertyLabel": "Per property",
+    "perPropertySub": "Inspection and conveyancing, paid to go after one property",
+    "searchLabel": "Across your whole search",
+    "searchSub_one": "{{properties}} property, so nothing beyond the figure above",
+    "searchSub_other": "{{properties}} × {{perProperty}} — {{lost}} of it on the ones you do not win",
+    "framing": "This is the money that is gone whether you win or lose. The deposit, stamp duty, government fees, LMI and settlement costs above are only ever paid on the property you actually buy — these are not.",
+    "researchBefore": "Consumer Policy Research Centre research, cited by the Victorian Government in March 2026, found building and pest reports cost $500–$600 for the pair, that about half of buyers paid for several inspections while house-hunting, and that 17% paid for seven or more — spending up to $4,200. The figures above are your own, not that research. Source: ",
+    "researchLink": "Victorian Premier, 12 March 2026",
+    "researchAfter": "."
   },
   "table": {
     "line": "Line",

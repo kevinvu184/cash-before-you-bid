@@ -40,6 +40,8 @@
     "assumptions": "Các chi phí ước tính (sửa nếu bạn có báo giá)",
     "conveyancing": "Phí pháp lý chuyển nhượng, gồm chi phí phát sinh (AUD)",
     "buildingAndPest": "Phí kiểm tra công trình và mối mọt (AUD)",
+    "properties": "Số căn nhà bạn sẽ trả giá trước khi mua được",
+    "propertiesHint": "Mỗi lần tham gia đều tốn phí kiểm tra nhà và phí xem hợp đồng, dù thắng hay thua. Để 1 nếu chỉ tính riêng căn này.",
     "lenderFees": "Phí ngân hàng: tất toán + định giá (AUD)",
     "settlementAdjustments": "Các khoản điều chỉnh trả cho bên bán khi tất toán (AUD)",
     "buildingInsurance": "Bảo hiểm công trình, năm đầu (AUD)",
@@ -105,6 +107,17 @@
     "loanSubWithEquity": "LVR {{lvr}} · vốn chính phủ {{equity}}",
     "repaymentLabel": "Trả nợ / tháng",
     "repaymentSub": "với lãi suất {{rate}} · thẩm định ở {{assessedRate}}: {{assessed}}/tháng"
+  },
+  "sunk": {
+    "heading": "Tiền đã chi trước khi đấu giá",
+    "perPropertyLabel": "Mỗi căn nhà",
+    "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn",
+    "searchLabel": "Cho cả quá trình tìm nhà",
+    "searchSub_other": "{{properties}} căn × {{perProperty}} — trong đó {{lost}} là cho những căn bạn không mua được",
+    "framing": "Đây là khoản tiền mất đi dù bạn thắng hay thua. Tiền đặt cọc, thuế trước bạ, phí nhà nước, LMI và các chi phí tất toán ở trên chỉ phải trả cho căn bạn thực sự mua — còn khoản này thì không.",
+    "researchBefore": "Nghiên cứu của Consumer Policy Research Centre, được Chính phủ bang Victoria dẫn lại vào tháng 3/2026, cho thấy báo cáo kiểm tra công trình và mối mọt tốn 500–600 AUD cho cả hai báo cáo, khoảng một nửa người mua đã trả tiền cho nhiều lần kiểm tra trong quá trình tìm nhà, và 17% trả cho bảy lần trở lên — tốn tới 4.200 AUD. Các con số ở trên là số liệu của bạn, không phải của nghiên cứu đó. Nguồn: ",
+    "researchLink": "Thủ hiến bang Victoria, 12/03/2026",
+    "researchAfter": "."
   },
   "table": {
     "line": "Khoản mục",

@@ -8,11 +8,12 @@ import {
   ROUTE_OPTIONS,
   SKIN_OPTIONS,
   SOURCES,
+  SUNK_COST_RESEARCH,
 } from '../logic/fieldLabels'
 import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
-import type { CalculationTiles } from '../types/calculator'
+import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
 import {
   type AppViewModel,
@@ -21,6 +22,7 @@ import {
   type NumberInputField,
   type StatField,
   type StatFieldId,
+  type SunkCostViewModel,
   type TextParam,
   type TextRef,
 } from '../types/viewModel'
@@ -36,6 +38,7 @@ import { useTranslationNotice } from './useTranslationNotice'
 const money = (value: number): TextParam => ({ format: 'money', value })
 const moneyExact = (value: number): TextParam => ({ format: 'moneyExact', value })
 const percent = (value: number): TextParam => ({ format: 'percent', value })
+const count = (value: number): TextParam => ({ format: 'count', value })
 
 /**
  * The estimate disclosure, as sentences rather than a paragraph: every
@@ -68,6 +71,8 @@ interface NumericSpec {
   labelKey: string
   kind: 'money' | 'number' | 'percent'
   importance: 'primary' | 'secondary'
+  /** Defaults to the decimal keypad; a whole count asks for 'numeric'. */
+  keypad?: 'decimal' | 'numeric'
 }
 
 function numberField(
@@ -84,6 +89,7 @@ function numberField(
     value,
     kind: spec.kind,
     importance: spec.importance,
+    keypad: spec.keypad ?? 'decimal',
     draft,
     hintKey,
     onDraftChange,
@@ -193,6 +199,54 @@ function buildStats(tiles: CalculationTiles): readonly StatField[] {
 }
 
 /**
+ * Both figures the pre-auction spend has to report: what one property costs to
+ * bid on, and what the whole search costs. The count rides in the detail
+ * rather than the label so the label stays a plain key — and so i18next can
+ * pluralise the sentence that actually names it.
+ */
+function buildSunkCost(sunk: SunkCostSummary): SunkCostViewModel {
+  return {
+    headingKey: 'sunk.heading',
+    stats: [
+      statField(
+        'statSunkPerProperty',
+        'sunk.perPropertyLabel',
+        sunk.perProperty,
+        { key: 'sunk.perPropertySub', params: {} },
+        'secondary',
+      ),
+      statField('statSunkSearch', 'sunk.searchLabel', sunk.expectedTotal, {
+        key: 'sunk.searchSub',
+        params: {
+          // `count` drives the plural form; `properties` is the same number
+          // formatted for the locale, which is what the sentence shows. It is
+          // the user's own figure, so it is quoted exactly — rounding it here
+          // would let the sentence disagree with the field they typed it into.
+          count: count(sunk.properties),
+          properties: { format: 'numberExact', value: sunk.properties },
+          perProperty: money(sunk.perProperty),
+          lost: money(sunk.onPropertiesNotWon),
+        },
+      }, 'primary'),
+    ],
+    framing: {
+      id: 'sunkFraming',
+      labelKey: 'sunk.framing',
+      value: { key: 'sunk.framing', params: {} },
+      kind: 'text',
+      importance: 'secondary',
+    },
+    research: {
+      id: 'sunkResearch',
+      labelKey: 'sunk.researchLink',
+      value: SUNK_COST_RESEARCH,
+      kind: 'text',
+      importance: 'secondary',
+    },
+  }
+}
+
+/**
  * The one view model for the one screen. It takes the calculator rather than
  * calling it, so there is exactly one URL-state instance in the app, and it is
  * called above the skin boundary: changing skin or mode swaps a child
@@ -230,6 +284,11 @@ export function useAppViewModel(
   const insurance = useNumericDraft(inputs.buildingInsurance, set('buildingInsurance'), locale)
   const moving = useNumericDraft(inputs.movingCosts, set('movingCosts'), locale)
   const bufferMonths = useNumericDraft(inputs.bufferMonths, set('bufferMonths'), locale)
+  const properties = useNumericDraft(
+    inputs.propertiesConsidered,
+    set('propertiesConsidered'),
+    locale,
+  )
 
   const assumptionFields = [
     numberField(
@@ -257,6 +316,20 @@ export function useAppViewModel(
       buildingAndPest.draft,
       buildingAndPest.onDraftChange,
       null,
+    ),
+    numberField(
+      {
+        id: 'propertiesConsidered',
+        controlId: 'bids',
+        labelKey: 'inputs.properties',
+        kind: 'number',
+        importance: 'secondary',
+        keypad: 'numeric',
+      },
+      inputs.propertiesConsidered,
+      properties.draft,
+      properties.onDraftChange,
+      'inputs.propertiesHint',
     ),
     numberField(
       {
@@ -559,6 +632,7 @@ export function useAppViewModel(
         kind: 'text',
         importance: 'secondary',
       },
+      sunkCost: buildSunkCost(result.sunkCost),
       notesHeadingKey: 'notes.heading',
       notes: {
         id: 'notes',

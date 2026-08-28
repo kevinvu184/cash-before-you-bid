@@ -35,8 +35,14 @@ export interface TextRef {
 
 export type TextParam =
   // `money` is a computed figure, shown as a rounded estimate; `moneyExact` is
-  // what the user typed or what a rule states, and is never rounded.
-  | { format: 'money' | 'moneyExact' | 'percent' | 'number' | 'count'; value: number }
+  // what the user typed or what a rule states, and is never rounded. `number`
+  // and `numberExact` draw the same distinction for plain numbers: a figure
+  // the user entered is quoted exactly, to the same precision the field and
+  // the URL hold it at, so the sentence can never disagree with the input.
+  | {
+      format: 'money' | 'moneyExact' | 'percent' | 'number' | 'numberExact' | 'count'
+      value: number
+    }
   | { format: 'raw'; value: string }
 
 // ── field ids ────────────────────────────────────────────────────────────────
@@ -65,6 +71,7 @@ export type InputFieldId =
   | 'assumptions'
   | 'conveyancing'
   | 'buildingAndPest'
+  | 'propertiesConsidered'
   | 'lenderFees'
   | 'settlementAdjustments'
   | 'buildingInsurance'
@@ -73,7 +80,15 @@ export type InputFieldId =
   | 'capitaliseLmi'
   | 'panelFoot'
 
-export type StatFieldId = 'statTotal' | 'statDeposit' | 'statCosts' | 'statLoan' | 'statRepayment'
+export type StatFieldId =
+  | 'statTotal'
+  | 'statDeposit'
+  | 'statCosts'
+  | 'statLoan'
+  | 'statRepayment'
+  // The pre-auction spend, reported beside the cash stack rather than in it.
+  | 'statSunkPerProperty'
+  | 'statSunkSearch'
 
 export type LineFieldId =
   | 'lineDeposit'
@@ -97,7 +112,13 @@ export type LineFieldId =
   | 'lineSubtotalAfterSettlement'
   | 'lineTotal'
 
-export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
+export type ResultsFieldId =
+  | 'flags'
+  | 'estimateNote'
+  | 'sunkFraming'
+  | 'sunkResearch'
+  | 'notes'
+  | 'sources'
 
 export type FieldId = ChromeFieldId | InputFieldId | StatFieldId | LineFieldId | ResultsFieldId
 
@@ -128,6 +149,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   assumptions: true,
   conveyancing: true,
   buildingAndPest: true,
+  propertiesConsidered: true,
   lenderFees: true,
   settlementAdjustments: true,
   buildingInsurance: true,
@@ -140,6 +162,8 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   statCosts: true,
   statLoan: true,
   statRepayment: true,
+  statSunkPerProperty: true,
+  statSunkSearch: true,
   lineDeposit: true,
   lineStampDuty: true,
   lineForeignDuty: true,
@@ -162,6 +186,8 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   lineTotal: true,
   flags: true,
   estimateNote: true,
+  sunkFraming: true,
+  sunkResearch: true,
   notes: true,
   sources: true,
 }
@@ -218,6 +244,11 @@ export interface NumberInputField extends Field<number> {
   kind: 'money' | 'number' | 'percent'
   /** Stable DOM id, so every skin pairs label and control the same way. */
   controlId: string
+  /**
+   * Which on-screen keypad the field wants: 'numeric' for a whole count,
+   * 'decimal' for anything a locale separator can appear in.
+   */
+  keypad: 'decimal' | 'numeric'
   draft: string
   hintKey: string | null
   onDraftChange(raw: string): void
@@ -350,6 +381,23 @@ export interface TableHeadingKeys {
   how: string
 }
 
+/**
+ * The pre-auction spend: what one property costs to bid on, and what a whole
+ * search costs. It is a section of its own rather than two more entries in
+ * `stats`, because the money is spent whether or not the auction is won — the
+ * cash stack above is the cost of buying one property, and these are not part
+ * of it.
+ */
+export interface SunkCostViewModel {
+  headingKey: string
+  /** Per property, then across the search. */
+  stats: readonly StatField[]
+  /** The "gone whether you win or lose" sentence. */
+  framing: Field<TextRef>
+  /** The published research the multiplier exists because of. */
+  research: Field<SourcesValue>
+}
+
 export interface ResultsViewModel {
   /** aria-label for the flags region. */
   flagsRegionLabelKey: string
@@ -371,6 +419,7 @@ export interface ResultsViewModel {
   total: LineField
   /** The one disclosure that every computed figure above is a rounded estimate. */
   estimateNote: Field<readonly TextRef[]>
+  sunkCost: SunkCostViewModel
   notesHeadingKey: string
   notes: Field<readonly NoteEntry[]>
   sources: Field<SourcesValue>
