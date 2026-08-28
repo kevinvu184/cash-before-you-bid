@@ -20,10 +20,10 @@ export function EstimateDisclaimer() {
           smallUnit: exact(config.smallUnit),
         })
       : null
-  return (
-    <p className="small estimate-note">
-      {t('money.disclaimer', { unit: exact(config.unit) })}
-      {small === null ? '' : ` ${small}`} {t('money.roundingNote')}
-    </p>
-  )
+  // Joined in JS so the paragraph is one text node with single spaces,
+  // rather than JSX whitespace rules deciding the gaps.
+  const text = [t('money.disclaimer', { unit: exact(config.unit) }), small, t('money.roundingNote')]
+    .filter((sentence) => sentence !== null)
+    .join(' ')
+  return <p className="small estimate-note">{text}</p>
 }
