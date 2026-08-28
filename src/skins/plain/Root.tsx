@@ -286,7 +286,7 @@ function ExchangeRate({ field }: { field: ExchangeRateField }) {
   const { t } = useTranslation()
   const display = useDisplay()
   const base = t(field.baseSymbolKey)
-  const controlId = 'fx'
+  const controlId = field.controlId
 
   const apply = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()

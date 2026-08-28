@@ -152,20 +152,29 @@ describe('history behaviour', () => {
     fireEvent.change(select('region'), { target: { value: 'regional' } })
     expect(window.location.search).toBe('?region=regional&route=htb')
 
+    // The fields are asserted inside the wait, not after it: the URL changes
+    // on popstate, a beat before React has re-rendered from it, so waiting on
+    // location alone and then reading the DOM is a race.
     window.history.back()
-    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
-    expect(select('region').value).toBe('metro')
-    expect(select('route').value).toBe('htb')
+    await waitFor(() => {
+      expect(window.location.search).toBe('?route=htb')
+      expect(select('region').value).toBe('metro')
+      expect(select('route').value).toBe('htb')
+    })
 
     window.history.back()
-    await waitFor(() => expect(window.location.search).toBe(''))
-    expect(select('route').value).toBe('scheme')
-    expect(input('dep').value).toBe('5')
+    await waitFor(() => {
+      expect(window.location.search).toBe('')
+      expect(select('route').value).toBe('scheme')
+      expect(input('dep').value).toBe('5')
+    })
 
     window.history.forward()
-    await waitFor(() => expect(window.location.search).toBe('?route=htb'))
-    expect(select('route').value).toBe('htb')
-    expect(input('dep').value).toBe('2')
+    await waitFor(() => {
+      expect(window.location.search).toBe('?route=htb')
+      expect(select('route').value).toBe('htb')
+      expect(input('dep').value).toBe('2')
+    })
   })
 
   it('discards a pending debounced write when navigating back before it flushes', async () => {

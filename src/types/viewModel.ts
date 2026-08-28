@@ -552,6 +552,8 @@ export interface ExchangeRateActionKeys {
  */
 export interface ExchangeRateField extends Field<number> {
   kind: 'number'
+  /** Stable DOM id for the override box, so every skin pairs its label to it. */
+  controlId: string
   /** "1 {{base}} = {{quoted}}", filled in by the skin from the two symbols. */
   lineKey: string
   /** Names the base currency one unit of which the rate prices. */
@@ -575,8 +577,9 @@ export interface ExchangeRateField extends Field<number> {
   noteKey: string
   /**
    * Applies a rate the reader typed, in their own locale's separators. An
-   * unusable figure is ignored rather than raising: the rate on screen is
-   * still a working one.
+   * unusable figure — and one that is already in force — is ignored rather
+   * than raising: the rate on screen is still a working one, and re-applying
+   * it would push an identical history entry.
    */
   onOverride(raw: string): void
   /** Drops the override; the fetched rate takes over again. */

@@ -321,6 +321,7 @@ export function useAppViewModel(
       ? null
       : {
           id: 'exchangeRate',
+          controlId: 'fx',
           labelKey: 'currency.rateLabel',
           value: activeRate,
           kind: 'number',
@@ -339,8 +340,10 @@ export function useAppViewModel(
           onOverride: (raw) => {
             const parsed = parseLocaleNumber(raw, locale)
             // An unusable figure changes nothing rather than raising: the rate
-            // on screen is still a working one.
-            if (parsed !== null && isValidRate(parsed)) setManualRate(parsed)
+            // on screen is still a working one. Nor does re-applying the rate
+            // already in force, which would push an identical history entry.
+            if (parsed === null || !isValidRate(parsed)) return
+            if (parsed !== presentation.manualRate) setManualRate(parsed)
           },
           onReset: () => setManualRate(null),
         }

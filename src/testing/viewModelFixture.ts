@@ -106,6 +106,7 @@ const FIXTURE_DISPLAY: DisplayViewModel = {
   },
   rate: {
     id: 'exchangeRate',
+    controlId: 'fx',
     labelKey: 'currency.rateLabel',
     value: 18_700,
     kind: 'number',
