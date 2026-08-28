@@ -81,6 +81,7 @@ export const meta: SkinMeta = {
     sunkFraming: true,
     sunkResearch: true,
     notes: true,
+    ratesAsAt: true,
     sources: true,
     scenariosHeading: true,
     scenarioSave: true,
