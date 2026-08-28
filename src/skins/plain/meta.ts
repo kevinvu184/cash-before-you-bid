@@ -78,5 +78,9 @@ export const meta: SkinMeta = {
     sunkResearch: true,
     notes: true,
     sources: true,
+    scenariosHeading: true,
+    scenarioSave: true,
+    scenarioList: true,
+    scenarioPrivacy: true,
   },
 }

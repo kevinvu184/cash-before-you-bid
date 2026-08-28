@@ -22,6 +22,7 @@ import {
   SUNK_COST_RESEARCH,
 } from '../logic/fieldLabels'
 import type { RowCode } from '../types/calculator'
+import type { ScenarioActionKeys, ScenarioEntry } from '../types/viewModel'
 
 /**
  * A fixed view model that carries every FieldId at once, so the parity test can
@@ -76,6 +77,44 @@ function boolean(
     onChange: noop,
   }
 }
+
+const SCENARIO_ACTION_KEYS: ScenarioActionKeys = {
+  loadNamed: 'scenarios.loadNamed',
+  rename: 'scenarios.rename',
+  renameNamed: 'scenarios.renameNamed',
+  renameLabel: 'scenarios.renameLabel',
+  renameSave: 'scenarios.renameSave',
+  remove: 'scenarios.remove',
+  removeNamed: 'scenarios.removeNamed',
+  removeQuestion: 'scenarios.removeQuestion',
+  cancel: 'scenarios.cancel',
+  savedAt: 'scenarios.savedAt',
+}
+
+function scenario(id: string, name: string, mode: ScenarioEntry['mode']): ScenarioEntry {
+  return {
+    id,
+    name,
+    // Fixed, so the rendered date is stable across runs and time zones.
+    savedAt: Date.UTC(2026, 7, 22, 12),
+    mode,
+    controlId: `scenario-name-${id}`,
+    nameDraft: name,
+    onLoad: noop,
+    onRenameStart: noop,
+    onNameDraftChange: noop,
+    onRenameCommit: noop,
+    onDeleteStart: noop,
+    onDeleteConfirm: noop,
+    onCancel: noop,
+  }
+}
+
+const SCENARIO_ENTRIES: readonly ScenarioEntry[] = [
+  scenario('s1', '12 Rose St, Preston', 'idle'),
+  scenario('s2', '8 Ardgower Ct, Noble Park', 'renaming'),
+  scenario('s3', '3/44 Union Rd, Ascot Vale', 'confirmingDelete'),
+]
 
 const SUNK_STATS: readonly StatField[] = [
   {
@@ -456,6 +495,47 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         id: 'sources',
         labelKey: 'notes.sourcesLink',
         value: SOURCES,
+        kind: 'text',
+        importance: 'secondary',
+      },
+    },
+    scenarios: {
+      regionLabelKey: 'scenarios.label',
+      heading: {
+        id: 'scenariosHeading',
+        labelKey: 'scenarios.heading',
+        value: null,
+        kind: 'text',
+        importance: 'secondary',
+      },
+      save: {
+        id: 'scenarioSave',
+        controlId: 'scenario-name',
+        labelKey: 'scenarios.nameLabel',
+        value: '',
+        kind: 'text',
+        importance: 'primary',
+        actionLabelKey: 'scenarios.save',
+        canSave: false,
+        onDraftChange: noop,
+        onSave: noop,
+      },
+      list: {
+        id: 'scenarioList',
+        labelKey: 'scenarios.listLabel',
+        // One row in each of the three states, so every skin is proved to
+        // render all three rather than only the resting one.
+        value: SCENARIO_ENTRIES,
+        kind: 'text',
+        importance: 'secondary',
+        emptyLabelKey: 'scenarios.empty',
+        errorLabelKey: null,
+        actionKeys: SCENARIO_ACTION_KEYS,
+      },
+      privacy: {
+        id: 'scenarioPrivacy',
+        labelKey: 'scenarios.privacy',
+        value: null,
         kind: 'text',
         importance: 'secondary',
       },
