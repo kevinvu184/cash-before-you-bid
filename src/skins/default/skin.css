@@ -1,0 +1,868 @@
+/* The Ledger skin: warm cream paper, near-black ink, hairline rules, one rust
+   accent, mono metadata. Every selector is scoped to [data-skin='default'] so
+   nothing here can reach another skin, and every colour, family, size, radius,
+   shadow and duration is read from a var(--token) that the skin's own
+   tokens.light / tokens.dark supply. Mobile is the base; 820px and 1024px
+   widen it. */
+
+/* ── base: the printed page ─────────────────────────────────────────────── */
+
+[data-skin='default'] body {
+  font-family: var(--font-body);
+  text-wrap: pretty;
+  hyphens: none;
+  overflow-wrap: normal;
+}
+
+[data-skin='default'] h1,
+[data-skin='default'] h2,
+[data-skin='default'] h3 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-title);
+  margin: 0 0 var(--space-3);
+}
+
+[data-skin='default'] p {
+  margin: 0 0 var(--space-3);
+}
+
+[data-skin='default'] strong {
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='default'] a {
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+[data-skin='default'] ::selection {
+  background: var(--color-accent-tint);
+}
+
+/* Ledger states its hovers unconditionally, and on touch a :hover can stick to
+   whatever was tapped last, so every hover rule here is behind (hover: hover). */
+@media (hover: hover) {
+  [data-skin='default'] a:hover {
+    color: var(--color-accent-strong);
+  }
+}
+
+/* The mono voice: labels, metadata, captions. Uppercase with +0.06em tracking
+   at small sizes. */
+[data-skin='default'] .section-mark {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text);
+}
+
+/* Vietnamese: stacked tone marks collide with negative tracking, so vi text
+   never tracks tight, and small mono uppercase tracks +0.04em instead. */
+[data-skin='default'] *:lang(vi) {
+  letter-spacing: 0;
+}
+
+[data-skin='default'] .section-mark:lang(vi),
+[data-skin='default'] .field > label:lang(vi),
+[data-skin='default'] .lines th:lang(vi),
+[data-skin='default'] .stat-label:lang(vi),
+[data-skin='default'] .eyebrow:lang(vi),
+[data-skin='default'] .choice-option:lang(vi) {
+  letter-spacing: 0.04em;
+}
+
+/* ── page ───────────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .page {
+  /* One gutter value so the ink total strip can bleed to the screen edges
+     without re-deriving the safe-area insets. */
+  --gutter: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px var(--gutter) 64px;
+}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .masthead {
+  padding: 8px 0 20px;
+  margin-bottom: 4px;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+/* Eyebrow on the left, the switches on the right; on a narrow phone they wrap
+   under the eyebrow rather than squeezing it. */
+[data-skin='default'] .masthead-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 6px;
+}
+
+[data-skin='default'] .masthead-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
+  margin-left: auto;
+}
+
+[data-skin='default'] .choice-switch {
+  display: flex;
+  gap: 2px;
+}
+
+[data-skin='default'] .choice-option {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-label);
+  color: var(--color-text-muted);
+  background: none;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-skin='default'] .choice-option[aria-pressed='true'] {
+  color: var(--color-on-ink);
+  background: var(--color-ink);
+}
+
+[data-skin='default'] .choice-option:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .choice-option[aria-pressed='false']:hover {
+    border-color: var(--color-hairline-strong);
+  }
+}
+
+/* ── translation notice ─────────────────────────────────────────────────── */
+
+[data-skin='default'] .translation-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .translation-notice-text {
+  margin: 0;
+  padding: 8px 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .translation-notice-dismiss {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  margin-left: auto;
+  font-size: var(--font-size-stat);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-muted);
+  background: none;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-skin='default'] .translation-notice-dismiss:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .translation-notice-dismiss:hover {
+    color: var(--color-text);
+  }
+}
+
+[data-skin='default'] .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .masthead h1 {
+  margin: 0 0 10px;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-tight);
+  text-wrap: balance;
+}
+
+[data-skin='default'] .lede {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--font-size-lead);
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+}
+
+/* ── sticky total ───────────────────────────────────────────────────────── */
+
+[data-skin='default'] .sticky-total {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-left)) 8px
+    max(16px, env(safe-area-inset-right));
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  transform: translateY(-101%);
+  transition: transform var(--motion-fast) ease;
+}
+
+[data-skin='default'] .sticky-total.shown {
+  transform: none;
+}
+
+[data-skin='default'] .sticky-total-label {
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-on-ink-muted);
+}
+
+[data-skin='default'] .sticky-total-value {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-stat);
+  line-height: var(--line-height-snug);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── inputs ─────────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .panel h2 {
+  margin: 20px 0 4px;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+}
+
+[data-skin='default'] .field {
+  display: grid;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .field > label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .field input[type='text'],
+[data-skin='default'] .field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px 8px;
+  /* 16px: anything smaller makes iOS Safari zoom the page in when the field
+     takes focus. */
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  /* Clears the sticky total strip when the on-screen keyboard scrolls a
+     focused field into view. */
+  scroll-margin-top: 72px;
+}
+
+[data-skin='default'] .field input[type='text']:focus-visible,
+[data-skin='default'] .field select:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+
+[data-skin='default'] .field input[type='text']:active,
+[data-skin='default'] .field select:active {
+  background: var(--color-surface);
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .field input[type='text']:hover,
+  [data-skin='default'] .field select:hover {
+    border-color: var(--color-border-hover);
+  }
+}
+
+[data-skin='default'] .field-hint {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .field-inline {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 12px;
+  min-height: 44px;
+  padding: 0;
+  cursor: pointer;
+}
+
+[data-skin='default'] .field-inline input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-text);
+}
+
+[data-skin='default'] .field-inline > span {
+  padding: 12px 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+}
+
+[data-skin='default'] .assumptions {
+  margin: 0;
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .assumptions > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  list-style: none;
+  cursor: pointer;
+}
+
+[data-skin='default'] .assumptions > summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-skin='default'] .assumptions > summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: var(--font-size-compact);
+  text-decoration: none;
+}
+
+[data-skin='default'] .assumptions[open] > summary::after {
+  content: '−';
+}
+
+[data-skin='default'] .panel-foot {
+  margin: 14px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+/* ── flags ──────────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .flags {
+  margin: 0 0 4px;
+}
+
+[data-skin='default'] .flag {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+}
+
+[data-skin='default'] .flag-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-base);
+  letter-spacing: var(--letter-spacing-label);
+}
+
+[data-skin='default'] .flag.warn .flag-label {
+  color: var(--color-error);
+}
+
+[data-skin='default'] .flag.note .flag-label {
+  color: var(--color-warning);
+}
+
+[data-skin='default'] .flag.ok .flag-label {
+  color: var(--color-success);
+}
+
+/* ── stat row ───────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .stats {
+  margin: 16px 0 28px;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .stat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .stat-value {
+  font-family: var(--font-body);
+  font-size: var(--font-size-stat);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+[data-skin='default'] .stat-sub {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+/* The total reads as the sticky strip does: ink and paper, no accent. */
+[data-skin='default'] .stat.emphasis {
+  margin-inline: calc(var(--gutter) * -1);
+  padding: 14px var(--gutter);
+  border-top: 0;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+[data-skin='default'] .stat.emphasis .stat-label,
+[data-skin='default'] .stat.emphasis .stat-sub {
+  color: var(--color-on-ink-muted);
+}
+
+[data-skin='default'] .stat.emphasis .stat-value {
+  font-size: var(--font-size-stat-large);
+}
+
+[data-skin='default'] .stat.emphasis + .stat {
+  border-top: 0;
+}
+
+/* ── line table ─────────────────────────────────────────────────────────── */
+
+/* Base is the phone layout: two columns, the working behind a per-row
+   disclosure. The table never scrolls sideways. */
+[data-skin='default'] .lines {
+  display: block;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-compact);
+}
+
+[data-skin='default'] .lines thead,
+[data-skin='default'] .lines tbody {
+  display: block;
+}
+
+[data-skin='default'] .lines tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+[data-skin='default'] .lines th {
+  padding: 10px 0 8px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  text-align: left;
+  color: var(--color-text-muted);
+}
+
+/* The head rule belongs to the row: on a per-cell border the column gap would
+   break it in two. */
+[data-skin='default'] .lines thead tr {
+  border-bottom: var(--border-width) solid var(--color-text);
+}
+
+[data-skin='default'] .lines th.n,
+[data-skin='default'] .lines td.n {
+  text-align: right;
+}
+
+[data-skin='default'] .lines tbody tr {
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .lines tbody tr.expanded {
+  border-bottom: 0;
+}
+
+[data-skin='default'] .lines tbody tr.total {
+  border-top: var(--border-strong-width) solid var(--color-text);
+}
+
+/* ── timing bands ──────────────────────────────────────────────────────────
+   One tbody per band: a heading naming when the money is due, the lines, then
+   the band's own subtotal. The heading spans the full width rather than taking
+   the label column, so the gloss underneath has the whole line to wrap into on
+   a 360px screen. */
+[data-skin='default'] .lines tr.band-head {
+  display: block;
+  border-bottom: 0;
+}
+
+[data-skin='default'] .lines tr.band-head th {
+  padding: var(--space-6) 0 var(--space-1);
+  color: var(--color-text);
+}
+
+/* Follows the head rule directly, so it needs no separating space of its own. */
+[data-skin='default'] .lines tbody:first-of-type tr.band-head th {
+  padding-top: var(--space-3);
+}
+
+[data-skin='default'] .band-name {
+  display: block;
+}
+
+[data-skin='default'] .band-note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--font-size-micro);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-text-muted);
+}
+
+/* The last line's hairline already closes the band, so the subtotal carries
+   weight instead of another rule. */
+[data-skin='default'] .lines tr.band-subtotal {
+  border-bottom: 0;
+}
+
+[data-skin='default'] .lines tr.band-subtotal td {
+  padding-top: var(--space-2);
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='default'] .lines td {
+  padding: 4px 0;
+  line-height: var(--line-height-snug);
+}
+
+[data-skin='default'] .lines tr.total td {
+  font-weight: var(--font-weight-strong);
+}
+
+[data-skin='default'] .lines td.n {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-figure);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[data-skin='default'] .lines tr.total td.n {
+  font-weight: var(--font-weight-normal);
+}
+
+[data-skin='default'] .lines tr.formula {
+  display: none;
+}
+
+[data-skin='default'] .lines tr.formula.shown {
+  display: block;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .lines td.m {
+  padding: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .line-disclosure {
+  display: flex;
+  align-items: center;
+  /* The mark sits against the label, not out at the column edge, where it
+     would read as a sign on the amount in the next column. */
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+[data-skin='default'] .line-disclosure:active {
+  color: var(--color-accent);
+}
+
+[data-skin='default'] .line-disclosure-mark {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+/* ── notes and sources ──────────────────────────────────────────────────── */
+
+[data-skin='default'] .notes h3 {
+  margin: 32px 0 12px;
+  padding-top: 24px;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-strong);
+  /* Room for Vietnamese stacked diacritics (ệ, ổ, ữ). */
+  line-height: var(--line-height-tight);
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .small {
+  font-size: var(--font-size-compact);
+  line-height: var(--line-height-base);
+}
+
+[data-skin='default'] ul.small {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+
+[data-skin='default'] ul.small li {
+  margin: 0 0 10px;
+}
+
+[data-skin='default'] p.small {
+  color: var(--color-text-muted);
+}
+
+/* The one page-level statement that the computed figures are rounded
+   estimates; it sits between the table and the notes. */
+[data-skin='default'] .estimate-note {
+  margin: 12px 0 0;
+}
+
+/* Inline prose link: the padding/negative-margin pair grows the tap target to
+   44px without moving the text in the line box. */
+[data-skin='default'] p.small a {
+  display: inline-block;
+  padding: 11px 4px;
+  margin: -11px -4px;
+  touch-action: manipulation;
+}
+
+/* ── 820px: the stat row goes horizontal, the table shows its working ───── */
+
+@media (min-width: 820px) {
+  [data-skin='default'] .masthead {
+    padding-top: 16px;
+  }
+
+  [data-skin='default'] .masthead h1 {
+    font-size: var(--font-size-title-wide);
+    letter-spacing: var(--letter-spacing-title);
+  }
+
+  /* auto-fit rather than a fixed five columns: the results column narrows
+     again at 1024px when the inputs move beside it, and a currency value must
+     never be squeezed or clipped. */
+  [data-skin='default'] .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  [data-skin='default'] .stat {
+    display: block;
+    margin: 0;
+    padding: 14px 16px;
+    border-top: var(--border-width) solid var(--color-hairline);
+    border-left: var(--border-width) solid var(--color-hairline);
+  }
+
+  [data-skin='default'] .stat:first-child {
+    border-left: 0;
+  }
+
+  [data-skin='default'] .stat.emphasis {
+    margin: 0;
+    padding: 14px 16px;
+    /* Keeps the ink block on the same grid as its neighbours without drawing a
+       visible rule across it. */
+    border-top: var(--border-width) solid var(--color-text);
+    border-left: 0;
+  }
+
+  [data-skin='default'] .stat-value,
+  [data-skin='default'] .stat.emphasis .stat-value {
+    margin-top: 2px;
+    font-size: var(--font-size-stat);
+    text-align: left;
+  }
+
+  [data-skin='default'] .stat-sub {
+    margin-top: 2px;
+  }
+
+  [data-skin='default'] .lines {
+    display: table;
+  }
+
+  [data-skin='default'] .lines thead {
+    display: table-header-group;
+  }
+
+  [data-skin='default'] .lines tbody {
+    display: table-row-group;
+  }
+
+  [data-skin='default'] .lines tr {
+    display: table-row;
+  }
+
+  [data-skin='default'] .lines th,
+  [data-skin='default'] .lines td {
+    display: table-cell;
+    padding: 10px 8px 8px 0;
+    vertical-align: top;
+  }
+
+  [data-skin='default'] .lines thead tr,
+  [data-skin='default'] .lines tbody tr,
+  [data-skin='default'] .lines tbody tr.total {
+    border: 0;
+  }
+
+  [data-skin='default'] .lines th {
+    border-bottom: var(--border-width) solid var(--color-text);
+  }
+
+  [data-skin='default'] .lines td {
+    border-bottom: var(--border-width) solid var(--color-hairline);
+  }
+
+  [data-skin='default'] .lines tr.total td {
+    border-top: var(--border-strong-width) solid var(--color-text);
+  }
+
+  /* Back to real table rows: the band heading spans all three columns and the
+     ink rule under `.lines th` belongs to the column headings only. */
+  [data-skin='default'] .lines tr.band-head {
+    display: table-row;
+  }
+
+  [data-skin='default'] .lines tr.band-head th {
+    padding: var(--space-6) var(--space-2) var(--space-1) 0;
+    border-bottom: 0;
+  }
+
+  [data-skin='default'] .lines tbody:first-of-type tr.band-head th {
+    padding-top: 14px;
+  }
+
+  [data-skin='default'] .lines tr.band-subtotal td {
+    border-bottom: 0;
+  }
+
+  /* Outranks `.lines td`, so the phone padding has to be undone by name or the
+     working floats above its row label. */
+  [data-skin='default'] .lines td.m {
+    padding: 10px 8px 8px 0;
+  }
+}
+
+/* ── 1024px: inputs beside the results ──────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  /* The stat row sits alongside the inputs, so the strip has nothing left to
+     do. */
+  [data-skin='default'] .sticky-total {
+    display: none;
+  }
+
+  [data-skin='default'] .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  /* A hairline-framed rectangle, not a shadowed card. */
+  [data-skin='default'] .panel {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100dvh - 32px);
+    padding: 4px 20px 16px;
+    overflow-y: auto;
+    border: var(--border-width) solid var(--color-hairline);
+    border-radius: var(--radius-md);
+  }
+}

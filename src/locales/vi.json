@@ -65,7 +65,9 @@
     "lmi": "Dưới 20%; phải trả LMI"
   },
   "results": {
-    "flagsLabel": "Cảnh báo và ghi chú"
+    "flagsLabel": "Cảnh báo và ghi chú",
+    "statsHeading": "Tóm tắt",
+    "linesHeading": "Chi tiết từng dòng"
   },
   "money": {
     "disclaimer": "Mọi con số ở trên đều là ước tính, được làm tròn đến {{unit}} gần nhất.",
@@ -118,7 +120,10 @@
     "atSettlementNote": "Phải trả vài tuần sau, vào ngày tất toán",
     "afterSettlement": "Sau khi tất toán",
     "afterSettlementNote": "Không cần trong ngày đấu giá, nhưng vẫn là tiền bạn phải có",
-    "subtotal": "Tổng phụ — {{band}}"
+    "subtotalPreAuction": "Tổng phụ — trước phiên đấu giá",
+    "subtotalAuctionDay": "Tổng phụ — ngày đấu giá",
+    "subtotalAtSettlement": "Tổng phụ — khi tất toán",
+    "subtotalAfterSettlement": "Tổng phụ — sau khi tất toán"
   },
   "rows": {
     "deposit": "Tiền đặt cọc",
@@ -159,7 +164,7 @@
     "lmiCharged": "Khoản vay {{loan}} × {{rate}} (LVR {{lvr}}) × 1,10 thuế bảo hiểm bang Victoria — chỉ mang tính tham khảo",
     "lmiChargedCapitalised": "Khoản vay {{loan}} × {{rate}} (LVR {{lvr}}) × 1,10 thuế bảo hiểm bang Victoria — chỉ mang tính tham khảo — đã cộng vào khoản vay",
     "yourFigure": "Số liệu của bạn",
-    "conveyancing": "Số liệu của bạn. Bao gồm cả việc xem xét hợp đồng trước phiên đấu giá và công việc pháp lý khi tất toán; xếp vào nhóm trước phiên đấu giá, vì bạn thuê người làm thủ tục chuyển nhượng trước khi trả giá.",
+    "conveyancing": "Số liệu của bạn: xem xét hợp đồng và công việc khi tất toán, cam kết trước khi trả giá.",
     "settlementAdjustments": "Thuế địa phương, tiền nước, phí quản lý chung cư phân bổ đến ngày tất toán",
     "buildingInsurance": "Ngân hàng yêu cầu có bảo hiểm trước khi tất toán",
     "grant": "Nhà mới ≤ 750.000 AUD, người mua nhà lần đầu đủ điều kiện; thường được trừ khi tất toán",
@@ -188,5 +193,16 @@
     "sourcesBefore": "Nguồn và giải thích đầy đủ nằm trong ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". Chỉ là thông tin chung, không phải tư vấn pháp lý, thuế hay tín dụng cho cá nhân bạn."
+  },
+  "skins": {
+    "label": "Giao diện",
+    "default": "Ledger",
+    "plain": "Đơn giản"
+  },
+  "mode": {
+    "label": "Chế độ màu",
+    "system": "Hệ thống",
+    "light": "Sáng",
+    "dark": "Tối"
   }
 }

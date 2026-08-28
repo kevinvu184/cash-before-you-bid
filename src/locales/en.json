@@ -59,7 +59,9 @@
     "lmi": "Under 20%; LMI charged"
   },
   "results": {
-    "flagsLabel": "Warnings and notes"
+    "flagsLabel": "Warnings and notes",
+    "statsHeading": "Summary",
+    "linesHeading": "Line by line"
   },
   "money": {
     "disclaimer": "Every figure above is an estimate, rounded to the nearest {{unit}}.",
@@ -112,7 +114,10 @@
     "atSettlementNote": "Due weeks later, on the settlement date",
     "afterSettlement": "After settlement",
     "afterSettlementNote": "Not needed on the day, but still money you have to have",
-    "subtotal": "Subtotal — {{band}}"
+    "subtotalPreAuction": "Subtotal — before the auction",
+    "subtotalAuctionDay": "Subtotal — on auction day",
+    "subtotalAtSettlement": "Subtotal — at settlement",
+    "subtotalAfterSettlement": "Subtotal — after settlement"
   },
   "rows": {
     "deposit": "Deposit",
@@ -153,7 +158,7 @@
     "lmiCharged": "Loan {{loan}} × {{rate}} (LVR {{lvr}}) × 1.10 Victorian insurance duty — indicative",
     "lmiChargedCapitalised": "Loan {{loan}} × {{rate}} (LVR {{lvr}}) × 1.10 Victorian insurance duty — indicative — capitalised into the loan",
     "yourFigure": "Your figure",
-    "conveyancing": "Your figure. Covers both the pre-auction contract review and the settlement work; shown before the auction, because you engage a conveyancer before you bid.",
+    "conveyancing": "Your figure: contract review and settlement work, committed before you bid.",
     "settlementAdjustments": "Rates, water, owners corp apportioned to settlement day",
     "buildingInsurance": "Lender requires cover before settlement",
     "grant": "New home ≤ $750,000, eligible first home buyer; usually applied at settlement",
@@ -183,5 +188,16 @@
     "sourcesBefore": "Sources and the full explanation are in the ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". General information only, not personal legal, tax or credit advice."
+  },
+  "skins": {
+    "label": "Appearance",
+    "default": "Ledger",
+    "plain": "Plain"
+  },
+  "mode": {
+    "label": "Colour mode",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

@@ -2,6 +2,14 @@ import { DEFAULT_INPUTS } from '../data/defaults'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
+import {
+  DEFAULT_SKIN_ID,
+  FALLBACK_SKIN_ID,
+  isColorMode,
+  isSkinId,
+  type ColorMode,
+  type SkinId,
+} from './skins'
 
 // The URL query string is the persistence layer for everything the user can
 // change. Param names reuse the original page's element ids so links stay
@@ -126,6 +134,72 @@ export function serialiseParams(state: AppState): URLSearchParams {
   num('rate', state.interestRatePct, d.interestRatePct)
   str('region', state.region, d.region)
   str('route', state.route, d.route)
+  entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  return new URLSearchParams(entries)
+}
+
+// ── presentation state ───────────────────────────────────────────────────────
+//
+// The skin and the colour mode ride in the same query string as everything
+// else, so a shared link reproduces the exact view. They are kept beside the
+// calculator state rather than inside it: `AppState` is what `calculate()`
+// reads, and neither of these changes a number.
+//
+//   skin  <id>          omitted when it is the default skin
+//   mode  light | dark  omitted while following the operating system
+
+/** `'system'` means "no ?mode=": follow prefers-color-scheme, and keep following it. */
+export type ModePreference = ColorMode | 'system'
+
+export interface PresentationState {
+  skin: SkinId
+  mode: ModePreference
+}
+
+export const DEFAULT_PRESENTATION: PresentationState = {
+  skin: DEFAULT_SKIN_ID,
+  mode: 'system',
+}
+
+export interface UrlState {
+  app: AppState
+  presentation: PresentationState
+}
+
+export const DEFAULT_URL_STATE: UrlState = {
+  app: DEFAULT_APP_STATE,
+  presentation: DEFAULT_PRESENTATION,
+}
+
+export function parsePresentation(searchParams: URLSearchParams): PresentationState {
+  const rawSkin = searchParams.get('skin')
+  const rawMode = searchParams.get('mode')
+  return {
+    // Absent means the default skin; present-but-unknown means the plain
+    // baseline, which is always renderable. Either way serialisePresentation
+    // writes back the id that was actually used, and useUrlState rewrites the
+    // query string with `replace`.
+    skin: rawSkin === null ? DEFAULT_SKIN_ID : isSkinId(rawSkin) ? rawSkin : FALLBACK_SKIN_ID,
+    mode: isColorMode(rawMode) ? rawMode : 'system',
+  }
+}
+
+export function serialisePresentation(state: PresentationState): Array<[string, string]> {
+  const entries: Array<[string, string]> = []
+  if (state.skin !== DEFAULT_SKIN_ID) entries.push(['skin', state.skin])
+  if (state.mode !== 'system') entries.push(['mode', state.mode])
+  return entries
+}
+
+export function parseUrlState(searchParams: URLSearchParams): UrlState {
+  return {
+    app: parseParams(searchParams),
+    presentation: parsePresentation(searchParams),
+  }
+}
+
+export function serialiseUrlState(state: UrlState): URLSearchParams {
+  const entries = [...serialiseParams(state.app), ...serialisePresentation(state.presentation)]
   entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
   return new URLSearchParams(entries)
 }
