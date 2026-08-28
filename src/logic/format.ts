@@ -1,32 +1,75 @@
-// Locale-aware formatting and parsing. Amounts are always Australian dollars;
-// only the digits, separators and currency marker follow the UI locale.
+// Locale-aware formatting and parsing. The currency of an amount is explicit;
+// the digits, separators and currency marker follow the UI locale.
+
+import { CURRENCY_ROUNDING, type CurrencyCode } from './currencyConfig'
+import { roundForDisplay } from './rounding'
+
+export interface FormatMoneyOptions {
+  /**
+   * Round to the currency's display unit (the default). Displayed money is an
+   * estimate; pass false only for values that must read exactly as entered
+   * (user inputs, statutory caps, the disclaimer's own unit).
+   */
+  round?: boolean
+}
 
 /**
- * Whole-dollar AUD for the given UI locale ('en' or 'vi'). Prefers the
- * locale's own symbol when it is unambiguous ("A$1,235" for en); when the
- * symbol Intl produces does not read as clearly Australian (vi renders
- * "AU$", and some data would show a bare "$"), it falls back to the ISO code
- * ("1.235 AUD") so the currency can never be misread as đồng.
+ * Money for the given UI locale ('en' or 'vi'). Rounded (default) it shows an
+ * estimate snapped to the currency's rounding unit with no minor units;
+ * unrounded it shows the value exactly, keeping every fraction digit the
+ * value carries (up to Intl's 20) and never adding a trailing ".00".
+ *
+ * For AUD it prefers the locale's own symbol when it is unambiguous
+ * ("A$1,235" for en); when the symbol Intl produces does not read as clearly
+ * Australian (vi renders "AU$", and some data would show a bare "$"), it
+ * falls back to the ISO code ("1.235 AUD") so the currency can never be
+ * misread as đồng.
  */
-export function formatAud(amount: number, locale: string): string {
+export function formatMoney(
+  amount: number,
+  currency: CurrencyCode,
+  locale: string,
+  opts: FormatMoneyOptions = {},
+): string {
+  const round = opts.round ?? true
+  const value = round ? roundForDisplay(amount, currency) : amount
+  const digits: Intl.NumberFormatOptions = round
+    ? {
+        minimumFractionDigits: CURRENCY_ROUNDING[currency].fractionDigits,
+        maximumFractionDigits: CURRENCY_ROUNDING[currency].fractionDigits,
+      }
+    : // Exact mode must not alter the value: minimum 0 drops the ".00" on
+      // whole amounts, and Intl's maximum of 20 fraction digits keeps every
+      // digit a double can carry, so a figure with more precision than the
+      // currency's minor units (parseLocaleNumber accepts any) is never
+      // silently rounded.
+      { minimumFractionDigits: 0, maximumFractionDigits: 20 }
   const withSymbol = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'AUD',
-    maximumFractionDigits: 0,
-  }).format(amount)
-  if (withSymbol.includes('A$') || withSymbol.includes('AUD')) return withSymbol
+    currency,
+    ...digits,
+  }).format(value)
+  if (currency !== 'AUD' || withSymbol.includes('A$') || withSymbol.includes('AUD')) {
+    return withSymbol
+  }
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'AUD',
+    currency,
     currencyDisplay: 'code',
-    maximumFractionDigits: 0,
-  }).format(amount)
+    ...digits,
+  }).format(value)
 }
 
 // The original table renders negatives as a typographic minus before the
-// absolute value; kept, with the amount itself in locale AUD.
-export function formatRowAmount(amount: number, locale: string): string {
-  return (amount < 0 ? '−' : '') + formatAud(Math.abs(amount), locale)
+// absolute value; kept, with the amount itself in locale currency. Rounding
+// (the default) is symmetric, so rounding the absolute value is safe.
+export function formatRowAmount(
+  amount: number,
+  currency: CurrencyCode,
+  locale: string,
+  opts: FormatMoneyOptions = {},
+): string {
+  return (amount < 0 ? '−' : '') + formatMoney(Math.abs(amount), currency, locale, opts)
 }
 
 export function formatNumber(value: number, locale: string): string {

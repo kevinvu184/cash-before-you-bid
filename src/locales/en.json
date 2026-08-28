@@ -61,6 +61,12 @@
   "results": {
     "flagsLabel": "Warnings and notes"
   },
+  "money": {
+    "approx": "~{{amount}}",
+    "disclaimer": "Figures are estimates rounded to the nearest {{unit}}.",
+    "disclaimerSmall": "Amounts under {{threshold}} are rounded to the nearest {{smallUnit}}.",
+    "roundingNote": "Parts may not add to the total due to rounding."
+  },
   "flagKinds": {
     "warn": "WARNING",
     "note": "NOTE",
