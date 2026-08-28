@@ -13,6 +13,7 @@ import type {
   NumberInputField,
   PrivacyField,
   ResultsViewModel,
+  SafeMaxBidField,
   ScenarioActionKeys,
   ScenarioEntry,
   ScenariosViewModel,
@@ -211,6 +212,27 @@ function Stat({ stat }: { stat: StatField }) {
   )
 }
 
+/**
+ * The safe maximum bid, spelled out. Same rule as everywhere else in this
+ * skin: no ornament, and nothing hidden — but still no figure where the core
+ * says there is no ceiling to state, because printing a price there would be
+ * inventing one.
+ */
+function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxBidField }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <section data-field={field.id} data-importance={field.importance}>
+      <h2>{t(headingKey)}</h2>
+      <h3>{t(field.labelKey)}</h3>
+      {field.status === 'bound' ? (
+        <p className="plain-figure">{estimateMoney(field.value, i18n.language)}</p>
+      ) : null}
+      <p>{refText(field.summary, t, i18n.language)}</p>
+      {field.detail === null ? null : <p>{refText(field.detail, t, i18n.language)}</p>}
+    </section>
+  )
+}
+
 function Verdict({ verdict }: { verdict: VerdictField }) {
   const { t, i18n } = useTranslation()
   return (
@@ -293,6 +315,8 @@ function Results({ results }: { results: ResultsViewModel }) {
   const { t, i18n } = useTranslation()
   return (
     <main>
+      <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
+
       <section>
         <h2>{t(results.verdictsHeadingKey)}</h2>
         {results.verdicts.map((verdict) => (

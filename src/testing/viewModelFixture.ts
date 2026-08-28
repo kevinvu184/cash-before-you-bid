@@ -1,6 +1,7 @@
 import { rowBand } from '../logic/bands'
 import { buildLineFields } from '../logic/lineFields'
 import { PRIVACY_STATEMENT } from '../logic/privacy'
+import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { assessReadiness } from '../logic/verdict'
 import { buildVerdictFields } from '../logic/verdictFields'
 import type { ColorMode, SkinId } from '../logic/skins'
@@ -25,7 +26,7 @@ import {
   SOURCES,
   SUNK_COST_RESEARCH,
 } from '../logic/fieldLabels'
-import type { CalculationTotals, RowCode, TableRow } from '../types/calculator'
+import type { CalculationTotals, RowCode, SafeMaxBidResult, TableRow } from '../types/calculator'
 import type { ScenarioActionKeys, ScenarioEntry } from '../types/viewModel'
 
 /**
@@ -289,17 +290,40 @@ const TOTALS: CalculationTotals = {
  * Run through the live assessor and builder, so the fixture cannot drift from
  * what a skin actually receives.
  */
+/** The savings the fixture's verdicts and its safe maximum bid both read. */
+const FIXTURE_SAVINGS = 60_000
+
 const VERDICTS = buildVerdictFields(
   assessReadiness(
     { rows: ROWS, totals: TOTALS },
-    { savings: 60_000, preApprovedLoan: 700_000 },
+    { savings: FIXTURE_SAVINGS, preApprovedLoan: 700_000 },
   ),
 )
+
+/**
+ * A cash-bound ceiling, put through the live builder rather than hand-written,
+ * so the fixture cannot drift from the field a skin actually receives. The
+ * search itself is not run here: the point is to carry the field, not to be a
+ * coherent calculation.
+ */
+const SAFE_MAX_BID_SOURCE: SafeMaxBidResult = {
+  price: 690_000,
+  exact: 690_412.37,
+  binding: 'cash',
+  status: 'bound',
+  iterations: 35,
+}
 
 export interface FixtureOptions {
   locale?: Lang
   skinId?: SkinId
   resolvedMode?: ColorMode
+  /**
+   * A different safe-maximum-bid outcome. The default is a bounded one, which
+   * is the case with a figure to render; the others exist so a skin can be
+   * shown a ceiling it must not print a number for.
+   */
+  safeMaxBid?: SafeMaxBidResult
 }
 
 export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
@@ -497,6 +521,8 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       },
       statsHeadingKey: 'results.statsHeading',
       stats: STATS,
+      safeMaxBidHeadingKey: 'safeMaxBid.heading',
+      safeMaxBid: buildSafeMaxBidField(options.safeMaxBid ?? SAFE_MAX_BID_SOURCE, FIXTURE_SAVINGS),
       verdictsHeadingKey: 'results.verdictsHeading',
       verdicts: VERDICTS,
       linesHeadingKey: 'results.linesHeading',

@@ -466,6 +466,58 @@
   color: var(--color-text-muted);
 }
 
+/* ── the safe maximum bid ───────────────────────────────────────────────── */
+
+/* The one figure someone photographs at an inspection, so it is the loudest
+   thing on the page: the accent rule above it and the title-sized number are
+   the emphasis, not a box or a fill. It leads the results, and the verdicts
+   below it carry the same rule treatment, so the two read as one answer. */
+
+[data-skin='default'] .max-bid {
+  margin: 0 0 20px;
+  padding: 14px 0 16px;
+  border-top: var(--border-strong-width) solid var(--color-accent);
+}
+
+[data-skin='default'] .max-bid-label {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .max-bid-label:lang(vi) {
+  letter-spacing: 0.04em;
+}
+
+/* Tabular figures so the digits do not shift width as the number recalculates
+   under a keystroke. */
+[data-skin='default'] .max-bid-figure {
+  margin: 2px 0 0;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-strong);
+}
+
+[data-skin='default'] .max-bid-summary {
+  max-width: 62ch;
+  margin: 8px 0 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  color: var(--color-text);
+}
+
+[data-skin='default'] .max-bid-detail {
+  max-width: 62ch;
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+}
+
 /* ── the verdict ────────────────────────────────────────────────────────── */
 
 /* The answer, before the arithmetic that produced it: one block per moment,
@@ -1137,6 +1189,15 @@
   [data-skin='default'] .masthead h1 {
     font-size: var(--font-size-title-wide);
     letter-spacing: var(--letter-spacing-title);
+  }
+
+  [data-skin='default'] .max-bid-figure {
+    font-size: var(--font-size-title-wide);
+    letter-spacing: var(--letter-spacing-title);
+  }
+
+  [data-skin='default'] .max-bid-figure:lang(vi) {
+    letter-spacing: 0;
   }
 
   /* auto-fit rather than a fixed five columns: the results column narrows
