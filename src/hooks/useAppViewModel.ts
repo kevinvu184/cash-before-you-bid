@@ -29,6 +29,7 @@ import {
 } from '../types/viewModel'
 import type { UseCalculatorResult } from './useCalculator'
 import { useNumericDraft, useOptionalNumericDraft } from './useNumericDraft'
+import { useScenariosViewModel } from './useScenariosViewModel'
 import { useTranslationNotice } from './useTranslationNotice'
 
 // Every field the app can show, assembled once, above the skin boundary. The
@@ -262,6 +263,7 @@ export function useAppViewModel(
   const { inputs, presentation, result, setField, setRoute, setLang, setSkin, setMode } = core
   const locale = i18n.language
   const notice = useTranslationNotice(inputs.lang === 'vi')
+  const scenarios = useScenariosViewModel(core.currentQuery, core.loadQuery)
 
   // One draft per numeric field, in a fixed order. The draft is the raw text
   // the field is holding, so no skin has to parse or format a keystroke.
@@ -686,5 +688,6 @@ export function useAppViewModel(
         importance: 'secondary',
       },
     },
+    scenarios,
   }
 }

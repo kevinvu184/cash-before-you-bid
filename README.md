@@ -28,6 +28,9 @@ and the boundaries between them are enforced by tests:
 ```
 ├── index.html          # SPA entry point; paints the ground colours pre-mount
 ├── public/             # Static assets served as-is
+│   ├── manifest.webmanifest  # Install metadata; every path relative to the base
+│   ├── sw.js           # Offline shell worker; scope comes from the registration
+│   └── icons/          # Install icons, 192/512/maskable/apple-touch
 ├── src/
 │   ├── main.tsx        # React root mount
 │   ├── App.tsx         # Shell: owns every hook, hands a skin the view model
@@ -118,6 +121,48 @@ link pasted into a chat carries the sender's savings balance with it.
 An unknown `?skin=` falls back to `plain` — the baseline that always renders —
 and the URL is rewritten with `replace`. An unknown `?mode=` falls back to
 following `prefers-color-scheme`, and the param is dropped.
+
+## Saved scenarios
+
+Auction buyers look at properties for months, and the query string only holds
+one of them. A saved scenario is a name and **the query string itself**, kept in
+`localStorage` under `cbyb.scenarios.v1`:
+
+```json
+{ "version": 1, "scenarios": [{ "id": "…", "name": "12 Rose St", "query": "price=820000&route=lmi", "savedAt": 1787000000000 }] }
+```
+
+Saving is "remember this URL under a name"; loading is "apply this query
+string". `src/logic/urlState.ts` therefore stays the single serialisation
+format — a new calculator input added to the codec is saved and restored with
+no change here — and reading leans on the codec's existing clamping and
+fallbacks, so a scenario written by an older version of the app loads as far as
+it still parses and takes today's defaults for the rest.
+
+Loading keeps the language, skin and colour mode currently on screen: those are
+how the reader likes to be shown a property, not part of the property.
+
+`src/logic/scenarioStore.ts` is the pure half (shape, validation, limits) and
+`src/hooks/useSavedScenarios.ts` the storage half. Every read and write is
+wrapped: a browser that refuses storage makes the panel say so and leaves the
+rest of the page working. **Nothing is uploaded.** These are somebody's savings
+figures; they stay in the browser that typed them.
+
+## Installable and offline
+
+The app is a static SPA with no runtime network dependency, so it works with no
+signal at an inspection once it has been opened online.
+
+- `public/manifest.webmanifest` — states every path relatively, because Vite
+  does not rewrite URLs inside a manifest and the app is served from
+  `/cash-before-you-bid/`. `src/installable.test.ts` holds it to that.
+- `public/sw.js` — caches the shell. Navigations are network-first, so a
+  redeploy is picked up on the next online visit rather than stranding anyone
+  on a stale bundle; fingerprinted build assets are cache-first, because a
+  given URL's bytes never change. Nothing cross-origin is cached, so the web
+  fonts fall back to the system stack offline.
+- It registers in production only (`src/serviceWorker.ts`); in development it
+  would serve a cached shell over Vite's module graph.
 
 ## Adding a skin
 

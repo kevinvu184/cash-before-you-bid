@@ -253,5 +253,26 @@
     "system": "Hệ thống",
     "light": "Sáng",
     "dark": "Tối"
+  },
+  "scenarios": {
+    "label": "Phương án đã lưu",
+    "heading": "Phương án đã lưu",
+    "listLabel": "Các phương án bạn đã lưu",
+    "nameLabel": "Đặt tên cho phương án này",
+    "save": "Lưu",
+    "empty": "Chưa lưu phương án nào. Hãy đặt tên cho các số liệu trên màn hình và lưu lại — chúng sẽ ở đây sau buổi xem nhà tới.",
+    "loadNamed": "Mở {{name}}",
+    "rename": "Đổi tên",
+    "renameNamed": "Đổi tên {{name}}",
+    "renameLabel": "Tên phương án",
+    "renameSave": "Lưu tên",
+    "remove": "Xoá",
+    "removeNamed": "Xoá {{name}}",
+    "removeQuestion": "Xoá “{{name}}”?",
+    "cancel": "Huỷ",
+    "savedAt": "Đã lưu {{date}}",
+    "privacy": "Phương án đã lưu nằm trong trình duyệt này, trên thiết bị này. Không có gì được tải lên và không ai khác xem được.",
+    "errorUnavailable": "Trình duyệt này không cho phép ứng dụng lưu dữ liệu, nên không thể lưu phương án ở đây. Mọi chức năng khác vẫn hoạt động.",
+    "errorFull": "Không còn chỗ để lưu thêm phương án. Hãy xoá một phương án bạn không cần nữa."
   }
 }

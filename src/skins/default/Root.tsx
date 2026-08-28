@@ -5,6 +5,7 @@ import { useScrolledPast } from '../shared/useScrolledPast'
 import { ChoiceButtons } from './Controls'
 import { InputsPanel } from './Inputs'
 import { Results } from './Results'
+import { Scenarios } from './Scenarios'
 import { StickyTotal } from './StickyTotal'
 import './skin.css'
 
@@ -69,6 +70,8 @@ export function Root({ vm }: { vm: AppViewModel }) {
             {t(vm.chrome.lede.labelKey)}
           </p>
         </header>
+
+        <Scenarios scenarios={vm.scenarios} />
 
         <div className="columns">
           <InputsPanel inputs={vm.inputs} />
