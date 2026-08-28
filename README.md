@@ -173,8 +173,10 @@ does not have. Zero is the exception, being the one figure no rate can move.
 **The rate is fetched from a third party.** `https://open.er-api.com` is
 keyless and CORS-open, and it stamps the quote itself rather than the request.
 Nothing about the reader or their figures is sent — it is a plain `GET` of a
-public rate table — but it is still a request to a host other than the one
-serving the page, and it is the only one this app makes:
+public rate table, with `referrerPolicy: 'no-referrer'` and `credentials:
+'omit'` stated outright rather than inherited from a browser default — but it
+is still a request to a host other than the one serving the page. Since the
+web fonts moved onto this origin it is **the only one the app makes**:
 
 - **Nothing is fetched in the default view.** Dollars need no conversion, so
   the request happens on the first switch to đồng and not before.
@@ -228,9 +230,11 @@ failed fetch falls back to a bundled indicative rate rather than to nothing.
 - `public/sw.js` — caches the shell. Navigations are network-first, so a
   redeploy is picked up on the next online visit rather than stranding anyone
   on a stale bundle; fingerprinted build assets are cache-first, because a
-  given URL's bytes never change. Nothing cross-origin is cached, and nothing
-  cross-origin is fetched either — the web fonts are served from this origin,
-  so the typography survives offline too.
+  given URL's bytes never change. Nothing cross-origin is cached — the web
+  fonts are served from this origin, so the typography survives offline too.
+  The one cross-origin fetch the app makes, the exchange rate, is deliberately
+  left alone by the worker; see
+  [the one outbound request](#the-one-outbound-request).
 - It registers in production only (`src/serviceWorker.ts`); in development it
   would serve a cached shell over Vite's module graph.
 
