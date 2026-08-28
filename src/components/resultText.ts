@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { APP_CURRENCY } from '../logic/currencyConfig'
-import { formatMoney, formatNumber, formatPercent } from '../logic/format'
+import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../logic/format'
 import type { Flag, RowCode, RowHow } from '../types/calculator'
 
 // The calculator emits codes and numbers; these maps turn them into text for
@@ -19,11 +19,12 @@ export function estimateMoney(amount: number, locale: string): string {
 }
 
 /**
- * A table row amount: rounded, with the typographic minus ahead of the digits
- * ("−10.000 AUD").
+ * A table row amount: the same rounded estimate, with the typographic minus
+ * ahead of the digits ("−10.000 AUD"). formatRowAmount owns that sign
+ * convention, so there is only ever one row-formatting path.
  */
 export function estimateRowAmount(amount: number, locale: string): string {
-  return (amount < 0 ? '−' : '') + estimateMoney(Math.abs(amount), locale)
+  return formatRowAmount(amount, APP_CURRENCY, locale)
 }
 
 /** An exact figure (user input or statutory constant): never rounded. */
