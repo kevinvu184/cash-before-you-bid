@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_NAME_LENGTH } from '../../logic/scenarioStore'
 import type { ScenarioActionKeys, ScenarioEntry, ScenariosViewModel } from '../../types/viewModel'
+import { useFocusAfterRemoval, useRowModeFocus } from '../shared/scenarioFocus'
 import { savedDate } from '../shared/text'
 
 /**
@@ -9,13 +10,24 @@ import { savedDate } from '../shared/text'
  * control that loads the scenario, plus rename and delete; each is a plain
  * button at 44px, nothing appears on hover, and rename and delete swap the row
  * for a small form rather than opening anything that needs a pointer.
+ *
+ * Because that swap unmounts the control that was just activated, each shape
+ * marks where focus belongs (`useRowModeFocus`) and the panel catches the one
+ * case a row cannot, its own removal (`useFocusAfterRemoval`).
  */
+
+/** A row shape, plus where focus belongs while the row is in it. */
+interface RowShapeProps {
+  entry: ScenarioEntry
+  keys: ScenarioActionKeys
+  focusRef: (element: HTMLElement | null) => void
+}
 
 function Actions({ children }: { children: ReactNode }) {
   return <div className="scenario-actions">{children}</div>
 }
 
-function RenameRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
+function RenameRow({ entry, keys, focusRef }: RowShapeProps) {
   const { t } = useTranslation()
   return (
     <li className="scenario scenario-form">
@@ -23,6 +35,7 @@ function RenameRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioAction
         {t(keys.renameLabel)}
       </label>
       <input
+        ref={focusRef}
         id={entry.controlId}
         type="text"
         autoComplete="off"
@@ -46,15 +59,22 @@ function RenameRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioAction
   )
 }
 
-function DeleteRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
+function DeleteRow({ entry, keys, focusRef }: RowShapeProps) {
   const { t } = useTranslation()
+  const questionId = `${entry.controlId}-question`
   return (
     <li className="scenario scenario-form">
-      <p className="scenario-question">{t(keys.removeQuestion, { name: entry.name })}</p>
+      <p className="scenario-question" id={questionId}>
+        {t(keys.removeQuestion, { name: entry.name })}
+      </p>
       <Actions>
+        {/* Described by the question, so taking focus reads "Remove — remove
+            12 Rose St?" rather than a bare verb. */}
         <button
+          ref={focusRef}
           type="button"
           className="scenario-action scenario-action-danger"
+          aria-describedby={questionId}
           onClick={entry.onDeleteConfirm}
         >
           {t(keys.remove)}
@@ -67,7 +87,7 @@ function DeleteRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioAction
   )
 }
 
-function IdleRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
+function IdleRow({ entry, keys, focusRef }: RowShapeProps) {
   const { t, i18n } = useTranslation()
   const date = savedDate(entry.savedAt, i18n.language)
   return (
@@ -82,7 +102,10 @@ function IdleRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKe
         {date === null ? null : <span className="scenario-date">{t(keys.savedAt, { date })}</span>}
       </button>
       <Actions>
+        {/* Where focus comes back to from either form: it is the control that
+            opened one, and it names the row it belongs to. */}
         <button
+          ref={focusRef}
           type="button"
           className="scenario-action"
           aria-label={t(keys.renameNamed, { name: entry.name })}
@@ -103,15 +126,24 @@ function IdleRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKe
   )
 }
 
+/**
+ * The three shapes are separate components, so the mode hook has to live here,
+ * in the one component that survives the swap between them: called inside a
+ * shape it would mount already believing it was in its own mode, see no
+ * change, and move nothing.
+ */
 function Row({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
-  if (entry.mode === 'renaming') return <RenameRow entry={entry} keys={keys} />
-  if (entry.mode === 'confirmingDelete') return <DeleteRow entry={entry} keys={keys} />
-  return <IdleRow entry={entry} keys={keys} />
+  const focusRef = useRowModeFocus(entry.mode)
+  const props = { entry, keys, focusRef }
+  if (entry.mode === 'renaming') return <RenameRow {...props} />
+  if (entry.mode === 'confirmingDelete') return <DeleteRow {...props} />
+  return <IdleRow {...props} />
 }
 
 export function Scenarios({ scenarios }: { scenarios: ScenariosViewModel }) {
   const { t } = useTranslation()
   const { heading, save, list, privacy } = scenarios
+  useFocusAfterRemoval(list.value.length, save.controlId)
 
   return (
     <section className="scenarios" aria-label={t(scenarios.regionLabelKey)}>

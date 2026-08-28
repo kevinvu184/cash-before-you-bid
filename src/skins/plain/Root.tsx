@@ -22,6 +22,7 @@ import type {
   VerdictField,
   SunkCostViewModel,
 } from '../../types/viewModel'
+import { useFocusAfterRemoval, useRowModeFocus } from '../shared/scenarioFocus'
 import {
   estimateMoney,
   estimateRowAmount,
@@ -440,15 +441,24 @@ function Results({ results }: { results: ResultsViewModel }) {
   )
 }
 
+/**
+ * Rename and delete replace the row's controls, which unmounts whichever one
+ * was activated. `useRowModeFocus` marks where focus belongs in each shape so
+ * a keyboard reader stays on the row instead of being handed back to the top
+ * of the document.
+ */
 function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActionKeys }) {
   const { t, i18n } = useTranslation()
+  const focusRef = useRowModeFocus(entry.mode)
   const date = savedDate(entry.savedAt, i18n.language)
+  const questionId = `${entry.controlId}-question`
 
   if (entry.mode === 'renaming') {
     return (
       <li>
         <label htmlFor={entry.controlId}>{t(keys.renameLabel)}</label>
         <input
+          ref={focusRef}
           id={entry.controlId}
           type="text"
           autoComplete="off"
@@ -473,8 +483,13 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
   if (entry.mode === 'confirmingDelete') {
     return (
       <li>
-        <span>{t(keys.removeQuestion, { name: entry.name })}</span>
-        <button type="button" onClick={entry.onDeleteConfirm}>
+        <span id={questionId}>{t(keys.removeQuestion, { name: entry.name })}</span>
+        <button
+          ref={focusRef}
+          type="button"
+          aria-describedby={questionId}
+          onClick={entry.onDeleteConfirm}
+        >
           {t(keys.remove)}
         </button>
         <button type="button" onClick={entry.onCancel}>
@@ -495,6 +510,7 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
       </button>
       {date === null ? null : <span>{t(keys.savedAt, { date })}</span>}
       <button
+        ref={focusRef}
         type="button"
         aria-label={t(keys.renameNamed, { name: entry.name })}
         onClick={entry.onRenameStart}
@@ -515,6 +531,7 @@ function ScenarioRow({ entry, keys }: { entry: ScenarioEntry; keys: ScenarioActi
 function Scenarios({ scenarios }: { scenarios: ScenariosViewModel }) {
   const { t } = useTranslation()
   const { heading, save, list, privacy } = scenarios
+  useFocusAfterRemoval(list.value.length, save.controlId)
 
   // No disclosure, as everywhere in this skin: the panel is simply on the page.
   return (
