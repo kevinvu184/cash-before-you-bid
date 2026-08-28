@@ -15,6 +15,7 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
+import { PRIVACY_STATEMENT } from '../logic/privacy'
 import { buildVerdictFields } from '../logic/verdictFields'
 import {
   type AppViewModel,
@@ -627,6 +628,9 @@ export function useAppViewModel(
         preApprovedLoan.onDraftChange,
         'inputs.preApprovedLoanHint',
       ),
+      // A constant: the claim and its points depend on nothing the user has
+      // typed, which is the point of it.
+      privacy: PRIVACY_STATEMENT,
       assumptions: {
         id: 'assumptions',
         labelKey: 'inputs.assumptions',

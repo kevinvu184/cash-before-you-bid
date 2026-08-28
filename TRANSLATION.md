@@ -56,6 +56,21 @@ From the auction-day deposit guidance (`guidance.*`) and the deposit hints
 - "thông lệ phổ biến" for "common practice", in the line that keeps the note
   descriptive rather than advisory.
 
+From the privacy statement (`privacy.*`), which is the one block where a
+mistranslation would turn a promise into a false one, so it is worth a
+careful read:
+
+- "rời khỏi trình duyệt" for "leave your browser" in the claim itself. The
+  claim is deliberately narrow — *your figures*, not *everything* — because
+  the page does load web fonts from Google; a Vietnamese rewrite that widens
+  it back out to "không có gì rời khỏi" would make it false.
+- "thu thập thông tin khách hàng tiềm năng" for lead capture, which has no
+  short Vietnamese equivalent; "không phân tích hành vi" for analytics.
+- "thanh địa chỉ" for the address bar, and "đồng bộ" for browser sync.
+- "bộ nhớ riêng của trình duyệt" for `localStorage`, kept descriptive rather
+  than naming the API.
+- "phông chữ web" for web fonts, and "địa chỉ IP" left as is.
+
 ## Submitting corrections
 
 1. Edit `src/locales/vi.json` (or `en.json`). Keys are flat or one level deep;
