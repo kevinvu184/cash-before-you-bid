@@ -72,8 +72,8 @@
     "linkBody": " Your figures sit in the address bar so the page can be reloaded and shared, which means anyone you send the link to can read them — your savings and pre-approved loan included — and a chat app or browser sync may keep a copy.",
     "storageTerm": "Saved scenarios stay on this device.",
     "storageBody": " Saving one keeps its numbers in this browser’s own storage, on this device only. They are never uploaded, and deleting one here deletes it everywhere.",
-    "thirdPartyTerm": "What the page loads from elsewhere.",
-    "thirdPartyBody": " Its web fonts, from Google, which sees your IP address and browser the way every site you visit does. Requests like that carry nothing you typed, and none is added without this statement changing first."
+    "thirdPartyTerm": "Nothing is loaded from anyone else.",
+    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address. There is no third party in a position to see you arrive, and none is added without this statement changing first."
   },
   "results": {
     "flagsLabel": "Warnings and notes",

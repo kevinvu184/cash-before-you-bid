@@ -74,15 +74,19 @@ mistranslation would turn a promise into a false one, so it is worth a
 careful read:
 
 - "rời khỏi trình duyệt" for "leave your browser" in the claim itself. The
-  claim is deliberately narrow — *your figures*, not *everything* — because
-  the page does load web fonts from Google; a Vietnamese rewrite that widens
-  it back out to "không có gì rời khỏi" would make it false.
+  claim is deliberately narrow — *your figures*, not *everything*. Since #23
+  self-hosted the fonts the broader claim would in fact be true today, but it
+  is not the one being made: the narrow one is about the reader's money and
+  stays true whatever the page later loads. Do not widen it to
+  "không có gì rời khỏi" on the grounds that it currently holds.
 - "thu thập thông tin khách hàng tiềm năng" for lead capture, which has no
   short Vietnamese equivalent; "không phân tích hành vi" for analytics.
 - "thanh địa chỉ" for the address bar, and "đồng bộ" for browser sync.
 - "bộ nhớ riêng của trình duyệt" for `localStorage`, kept descriptive rather
   than naming the API.
-- "phông chữ web" for web fonts, and "địa chỉ IP" left as is.
+- "phông chữ" for the fonts in the last point, which are now served from this
+  origin — the sentence says nothing is loaded from anyone else, so a
+  translation must not reintroduce a third party into it.
 
 ## Submitting corrections
 

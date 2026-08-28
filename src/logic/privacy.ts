@@ -8,19 +8,26 @@ import type { NotePart, PrivacyField } from '../types/viewModel'
  * source. So it is said on screen, beside the savings field — and said
  * narrowly, because a claim is only worth as much as the audit behind it.
  *
- * The claim is "your figures never leave your browser", not "nothing leaves
- * your browser": the page fetches web fonts from Google, so the broader
- * sentence would be false and the whole statement with it. A narrow claim that
- * survives the audit beats a broad one with an asterisk.
+ * The claim is "your figures never leave your browser" rather than "nothing
+ * leaves your browser". When it was written the page fetched web fonts from
+ * Google, so the broader sentence would have been false and the whole
+ * statement with it. #23 has since self-hosted those fonts and the audit now
+ * finds no third-party request at all, so the broad claim would be true today
+ * — but it is deliberately not made. It is about the page; the narrow one is
+ * about the reader's money, which is what they are deciding whether to type
+ * in, and it stays true whatever the page later loads. The stronger fact is
+ * where it belongs, in `privacy.thirdPartyBody`, which the tripwires hold to
+ * the build.
  *
  * `THIRD_PARTY_HOSTS` below is the other half. It is the audited list of hosts
  * the built page contacts on its own, established by loading `dist/` in a
  * browser — the audit is in the pull request that added this file. What keeps
- * it current is `privacy.test.ts`, which holds this repository's sources to
- * it: `index.html` may reference no host declared nowhere here, and no source
- * file may open a connection this file does not name. So a new outbound
- * request cannot be added without an edit landing next to the wording. That is
- * the mechanism behind the last sentence of `privacy.thirdPartyBody`.
+ * it current is `privacy.test.ts`, which holds this repository's sources to it
+ * in both directions: no source may reach a host this file has not declared,
+ * and no host declared here may go unreferenced. So neither adding a request
+ * nor removing one can happen without an edit landing next to the wording.
+ * That is the mechanism behind the last sentence of
+ * `privacy.thirdPartyBody`.
  *
  * Its limit, stated rather than glossed: that is a check on the build's
  * inputs, not on its output. A request arriving through a dependency or a
@@ -29,22 +36,26 @@ import type { NotePart, PrivacyField } from '../types/viewModel'
  */
 
 /**
- * Every host the production build requests on its own, with why. Verified by
- * loading `dist/` in a browser and recording every request; the audit is in
- * the pull request that introduced this file.
+ * Every host the production build requests on its own, with why.
+ *
+ * It is empty, and that is the finding rather than an oversight: loading
+ * `dist/` in a browser across a cold load, a full interaction pass, both skins
+ * and a service-worker reload produced 70 requests and not one of them left
+ * this origin. `fonts.googleapis.com` and `fonts.gstatic.com` were here until
+ * #23 self-hosted the faces; `src/fonts.css` serves them from `public/fonts`
+ * now, and `src/fonts.test.ts` holds index.html to that.
+ *
+ * Empty is therefore the strongest state this map has, and the tests below
+ * enforce it as one: with nothing declared, *any* host appearing in a source
+ * file fails the suite. Adding an entry means editing this file, which is
+ * where `privacy.thirdPartyBody` sits — so the sentence saying nothing is
+ * loaded from anyone else cannot quietly outlive the fact.
  *
  * Links a reader can *click* are not in here — a navigation the user chooses
  * is not a request the page made. Same-origin requests for the app's own
  * assets are not in here either; the claim is about third parties.
  */
-export const THIRD_PARTY_HOSTS: Readonly<Record<string, string>> = {
-  // index.html loads the Libre Franklin / Source Code Pro stylesheet, which in
-  // turn pulls the font files from gstatic. Google therefore sees an IP and a
-  // user agent on every visit. It never sees an input value: the request is
-  // for a fixed stylesheet URL with no per-visitor part to it.
-  'fonts.googleapis.com': 'web font stylesheet, loaded from index.html',
-  'fonts.gstatic.com': 'the font files that stylesheet points at',
-}
+export const THIRD_PARTY_HOSTS: Readonly<Record<string, string>> = {}
 
 /**
  * Every file allowed to open a connection at runtime, and what for. A file

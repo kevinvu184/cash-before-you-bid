@@ -78,8 +78,8 @@
     "linkBody": " Các con số của bạn nằm trong thanh địa chỉ để trang có thể tải lại và chia sẻ được, nghĩa là ai nhận được đường liên kết cũng đọc được chúng — kể cả tiền tiết kiệm và khoản vay đã được duyệt trước — và ứng dụng nhắn tin hoặc tính năng đồng bộ của trình duyệt có thể giữ lại một bản sao.",
     "storageTerm": "Phương án đã lưu nằm lại trên thiết bị này.",
     "storageBody": " Khi bạn lưu một phương án, các con số của nó được giữ trong bộ nhớ riêng của trình duyệt này, chỉ trên thiết bị này. Chúng không bao giờ được tải lên, và xoá ở đây là xoá hẳn.",
-    "thirdPartyTerm": "Những gì trang tải về từ bên ngoài.",
-    "thirdPartyBody": " Phông chữ web, lấy từ Google — nơi nhìn thấy địa chỉ IP và trình duyệt của bạn giống như mọi trang web bạn truy cập. Những yêu cầu như vậy không mang theo bất kỳ điều gì bạn đã nhập, và sẽ không có yêu cầu nào được thêm vào mà lời cam kết này không được sửa trước."
+    "thirdPartyTerm": "Không tải bất cứ thứ gì từ bên ngoài.",
+    "thirdPartyBody": " Mọi tệp trang này cần — mã nguồn, phần định dạng hiển thị, kể cả phông chữ — đều được phục vụ từ chính địa chỉ của trang. Không có bên thứ ba nào ở vị trí nhìn thấy bạn ghé thăm, và sẽ không có bên nào được thêm vào mà lời cam kết này không được sửa trước."
   },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",

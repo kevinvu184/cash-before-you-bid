@@ -235,6 +235,23 @@ describe('what the sources say the page will contact', () => {
     expect(stripComments('/* mentions sendBeacon */').trim()).toBe('')
   })
 
+  it('declares no host the sources have stopped reaching', () => {
+    // The other direction, and the one that bites on a merge rather than on an
+    // edit: #23 self-hosted the fonts, which left two Google hosts declared
+    // here that nothing reached any more — a statement naming a third party
+    // that no longer exists is as wrong as one omitting a third party that
+    // does. Whichever way the build moves, the wording has to move with it.
+    const reached = new Set([
+      ...hostsIn(readFileSync(join(ROOT, 'index.html'), 'utf8')),
+      ...sourceFiles(ROOT)
+        .map((file) => [repoPath(file), readFileSync(file, 'utf8')] as const)
+        .filter(([name]) => notATest(name))
+        .flatMap(([, source]) => autoFetchHosts(source)),
+    ])
+    const stale = Object.keys(THIRD_PARTY_HOSTS).filter((host) => !reached.has(host))
+    expect(stale).toEqual([])
+  })
+
   it('declares a reason for every host and every caller', () => {
     for (const [host, why] of Object.entries(THIRD_PARTY_HOSTS)) {
       expect(host, why).toMatch(/^[a-z0-9.-]+$/)
