@@ -181,6 +181,19 @@ export const NOTE_ENTRIES: readonly NoteEntry[] = [
   },
 ]
 
+/**
+ * The multiple-inspection research the pre-auction multiplier exists because
+ * of: the Victorian Premier's media release of 12 March 2026, which cites the
+ * Consumer Policy Research Centre. Named beside the figures rather than folded
+ * into them — the numbers on screen are the user's own.
+ */
+export const SUNK_COST_RESEARCH: SourcesValue = {
+  beforeKey: 'sunk.researchBefore',
+  linkKey: 'sunk.researchLink',
+  afterKey: 'sunk.researchAfter',
+  href: 'https://www.premier.vic.gov.au/no-more-hassles-getting-pre-sale-building-inspections',
+}
+
 export const SOURCES: SourcesValue = {
   beforeKey: 'notes.sourcesBefore',
   linkKey: 'notes.sourcesLink',

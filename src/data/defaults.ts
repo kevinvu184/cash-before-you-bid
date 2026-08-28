@@ -19,4 +19,7 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   movingCosts: 4000,
   bufferMonths: 3,
   capitaliseLmi: false,
+  // 1 keeps the whole-search figures equal to the per-property ones, so the
+  // calculator behaves exactly as it did for anyone who ignores the field.
+  propertiesConsidered: 1,
 }

@@ -16,6 +16,7 @@ import { mortgageRegistrationFee, pexaFees, transferRegistrationFee } from './fe
 import { firstHomeOwnerGrant } from './grant'
 import { lmiRate } from './lmi'
 import { monthlyRepayment } from './loan'
+import { sunkCost } from './sunkCost'
 
 // Mirrors the original's `+value || 0` guard for cleared/invalid inputs.
 const orZero = (n: number): number => (Number.isFinite(n) ? n : 0)
@@ -37,6 +38,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   const buildingInsurance = orZero(inputs.buildingInsurance)
   const movingCosts = orZero(inputs.movingCosts)
   const bufferMonths = orZero(inputs.bufferMonths)
+  const propertiesConsidered = orZero(inputs.propertiesConsidered)
   const capitaliseLmi = inputs.capitaliseLmi
 
   const flags: Flag[] = []
@@ -132,6 +134,9 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   }
 
   const costs = lines.reduce((sum, l) => sum + l.amount, 0)
+  // Pre-auction only, and reported beside the stack rather than added into it:
+  // the totals below stay the cost of buying this one property.
+  const sunk = sunkCost(lines, propertiesConsidered)
   const rep = monthlyRepayment(loanFinal, rate)
   const repAssessed = monthlyRepayment(loanFinal, rate + APRA_ASSESSMENT_BUFFER)
   const buffer = bufferMonths > 0 ? bufferMonths * rep + BUFFER_BASE_AMOUNT : 0
@@ -202,5 +207,6 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
       dutiableValue,
       grant,
     },
+    sunkCost: sunk,
   }
 }

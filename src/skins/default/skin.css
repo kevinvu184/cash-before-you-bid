@@ -732,6 +732,24 @@
 
 /* ── notes and sources ──────────────────────────────────────────────────── */
 
+/* ── pre-auction spend ───────────────────────────────────────────────────── */
+
+/* Its own section under the table, so the stat row above stays the cost of
+   buying this one property. */
+[data-skin='default'] .sunk h3 {
+  margin: 28px 0 0;
+  padding-top: 24px;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-strong);
+  /* Room for Vietnamese stacked diacritics (ệ, ổ, ữ). */
+  line-height: var(--line-height-tight);
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .sunk .stats {
+  margin: 12px 0;
+}
+
 [data-skin='default'] .notes h3 {
   margin: 32px 0 12px;
   padding-top: 24px;
@@ -920,4 +938,23 @@
     border: var(--border-width) solid var(--color-hairline);
     border-radius: var(--radius-md);
   }
+}
+
+/* Inline links in the prose sit in a single line box, short of the 44px tap
+   target. A transparent overlay lifts the hit area without changing the
+   paragraph's rhythm; a link that already wraps onto two lines is tall enough
+   and the overlay simply sits inside it. */
+[data-skin='default'] .notes a,
+[data-skin='default'] .sunk a {
+  position: relative;
+}
+
+[data-skin='default'] .notes a::after,
+[data-skin='default'] .sunk a::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 44px;
+  translate: 0 -50%;
 }
