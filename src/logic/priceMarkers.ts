@@ -58,6 +58,9 @@ export const PRICE_SLIDER_STEP = 5_000
  */
 export const PRICE_SLIDER_BASE_MAX = 1_500_000
 
+/** The bottom of the track. A price below it is not a price. */
+export const PRICE_SLIDER_MIN = 0
+
 /**
  * The track's top end for a given price. It grows to cover a price above the
  * base maximum, rounded up to a whole step, so the thumb always represents the
@@ -72,6 +75,23 @@ export function priceSliderMax(price: number): number {
   if (!Number.isFinite(price) || price <= PRICE_SLIDER_BASE_MAX) return PRICE_SLIDER_BASE_MAX
   const stepped = Math.ceil(price / PRICE_SLIDER_STEP) * PRICE_SLIDER_STEP
   return Math.min(PRICE_MAX, stepped)
+}
+
+/**
+ * The price, as a point the track can actually represent.
+ *
+ * The number field takes anything that parses — a leading minus, a figure past
+ * `PRICE_MAX` on the way to a longer one — and deliberately does not snap it.
+ * A range control cannot hold those: a browser silently clamps an out-of-range
+ * value, which would leave the thumb parked at an end while the price says
+ * otherwise, and the next nudge would drag the typed price to that end. That
+ * is the fight this pairing exists to avoid, so the clamp is stated here
+ * rather than left to the browser. The price itself is untouched — only what
+ * the slider can show is bounded.
+ */
+function clampToTrack(price: number, max: number): number {
+  if (!Number.isFinite(price)) return PRICE_SLIDER_MIN
+  return Math.min(max, Math.max(PRICE_SLIDER_MIN, price))
 }
 
 /** Where a threshold sits along a track running from 0 to `max`, as a percent. */
@@ -147,10 +167,10 @@ export function buildPriceSliderField(
     id: 'priceSlider',
     controlId: 'price-slider',
     labelKey: PRICE_SLIDER_LABEL_KEY,
-    value: price,
+    value: clampToTrack(price, max),
     kind: 'money',
     importance: 'primary',
-    min: 0,
+    min: PRICE_SLIDER_MIN,
     max,
     step: PRICE_SLIDER_STEP,
     markersLabelKey: CLIFFS_LABEL_KEY,

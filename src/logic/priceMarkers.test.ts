@@ -9,6 +9,7 @@ import {
 } from '../data/rates'
 import {
   PRICE_SLIDER_BASE_MAX,
+  PRICE_SLIDER_MIN,
   PRICE_SLIDER_STEP,
   buildPriceMarkers,
   buildPriceSliderField,
@@ -108,7 +109,8 @@ describe('the slider’s track', () => {
     // A track that stopped short would park the thumb at its end, and the next
     // nudge would drag the typed price down to the end of the track.
     expect(priceSliderMax(3_000_000)).toBe(3_000_000)
-    expect(priceSliderMax(2_000_001)).toBe(2_000_001 + PRICE_SLIDER_STEP - 1)
+    // Rounded up to a whole step, so the track's own end is a callable price.
+    expect(priceSliderMax(2_000_001)).toBe(2_005_000)
     expect(priceSliderMax(3_000_000) % PRICE_SLIDER_STEP).toBe(0)
   })
 
@@ -128,10 +130,33 @@ describe('the price slider field', () => {
 
     expect(field.id).toBe('priceSlider')
     expect(field.value).toBe(700_000)
-    expect(field.min).toBe(0)
+    expect(field.min).toBe(PRICE_SLIDER_MIN)
     expect(field.max).toBe(PRICE_SLIDER_BASE_MAX)
     expect(field.step).toBe(PRICE_SLIDER_STEP)
     expect(field.markers).toHaveLength(2)
+  })
+
+  it.each([
+    // The number field takes anything that parses and deliberately does not
+    // snap it; the track cannot hold either of these, and a browser would
+    // clamp them silently — leaving the thumb at an end while the price says
+    // otherwise, so the next nudge would drag the typed price there.
+    ['a negative price', -5, PRICE_SLIDER_MIN],
+    ['a price past the codec ceiling', PRICE_MAX * 2, PRICE_MAX],
+    ['a price that is not a number', Number.NaN, PRICE_SLIDER_MIN],
+  ])('shows %s as the nearest point the track can represent', (_case, price, expected) => {
+    const field = buildPriceSliderField(price, eligible, () => {})
+
+    expect(field.value).toBe(expected)
+    expect(field.value).toBeGreaterThanOrEqual(field.min)
+    expect(field.value).toBeLessThanOrEqual(field.max)
+  })
+
+  it('leaves a price the track can represent exactly as it is', () => {
+    // Only what the slider shows is bounded; the price itself is untouched.
+    for (const price of [0, 1, 749_000, PRICE_SLIDER_BASE_MAX, 3_000_000]) {
+      expect(buildPriceSliderField(price, eligible, () => {}).value).toBe(price)
+    }
   })
 
   it('reports a price through onChange and nothing else', () => {

@@ -8,7 +8,7 @@ import { calculate } from './logic/calculate'
 import { APP_CURRENCY } from './logic/currencyConfig'
 import { formatMoney } from './logic/format'
 import { roundForDisplay } from './logic/rounding'
-import { parseParams } from './logic/urlState'
+import { PRICE_MAX, parseParams } from './logic/urlState'
 import { SKINS } from './skins/registry'
 
 // Skins are React.lazy, so the first render resolves a dynamic import before
@@ -552,6 +552,18 @@ describe('the price slider and its duty cliffs', () => {
     fireEvent.change(input('price'), { target: { value: '749000' } })
     expect(input('price').value).toBe('749000')
     expect(slider().value).toBe('749000')
+  })
+
+  it('parks at its own end for a price the track cannot reach, and leaves the field alone', async () => {
+    await renderAt('/?lang=en&price=620000')
+    // Above PRICE_MAX, which the field accepts and does not snap.
+    fireEvent.change(input('price'), { target: { value: '200000000' } })
+
+    expect(input('price').value).toBe('200000000')
+    // The control states its own limit rather than leaving the browser to
+    // clamp a value it was handed out of range.
+    expect(slider().value).toBe(String(PRICE_MAX))
+    expect(slider().max).toBe(String(PRICE_MAX))
   })
 
   it('shows both cliffs to an eligible first home buyer', async () => {
