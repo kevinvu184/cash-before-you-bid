@@ -1,4 +1,10 @@
 import { DEFAULT_INPUTS } from '../data/defaults'
+import {
+  DEFAULT_DISPLAY_CURRENCY,
+  isDisplayCurrency,
+  type DisplayCurrency,
+} from './currencyConfig'
+import { isValidRate } from './exchangeRate'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
@@ -17,8 +23,8 @@ import { PROPERTIES_MAX, PROPERTIES_MIN } from './sunkCost'
 // short and stable. The full table (name, type, allowed values, default) is
 // documented in README.md.
 //
-//   adj bids bp bufm caplmi conv dep fhb foreign ins lang lender loan move
-//   newhome otp ppr price rate region route save
+//   adj bids bp bufm caplmi conv cur dep fhb foreign fx ins lang lender loan
+//   move newhome otp ppr price rate region route save
 //
 // Params equal to their default are omitted; keys are emitted alphabetically
 // so the same state always produces the same URL. Booleans are 1/0.
@@ -185,6 +191,14 @@ export function serialiseParams(state: AppState): URLSearchParams {
 //
 //   skin  <id>          omitted when it is the default skin
 //   mode  light | dark  omitted while following the operating system
+//   cur   AUD | VND     omitted while figures are shown in the base currency
+//   fx    number        omitted unless a typed rate is standing in for the
+//                       fetched one
+//
+// The display currency and its rate sit here rather than in AppState for the
+// same reason the skin does: a shared link has to reproduce the figures the
+// sender was looking at — and the rate is half of what determines them — but
+// neither changes a number the calculator worked out.
 
 /** `'system'` means "no ?mode=": follow prefers-color-scheme, and keep following it. */
 export type ModePreference = ColorMode | 'system'
@@ -192,11 +206,29 @@ export type ModePreference = ColorMode | 'system'
 export interface PresentationState {
   skin: SkinId
   mode: ModePreference
+  /** The currency figures are written in. Amounts are always held in AUD. */
+  currency: DisplayCurrency
+  /** Rate the user typed in place of the fetched one; null means use the live rate. */
+  manualRate: number | null
 }
 
 export const DEFAULT_PRESENTATION: PresentationState = {
   skin: DEFAULT_SKIN_ID,
   mode: 'system',
+  currency: DEFAULT_DISPLAY_CURRENCY,
+  manualRate: null,
+}
+
+/**
+ * A typed exchange rate. Out of range is treated as absent, not clamped: an
+ * override is a figure the user asserted, and silently swapping it for a
+ * boundary would show them figures priced at a rate they never typed.
+ */
+function readRate(searchParams: URLSearchParams): number | null {
+  const raw = searchParams.get('fx')
+  if (raw === null || raw.trim() === '') return null
+  const rate = Number(raw)
+  return isValidRate(rate) ? rate : null
 }
 
 export interface UrlState {
@@ -212,6 +244,7 @@ export const DEFAULT_URL_STATE: UrlState = {
 export function parsePresentation(searchParams: URLSearchParams): PresentationState {
   const rawSkin = searchParams.get('skin')
   const rawMode = searchParams.get('mode')
+  const rawCurrency = searchParams.get('cur')
   return {
     // Absent means the default skin; present-but-unknown means the plain
     // baseline, which is always renderable. Either way serialisePresentation
@@ -219,6 +252,8 @@ export function parsePresentation(searchParams: URLSearchParams): PresentationSt
     // query string with `replace`.
     skin: rawSkin === null ? DEFAULT_SKIN_ID : isSkinId(rawSkin) ? rawSkin : FALLBACK_SKIN_ID,
     mode: isColorMode(rawMode) ? rawMode : 'system',
+    currency: isDisplayCurrency(rawCurrency) ? rawCurrency : DEFAULT_DISPLAY_CURRENCY,
+    manualRate: readRate(searchParams),
   }
 }
 
@@ -226,6 +261,8 @@ export function serialisePresentation(state: PresentationState): Array<[string, 
   const entries: Array<[string, string]> = []
   if (state.skin !== DEFAULT_SKIN_ID) entries.push(['skin', state.skin])
   if (state.mode !== 'system') entries.push(['mode', state.mode])
+  if (state.currency !== DEFAULT_DISPLAY_CURRENCY) entries.push(['cur', state.currency])
+  if (state.manualRate !== null) entries.push(['fx', String(state.manualRate)])
   return entries
 }
 

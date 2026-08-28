@@ -4,16 +4,22 @@ import { assessReadiness } from '../logic/verdict'
 import { buildVerdictFields } from '../logic/verdictFields'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { Lang } from '../logic/lang'
+import { RATE_PROVIDER } from '../logic/exchangeRate'
 import {
   type AppViewModel,
   type BooleanInputField,
+  type DisplayViewModel,
   type FieldId,
   type LineField,
   type NumberInputField,
   type StatField,
 } from '../types/viewModel'
 import {
+  AMOUNT_HEADER_KEY,
+  CURRENCY_OPTIONS,
+  CURRENCY_SYMBOL_KEY,
   DEPOSIT_HINT_KEY,
+  EXCHANGE_RATE_ACTION_KEYS,
   LANGUAGE_OPTIONS,
   MODE_OPTIONS,
   NOTE_ENTRIES,
@@ -35,6 +41,12 @@ import type { ScenarioActionKeys, ScenarioEntry } from '../types/viewModel'
  *
  * The numbers are arbitrary but distinct, so a skin that renders the wrong
  * field's value in the wrong place fails the text assertions.
+ *
+ * It is fixed in đồng at a fixed rate, so a skin that formats a figure without
+ * the display it was handed — printing dollars under a ₫ heading — fails the
+ * same assertions. The rate line is present for the same reason parity needs
+ * every other field present, even though the live app hides it under the base
+ * currency, where no rate is doing any work.
  */
 
 const noop = () => {}
@@ -78,6 +90,42 @@ function boolean(
     importance: 'secondary',
     onChange: noop,
   }
+}
+
+const FIXTURE_DISPLAY: DisplayViewModel = {
+  settings: { currency: 'VND', rate: 18_700 },
+  currency: {
+    id: 'currency',
+    controlId: 'cur',
+    labelKey: 'currency.label',
+    value: 'VND',
+    kind: 'text',
+    importance: 'secondary',
+    options: CURRENCY_OPTIONS,
+    onChange: noop,
+  },
+  rate: {
+    id: 'exchangeRate',
+    labelKey: 'currency.rateLabel',
+    value: 18_700,
+    kind: 'number',
+    importance: 'secondary',
+    lineKey: 'currency.rateLine',
+    baseSymbolKey: CURRENCY_SYMBOL_KEY.AUD,
+    symbolKey: CURRENCY_SYMBOL_KEY.VND,
+    source: {
+      key: 'currency.sourceLive',
+      params: { provider: { format: 'raw', value: RATE_PROVIDER } },
+    },
+    // Fixed, so the rendered stamp is stable across runs and time zones.
+    updatedAt: Date.UTC(2026, 7, 27, 22),
+    manual: false,
+    actionKeys: EXCHANGE_RATE_ACTION_KEYS,
+    providerName: RATE_PROVIDER,
+    noteKey: 'currency.note',
+    onOverride: noop,
+    onReset: noop,
+  },
 }
 
 const SCENARIO_ACTION_KEYS: ScenarioActionKeys = {
@@ -305,6 +353,7 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
   const skinId = options.skinId ?? 'default'
   return {
     locale,
+    display: FIXTURE_DISPLAY,
     skinId,
     resolvedMode: options.resolvedMode ?? 'light',
     chrome: {
@@ -499,7 +548,7 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       linesHeadingKey: 'results.linesHeading',
       tableHeadingKeys: {
         line: 'table.line',
-        amount: 'table.amount',
+        amount: AMOUNT_HEADER_KEY.VND,
         how: 'table.how',
       },
       lines: LINES.lines,
@@ -529,12 +578,12 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         kind: 'text',
         importance: 'secondary',
         value: [
-          { key: 'money.disclaimer', params: { unit: { format: 'moneyExact', value: 100 } } },
+          { key: 'money.disclaimer', params: { unit: { format: 'moneyUnit', value: 100_000 } } },
           {
             key: 'money.disclaimerSmall',
             params: {
-              threshold: { format: 'moneyExact', value: 1000 },
-              smallUnit: { format: 'moneyExact', value: 10 },
+              threshold: { format: 'moneyUnit', value: 1_000_000 },
+              smallUnit: { format: 'moneyUnit', value: 10_000 },
             },
           },
           { key: 'money.roundingNote', params: {} },

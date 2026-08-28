@@ -1,9 +1,10 @@
 /* Offline for an inspection with no signal.
  *
- * The app is a static SPA: it calculates in the browser, sends nothing, and
- * fetches nothing at runtime. So the whole job here is to keep the shell and
- * its build assets, and the whole risk is stranding someone on a stale bundle
- * after a redeploy. The two rules that follow from that:
+ * The app is a static SPA: it calculates in the browser and sends nothing. Its
+ * one runtime request — the exchange rate, on the first switch to đồng — is
+ * cross-origin and handled below by being left alone. So the whole job here is
+ * to keep the shell and its build assets, and the whole risk is stranding
+ * someone on a stale bundle after a redeploy. The two rules that follow:
  *
  *   - The document is network-first. A redeploy changes index.html — it points
  *     at newly hashed assets — so an online visit always takes the fresh one
@@ -14,7 +15,10 @@
  *     is what keeps the last-visited version launchable offline.
  *
  * Nothing cross-origin is touched: the web fonts fall back to the system stack
- * offline, which is what font-display: swap already does on a slow connection.
+ * offline, which is what font-display: swap already does on a slow connection,
+ * and the exchange rate falls back to its own bundled indicative figure. A
+ * rate cached here would be worse than either — it has its own 12-hour
+ * expiry in localStorage, which a cache-first rule would silently outlive.
  *
  * Scope comes from the registration rather than a hardcoded path, so the
  * GitHub Pages base ('/cash-before-you-bid/') needs no mention here.

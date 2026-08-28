@@ -1,3 +1,4 @@
+import type { DisplayCurrency } from './currencyConfig'
 import type { Lang } from './lang'
 import type { ColorMode, SkinId } from './skins'
 import type { ModePreference } from './urlState'
@@ -11,6 +12,7 @@ import type {
 } from '../types/calculator'
 import type {
   ChoiceOption,
+  ExchangeRateActionKeys,
   GuidanceField,
   GuidanceFieldId,
   NoteEntry,
@@ -209,6 +211,46 @@ export const MODE_OPTIONS: readonly ChoiceOption<ModePreference>[] = [
   { value: 'light', labelKey: 'mode.light' },
   { value: 'dark', labelKey: 'mode.dark' },
 ]
+
+// One place mapping a currency to the keys that name it, so the symbol on the
+// switch, the symbol heading the amount column and the name a screen reader
+// announces can never drift apart.
+
+export const CURRENCY_SYMBOL_KEY: Readonly<Record<DisplayCurrency, string>> = {
+  AUD: 'currency.symbolAud',
+  VND: 'currency.symbolVnd',
+}
+
+export const CURRENCY_NAME_KEY: Readonly<Record<DisplayCurrency, string>> = {
+  AUD: 'currency.nameAud',
+  VND: 'currency.nameVnd',
+}
+
+/**
+ * What heads the amount column. Not always the symbol: formatMoney writes AUD
+ * as the ISO code for a vi reader, because "AU$" there does not read as
+ * unambiguously Australian — so the column head follows the cells under it
+ * rather than the symbol on the switch.
+ */
+export const AMOUNT_HEADER_KEY: Readonly<Record<DisplayCurrency, string>> = {
+  AUD: 'table.amount',
+  VND: 'table.amountVnd',
+}
+
+// The switch shows the symbol alone; the currency is named in the accessible
+// label, so the same control reads identically in both languages.
+export const CURRENCY_OPTIONS: readonly ChoiceOption<DisplayCurrency>[] = [
+  { value: 'AUD', labelKey: CURRENCY_SYMBOL_KEY.AUD, a11yLabelKey: CURRENCY_NAME_KEY.AUD },
+  { value: 'VND', labelKey: CURRENCY_SYMBOL_KEY.VND, a11yLabelKey: CURRENCY_NAME_KEY.VND },
+]
+
+export const EXCHANGE_RATE_ACTION_KEYS: ExchangeRateActionKeys = {
+  overrideLabel: 'currency.overrideLabel',
+  apply: 'currency.apply',
+  cancel: 'currency.cancel',
+  reset: 'currency.reset',
+  manualTag: 'currency.manualTag',
+}
 
 export const COLOR_MODE_LABEL_KEY: Readonly<Record<ColorMode, string>> = {
   light: 'mode.light',

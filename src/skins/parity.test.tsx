@@ -9,6 +9,7 @@ import type { SkinModule } from '../types/skin'
 import { ALL_FIELD_IDS, type AppViewModel, type FieldId } from '../types/viewModel'
 import { SKINS } from './registry'
 import { estimateMoney, estimateRowAmount } from './shared/text'
+import type { Display } from '../logic/display'
 
 // Information parity. Every registered skin, in every mode and both locales,
 // renders the same fixed view model and must put exactly the same set of
@@ -47,12 +48,15 @@ function fieldElements(root: HTMLElement): Map<FieldId, HTMLElement[]> {
  * those are covered by the id set, not by a value assertion.
  */
 function expectedText(vm: AppViewModel, id: FieldId, locale: string): string | null {
+  // Formatted through the display the skin was handed, not the base currency:
+  // a skin that ignored it would print dollars under the ₫ column heading.
+  const display: Display = { locale, ...vm.display.settings }
   const stat = [...vm.results.stats, ...vm.results.sunkCost.stats].find(
     (candidate) => candidate.id === id,
   )
-  if (stat) return estimateMoney(stat.value, locale)
+  if (stat) return estimateMoney(stat.value, display)
   const line = vm.results.lines.find((candidate) => candidate.id === id)
-  if (line) return estimateRowAmount(line.value, locale)
+  if (line) return estimateRowAmount(line.value, display)
   return null
 }
 

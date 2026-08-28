@@ -1,3 +1,8 @@
+import {
+  FHB_DUTY_CONCESSION_CAP,
+  FHB_DUTY_CONCESSION_RANGE,
+  FHB_DUTY_EXEMPTION_CAP,
+} from '../data/constants'
 import type { DutyHowCode, OffThePlanHow } from '../types/calculator'
 
 // Victorian land transfer duty, general rates.
@@ -59,11 +64,11 @@ export function stampDuty(input: StampDutyInput): StampDutyResult {
   let code: DutyHowCode
   let params: Record<string, number> = { dutiableValue }
   if (firstHomeConcessional) {
-    if (dutiableValue <= 600_000) {
+    if (dutiableValue <= FHB_DUTY_EXEMPTION_CAP) {
       duty = 0
       code = 'dutyFhbExempt'
-    } else if (dutiableValue <= 750_000) {
-      duty = (base * (dutiableValue - 600_000)) / 150_000
+    } else if (dutiableValue <= FHB_DUTY_CONCESSION_CAP) {
+      duty = (base * (dutiableValue - FHB_DUTY_EXEMPTION_CAP)) / FHB_DUTY_CONCESSION_RANGE
       code = 'dutyFhbConcession'
       params = { base, dutiableValue }
     } else {

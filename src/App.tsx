@@ -106,6 +106,15 @@ function App() {
     document.documentElement.dataset.coreInstance = String(instance)
   }, [instance])
 
+  // The display currency is published on the root element, beside data-skin
+  // and data-mode, so a stylesheet can answer it directly: đồng figures run
+  // some two and a half times longer than dollars, and the type and the stat
+  // grid have to give way to them.
+  const currency = core.presentation.currency
+  useEffect(() => {
+    document.documentElement.dataset.cur = currency
+  }, [currency])
+
   return <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
 }
 
