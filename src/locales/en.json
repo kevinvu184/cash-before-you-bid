@@ -55,10 +55,10 @@
     "regional": "Rest of Victoria (scheme cap $650k)"
   },
   "hints": {
-    "scheme": "Minimum 5% under the scheme",
-    "htb": "Minimum 2% under Help to Buy",
-    "nolmi": "20% avoids LMI without a guarantor",
-    "lmi": "Under 20%; LMI charged"
+    "scheme": "The contract sets the deposit you pay on the day, usually 10%. The scheme needs at least 5%.",
+    "htb": "The contract sets the deposit you pay on the day, usually 10%. Help to Buy needs at least 2%.",
+    "nolmi": "The contract sets the deposit you pay on the day, usually 10%. 20% avoids LMI without a guarantor.",
+    "lmi": "The contract sets the deposit you pay on the day, usually 10%. Under 20%, LMI is charged."
   },
   "results": {
     "flagsLabel": "Warnings and notes",
@@ -132,6 +132,19 @@
     "subtotalAuctionDay": "Subtotal — on auction day",
     "subtotalAtSettlement": "Subtotal — at settlement",
     "subtotalAfterSettlement": "Subtotal — after settlement"
+  },
+  "guidance": {
+    "auctionDay": "Paying the deposit on the day",
+    "hammerTerm": "Due on the fall of the hammer.",
+    "hammerBody": " You sign the contract straight after the auction, and the deposit is payable then. An auction purchase has no cooling-off period.",
+    "percentTerm": "The contract sets the percentage, not you.",
+    "percentBody": " It is usually 10%. A 5% deposit does happen, but the vendor has to agree to it before the auction — check the contract of sale.",
+    "formTerm": "Confirm the accepted forms with the agent beforehand.",
+    "formBody": " Personal cheques are often not accepted. Typically it is a bank cheque, EFT, or the agent’s online deposit service.",
+    "bondTerm": "Deposit bonds are rarely accepted in Victoria.",
+    "bondBody": " Section 27 of the Sale of Land Act 1962 lets a vendor seek early release of a cash deposit, and a bond cannot be released that way — so a bond needs the vendor’s written agreement before the auction.",
+    "confirmTerm": "Common practice, not advice.",
+    "confirmBody": " Terms vary from contract to contract: check yours with the agent and your conveyancer before you bid."
   },
   "rows": {
     "deposit": "Deposit",

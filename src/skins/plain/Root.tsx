@@ -6,6 +6,7 @@ import type {
   AppViewModel,
   BooleanInputField,
   ChoiceInputField,
+  GuidanceField,
   InputsViewModel,
   LineField,
   NumberInputField,
@@ -202,6 +203,29 @@ function PlainRow({ line }: { line: LineField }) {
   )
 }
 
+/**
+ * A band's guidance, spelled out. No disclosure — the plain skin hides
+ * nothing — so the points are simply a list in the band's last row.
+ */
+function PlainGuidance({ guidance }: { guidance: GuidanceField }) {
+  const { t } = useTranslation()
+  return (
+    <tr className="plain-guidance">
+      <td colSpan={3}>
+        <strong>{t(guidance.labelKey)}</strong>
+        <ul data-field={guidance.id} data-importance={guidance.importance}>
+          {guidance.value.map((point) => (
+            <li key={point.termKey}>
+              <strong>{t(point.termKey)}</strong>
+              {t(point.bodyKey)}
+            </li>
+          ))}
+        </ul>
+      </td>
+    </tr>
+  )
+}
+
 function Results({ results }: { results: ResultsViewModel }) {
   const { t, i18n } = useTranslation()
   return (
@@ -254,6 +278,7 @@ function Results({ results }: { results: ResultsViewModel }) {
                   <PlainRow key={line.id} line={line} />
                 ))}
                 <PlainRow line={group.subtotal} />
+                {group.guidance === null ? null : <PlainGuidance guidance={group.guidance} />}
               </tbody>
             ))}
             <tbody>

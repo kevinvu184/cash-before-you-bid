@@ -251,6 +251,22 @@
   font-weight: var(--font-weight-strong);
 }
 
+/* The band's guidance, in the open. It spans the row group's full width, so
+   the sentences wrap down the page instead of widening the table. */
+[data-skin='plain'] .plain-lines tr.plain-guidance > td {
+  padding-bottom: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+[data-skin='plain'] .plain-lines tr.plain-guidance ul {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
+}
+
+[data-skin='plain'] .plain-lines tr.plain-guidance li {
+  margin-bottom: var(--space-1);
+}
+
 [data-skin='plain'] .estimate-note {
   margin: 0 0 var(--space-4);
 }
