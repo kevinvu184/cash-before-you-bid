@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
 import i18n from '../i18n'
@@ -15,11 +14,7 @@ beforeAll(async () => {
 })
 
 async function renderApp() {
-  const result = render(
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>,
-  )
+  const result = render(<App />)
   await waitFor(() => expect(document.getElementById('price')).not.toBeNull())
   return result
 }

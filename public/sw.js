@@ -13,8 +13,18 @@
  *     Assets from an older build linger until the version below changes, which
  *     is what keeps the last-visited version launchable offline.
  *
- * Nothing cross-origin is touched: the web fonts fall back to the system stack
- * offline, which is what font-display: swap already does on a slow connection.
+ * Nothing cross-origin is touched, and since the web fonts moved onto this
+ * origin (src/fonts.css, public/fonts) that no longer costs anything: the
+ * cache-first rule picks them up on the first visit and the typography
+ * survives offline.
+ *
+ * One caveat that comes with them, and with everything else in public/ — the
+ * icons, the manifest, the favicon. Those URLs are not fingerprinted, so the
+ * "a given URL's bytes never change" reasoning above is a promise the build
+ * cannot keep for them; it is kept by hand. Replacing any of those files means
+ * bumping VERSION below in the same commit, or a returning visitor keeps the
+ * old bytes until something else evicts the cache. src/fonts.css says so where
+ * it explains how to regenerate the font files.
  *
  * Scope comes from the registration rather than a hardcoded path, so the
  * GitHub Pages base ('/cash-before-you-bid/') needs no mention here.

@@ -1,0 +1,58 @@
+# The pull request gate.
+#
+# Until this existed, deploy.yml was the only workflow and it triggered on push
+# to main — so every pull request in this repository showed zero checks and
+# merged unverified, and the mobile performance budget in CLAUDE.md was prose
+# nothing could fail on. This runs the checks a contributor runs locally, plus
+# the budget, on the merge result of every pull request.
+#
+# One job, one install, no matrix: the whole thing is a minute, which is the
+# point. Anything slower gets ignored or worked around.
+
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# A new push supersedes the run in flight for the same pull request.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, test, build, budget
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Matches deploy.yml, and the floor in package.json engines.
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Also the type check: `npm run build` is `tsc -b && vite build`.
+      - name: Build
+        run: npm run build
+
+      # Reads dist/, so it has to follow the build. Writes the measured totals
+      # to the run summary whether it passes or fails, so the numbers are on
+      # every pull request rather than only on the ones that break.
+      - name: Mobile performance budget
+        run: npm run size
