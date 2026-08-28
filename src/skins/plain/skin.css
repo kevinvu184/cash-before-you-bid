@@ -311,6 +311,23 @@
   touch-action: manipulation;
 }
 
+/* A pasted address with no spaces must not widen the page at 360px. `anywhere`
+   rather than `break-word` on purpose: it also shrinks the element's
+   min-content size, so the flex row can actually give the control less room —
+   `break-word` would let the text wrap but leave the row demanding the full
+   unbroken width. The 44px floor above still holds. The default skin guards
+   its own row the same way. */
+[data-skin='plain'] .plain-scenarios li > button,
+[data-skin='plain'] .plain-scenarios li > span {
+  overflow-wrap: anywhere;
+}
+
+/* The confirmation question carries the name and has no width floor of its
+   own; a flex item will not shrink below its content without this. */
+[data-skin='plain'] .plain-scenarios li > span {
+  min-width: 0;
+}
+
 [data-skin='plain'] .plain-scenarios button:disabled {
   color: var(--color-text-muted);
   border-color: var(--color-hairline);
