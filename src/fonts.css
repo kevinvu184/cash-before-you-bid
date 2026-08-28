@@ -22,6 +22,10 @@
  * Libre+Franklin:wght@400..600 and Source+Code+Pro:wght@400. Re-run that
  * request with a modern browser user agent, keep the three subsets above, and
  * drop the woff2 files into public/fonts under the same names.
+ *
+ * These URLs are not fingerprinted, and public/sw.js caches them first, so
+ * replacing a file without bumping VERSION in that worker leaves every
+ * returning visitor on the old one. Bump it in the same commit.
  */
 
 /* Libre Franklin, latin */
