@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { APP_CURRENCY } from '../logic/currencyConfig'
 import { formatMoney, formatPercent } from '../logic/format'
 import type { CalculationTiles } from '../types/calculator'
-import { approxMoney } from './resultText'
+import { estimateMoney } from './resultText'
 
 interface StatProps {
   id: string
@@ -33,9 +33,9 @@ interface StatRowProps {
 export function StatRow({ tiles }: StatRowProps) {
   const { t, i18n } = useTranslation()
   const locale = i18n.language
-  // Computed figures are estimates: rounded and "~"-prefixed. The purchase
-  // price is the user's own input, so it stays exact.
-  const aud = (amount: number) => approxMoney(amount, t, locale)
+  // Computed figures are estimates: rounded for display. The purchase price is
+  // the user's own input, so it stays exact.
+  const aud = (amount: number) => estimateMoney(amount, locale)
   const exact = (amount: number) => formatMoney(amount, APP_CURRENCY, locale, { round: false })
   const pct = (value: number) => formatPercent(value, locale)
 

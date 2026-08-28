@@ -3,10 +3,11 @@ import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
 import { formatMoney } from '../logic/format'
 
 /**
- * Sits under the results: says the figures are rounded estimates (naming the
- * currency's rounding unit, and the finer unit used below the threshold when
- * the currency defines one) and that independently rounded parts may not add
- * to the independently rounded total.
+ * Sits under the results: the single place that says every computed figure on
+ * the page is a rounded estimate (naming the currency's rounding unit, and the
+ * finer unit used below the threshold when the currency defines one) and that
+ * independently rounded parts may not add to the independently rounded total.
+ * Because it carries that once, no figure is marked "~" individually.
  */
 export function EstimateDisclaimer() {
   const { t, i18n } = useTranslation()
