@@ -189,6 +189,9 @@ describe('rounded estimates', () => {
     renderApp()
     const note = document.querySelector('.estimate-note')
     expect(note?.textContent).toContain('làm tròn đến 100 AUD gần nhất')
+    expect(note?.textContent).toContain(
+      'Số tiền dưới 1.000\u00a0AUD được làm tròn đến 10\u00a0AUD gần nhất',
+    )
     expect(note?.textContent).toContain('không khớp với tổng do làm tròn')
   })
 })

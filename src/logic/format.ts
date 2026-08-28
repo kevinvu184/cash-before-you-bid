@@ -16,8 +16,8 @@ export interface FormatMoneyOptions {
 /**
  * Money for the given UI locale ('en' or 'vi'). Rounded (default) it shows an
  * estimate snapped to the currency's rounding unit with no minor units;
- * unrounded it shows the value exactly, with the currency's normal minor-unit
- * digits only when the value has them (never a trailing ".00").
+ * unrounded it shows the value exactly, keeping every fraction digit the
+ * value carries (up to Intl's 20) and never adding a trailing ".00".
  *
  * For AUD it prefers the locale's own symbol when it is unambiguous
  * ("A$1,235" for en); when the symbol Intl produces does not read as clearly
