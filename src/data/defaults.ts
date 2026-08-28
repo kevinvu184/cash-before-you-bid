@@ -24,4 +24,7 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   savings: 0,
   // Null, not 0: "not yet pre-approved" suppresses the finance check.
   preApprovedLoan: null,
+  // 1 keeps the whole-search figures equal to the per-property ones, so the
+  // calculator behaves exactly as it did for anyone who ignores the field.
+  propertiesConsidered: 1,
 }

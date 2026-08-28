@@ -5,11 +5,13 @@ import { useMediaQuery } from '../../hooks/useMediaQuery'
 import type { FlagKind } from '../../types/calculator'
 import type {
   Field,
+  GuidanceField,
   LineField,
   NoteEntry,
   ResultsViewModel,
   SourcesValue,
   StatField,
+  SunkCostViewModel,
   TextRef,
   VerdictField,
 } from '../../types/viewModel'
@@ -174,6 +176,9 @@ function LineTable({ results }: { results: ResultsViewModel }) {
           </tr>
           {group.lines.map(renderLine)}
           <SubtotalRow line={group.subtotal} wide={wide} />
+          {group.guidance === null ? null : (
+            <BandGuidance guidance={group.guidance} span={wide ? 3 : 2} />
+          )}
         </tbody>
       ))}
       <tbody>{renderLine(results.total)}</tbody>
@@ -193,6 +198,37 @@ function SubtotalRow({ line, wide }: { line: LineField; wide: boolean }) {
       <td>{t(line.labelKey)}</td>
       <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
       {wide ? <td className="m" /> : null}
+    </tr>
+  )
+}
+
+/**
+ * The band's closing note: what the money in it has to look like. A native
+ * `<details>`, so it opens on tap, on Enter and on Space with no hover
+ * anywhere in it, and the points are in the DOM whether or not it is open.
+ * It sits after the subtotal so the figures of a band stay together.
+ */
+function BandGuidance({ guidance, span }: { guidance: GuidanceField; span: number }) {
+  const { t } = useTranslation()
+  return (
+    <tr className="band-guidance">
+      <td colSpan={span}>
+        <details className="guidance">
+          <summary>{t(guidance.labelKey)}</summary>
+          <ul
+            className="small"
+            data-field={guidance.id}
+            data-importance={guidance.importance}
+          >
+            {guidance.value.map((point) => (
+              <li key={point.termKey}>
+                <strong>{t(point.termKey)}</strong>
+                {t(point.bodyKey)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      </td>
     </tr>
   )
 }
@@ -285,6 +321,43 @@ function EstimateNote({ field }: { field: Field<readonly TextRef[]> }) {
   )
 }
 
+/**
+ * The pre-auction spend, under the table and above the estimate note. Its own
+ * section, not two more tiles in the stat row: the figures above are what
+ * buying this one property costs, and this money is spent whether or not the
+ * auction is won.
+ */
+function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
+  const { t, i18n } = useTranslation()
+  const research = sunk.research.value
+  return (
+    <section className="sunk">
+      <h3>{t(sunk.headingKey)}</h3>
+      <div className="stats">
+        {sunk.stats.map((stat) => (
+          <Stat key={stat.id} stat={stat} />
+        ))}
+      </div>
+      <p
+        className="small"
+        data-field={sunk.framing.id}
+        data-importance={sunk.framing.importance}
+      >
+        {refText(sunk.framing.value, t, i18n.language)}
+      </p>
+      <p
+        className="small"
+        data-field={sunk.research.id}
+        data-importance={sunk.research.importance}
+      >
+        {t(research.beforeKey)}
+        <a href={research.href}>{t(research.linkKey)}</a>
+        {t(research.afterKey)}
+      </p>
+    </section>
+  )
+}
+
 function RulesNotes({
   headingKey,
   notes,
@@ -331,6 +404,7 @@ export function Results({ results }: { results: ResultsViewModel }) {
         ))}
       </div>
       <LineTable results={results} />
+      <SunkCost sunk={results.sunkCost} />
       <EstimateNote field={results.estimateNote} />
       <RulesNotes
         headingKey={results.notesHeadingKey}

@@ -24,11 +24,35 @@ first use): **Cash Before You Bid**, **AUD**, **LMI**, **LVR**, **PEXA**,
 **off-the-plan** (glossed as "mua nhà trên giấy"), **Land Services Victoria**,
 **CBA**, **Bank Australia**, place names.
 
+Legislation is named in English, because that is what a buyer will see on the
+contract and what an agent or conveyancer will say: **Section 27** and
+**Sale of Land Act 1962** (in `guidance.bondBody`, kept together as
+"Section 27 của Sale of Land Act 1962"). The same rule covers the payment
+terms in that note: **deposit bond** (glossed as "giấy bảo lãnh đặt cọc"),
+**bank cheque**, **EFT**, **personal cheque**, **contract of sale**,
+**cooling-off period** (glossed as "thời gian được rút lui khỏi hợp đồng") and
+**conveyancer**.
+
 Terms a native reviewer should look at first: "thuế trước bạ" (stamp duty),
 "tất toán" (settlement), "phí pháp lý chuyển nhượng" (conveyancing),
 "người bảo lãnh" (guarantor), "vốn chính phủ" (government equity),
 "khoản dự phòng" (buffer), "trả giá" (bid). Alternatives are listed in the
 pull request that introduced the localisation.
+
+From the auction-day deposit guidance (`guidance.*`) and the deposit hints
+(`hints.*`), in rough order of how likely they are to be wrong:
+
+- "bên môi giới" for the selling agent — "đại lý bất động sản" and
+  "công ty môi giới" are the alternatives, and the right one depends on how
+  Vietnamese-Australian buyers actually refer to the agent at an auction.
+- "giải ngân sớm" for the early release of a deposit under Section 27
+  ("giải toả sớm" is the other candidate).
+- "búa gõ chốt giá" for the fall of the hammer — deliberately literal.
+- "giấy bảo lãnh đặt cọc" as the gloss for a deposit bond.
+- "chuyên viên pháp lý chuyển nhượng" for conveyancer, which follows the
+  existing "phí pháp lý chuyển nhượng" for conveyancing.
+- "thông lệ phổ biến" for "common practice", in the line that keeps the note
+  descriptive rather than advisory.
 
 ## Submitting corrections
 

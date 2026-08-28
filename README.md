@@ -67,23 +67,49 @@ Everything the user can change lives in the query string, so a link reproduces
 the exact view. Params equal to their default are omitted and keys are sorted,
 so the same state always produces the same URL.
 
-| Param  | Values             | Default    | Meaning                                |
-| ------ | ------------------ | ---------- | -------------------------------------- |
-| `skin` | `default`, `plain` | `default`  | Which skin renders the screen          |
-| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS     |
-| `lang` | `en`, `vi`         | `vi`       | UI language                            |
-| `save` | `0`–`100000000`    | `0`        | Savings available; clamped on read     |
-| `loan` | `0`–`100000000`    | _(absent)_ | Pre-approved loan; absent = not yet    |
+| Param  | Values             | Default    | Meaning                            |
+| ------ | ------------------ | ---------- | ---------------------------------- |
+| `skin` | `default`, `plain` | `default`  | Which skin renders the screen      |
+| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS |
+| `lang` | `en`, `vi`         | `vi`       | UI language                        |
 
-`loan` is the one param whose absence is not the same as `0`. Absent — or
-blank, or unparseable — means "not yet pre-approved", and the finance check is
-not run at all; `loan=0` is a figure the user entered, and the check runs and
-fails on it. Both readings are clamped into range, and neither figure is
-written to the query string at its default.
+The calculator's own params are read and written by `src/logic/urlState.ts`.
+Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.
 
-The calculator's other params (`price`, `route`, `dep`, `region`, `fhb`, `ppr`,
-`newhome`, `otp`, `foreign`, `rate`, `conv`, `bp`, `lender`, `adj`, `ins`,
-`move`, `bufm`, `caplmi`) are read and written by `src/logic/urlState.ts`.
+| Param     | Type            | Allowed values                       | Default  |
+| --------- | --------------- | ------------------------------------ | -------- |
+| `price`   | number          | 0 – 100,000,000                      | 750000   |
+| `route`   | enum            | `scheme`, `lmi`, `nolmi`, `htb`      | `scheme` |
+| `dep`     | number (%)      | 0 – 100, raised to the route minimum | route    |
+| `region`  | enum            | `metro`, `regional`                  | `metro`  |
+| `fhb`     | boolean         | `1`, `0`                             | `1`      |
+| `ppr`     | boolean         | `1`, `0`                             | `1`      |
+| `newhome` | boolean         | `1`, `0`                             | `0`      |
+| `otp`     | number          | 0 – 100,000,000                      | 0        |
+| `foreign` | boolean         | `1`, `0`                             | `0`      |
+| `rate`    | number (% p.a.) | 0 – 25                               | 6.2      |
+| `save`    | number          | 0 – 100,000,000                      | 0        |
+| `loan`    | number          | 0 – 100,000,000                      | _absent_ |
+| `conv`    | number          | 0 – 1,000,000                        | 1600     |
+| `bp`      | number          | 0 – 1,000,000                        | 550      |
+| `bids`    | number          | 1 – 50                               | 1        |
+| `lender`  | number          | 0 – 1,000,000                        | 300      |
+| `adj`     | number          | 0 – 1,000,000                        | 800      |
+| `ins`     | number          | 0 – 1,000,000                        | 1500     |
+| `move`    | number          | 0 – 1,000,000                        | 4000     |
+| `bufm`    | number (months) | 0 – 24                               | 3        |
+| `caplmi`  | boolean         | `1`, `0`                             | `0`      |
+
+`dep` defaults to the deposit route's own minimum (5% scheme, 2% Help to Buy,
+20% no-LMI, 5% LMI), matching what selecting that route resets the field to.
+
+`bids` is the number of properties bid on before winning one. It multiplies the
+pre-auction costs (`conv`, `bp`) and nothing else — see `src/logic/sunkCost.ts`.
+
+`loan` is the one param whose absence is not the same as `0`. Absent — or blank,
+or unparseable — means "not yet pre-approved", and the finance check is not run
+at all; `loan=0` is a figure the user entered, and the check runs and fails on
+it. See `src/logic/verdict.ts`.
 
 **A shared link carries whatever was typed into `save` and `loan`.** Nothing
 leaves the browser — the query string is the whole persistence layer — but a

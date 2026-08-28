@@ -6,12 +6,14 @@ import type {
   AppViewModel,
   BooleanInputField,
   ChoiceInputField,
+  GuidanceField,
   InputsViewModel,
   LineField,
   NumberInputField,
   ResultsViewModel,
   StatField,
   VerdictField,
+  SunkCostViewModel,
 } from '../../types/viewModel'
 import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
 import './skin.css'
@@ -68,7 +70,7 @@ function NumberRow({ field }: { field: NumberInputField }) {
       <input
         id={field.controlId}
         type="text"
-        inputMode="decimal"
+        inputMode={field.keypad}
         autoComplete="off"
         value={field.draft}
         aria-describedby={hintId}
@@ -191,6 +193,29 @@ function Verdict({ verdict }: { verdict: VerdictField }) {
   )
 }
 
+function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
+  const { t, i18n } = useTranslation()
+  const research = sunk.research.value
+  return (
+    <section>
+      <h2>{t(sunk.headingKey)}</h2>
+      <dl className="plain-stats">
+        {sunk.stats.map((stat) => (
+          <Stat key={stat.id} stat={stat} />
+        ))}
+      </dl>
+      <p data-field={sunk.framing.id} data-importance={sunk.framing.importance}>
+        {refText(sunk.framing.value, t, i18n.language)}
+      </p>
+      <p data-field={sunk.research.id} data-importance={sunk.research.importance}>
+        {t(research.beforeKey)}
+        <a href={research.href}>{t(research.linkKey)}</a>
+        {t(research.afterKey)}
+      </p>
+    </section>
+  )
+}
+
 function PlainRow({ line }: { line: LineField }) {
   const { t, i18n } = useTranslation()
   return (
@@ -198,6 +223,29 @@ function PlainRow({ line }: { line: LineField }) {
       <th scope="row">{t(line.labelKey)}</th>
       <td className="plain-figure">{estimateRowAmount(line.value, i18n.language)}</td>
       <td>{howText(line.how, t, i18n.language)}</td>
+    </tr>
+  )
+}
+
+/**
+ * A band's guidance, spelled out. No disclosure — the plain skin hides
+ * nothing — so the points are simply a list in the band's last row.
+ */
+function PlainGuidance({ guidance }: { guidance: GuidanceField }) {
+  const { t } = useTranslation()
+  return (
+    <tr className="plain-guidance">
+      <td colSpan={3}>
+        <strong>{t(guidance.labelKey)}</strong>
+        <ul data-field={guidance.id} data-importance={guidance.importance}>
+          {guidance.value.map((point) => (
+            <li key={point.termKey}>
+              <strong>{t(point.termKey)}</strong>
+              {t(point.bodyKey)}
+            </li>
+          ))}
+        </ul>
+      </td>
     </tr>
   )
 }
@@ -261,6 +309,7 @@ function Results({ results }: { results: ResultsViewModel }) {
                   <PlainRow key={line.id} line={line} />
                 ))}
                 <PlainRow line={group.subtotal} />
+                {group.guidance === null ? null : <PlainGuidance guidance={group.guidance} />}
               </tbody>
             ))}
             <tbody>
@@ -269,6 +318,8 @@ function Results({ results }: { results: ResultsViewModel }) {
           </table>
         </div>
       </section>
+
+      <SunkCost sunk={results.sunkCost} />
 
       <p
         className="estimate-note"

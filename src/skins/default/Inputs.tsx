@@ -8,10 +8,11 @@ import type {
 } from '../../types/viewModel'
 
 /**
- * A text field with the decimal keypad, not `type="number"`: number inputs
- * reject the locale's typed separators, and a vi user must be able to enter
- * `1.234,5`. The raw keystrokes come from the view model as `draft`; parsing
- * happens in the core.
+ * A text field with a keypad, not `type="number"`: number inputs reject the
+ * locale's typed separators, and a vi user must be able to enter `1.234,5`.
+ * Which keypad is the core's call (`keypad`) — a whole count asks for the
+ * digits-only one. The raw keystrokes come from the view model as `draft`;
+ * parsing happens in the core.
  */
 function NumberRow({ field }: { field: NumberInputField }) {
   const { t } = useTranslation()
@@ -27,7 +28,7 @@ function NumberRow({ field }: { field: NumberInputField }) {
       <input
         id={field.controlId}
         type="text"
-        inputMode="decimal"
+        inputMode={field.keypad}
         autoComplete="off"
         value={field.draft}
         aria-describedby={hintId}

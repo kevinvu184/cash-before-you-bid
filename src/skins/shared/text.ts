@@ -1,6 +1,12 @@
 import type { TFunction } from 'i18next'
 import { APP_CURRENCY } from '../../logic/currencyConfig'
-import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../../logic/format'
+import {
+  formatMoney,
+  formatNumber,
+  formatNumberInput,
+  formatPercent,
+  formatRowAmount,
+} from '../../logic/format'
 import type { Flag, RowHow } from '../../types/calculator'
 import type { TextParam, TextRef } from '../../types/viewModel'
 
@@ -40,7 +46,8 @@ export function exactMoney(amount: number, locale: string): string {
 /**
  * Formats one interpolation parameter the view model tagged with a format.
  * `money` is a computed figure and reads as a rounded estimate; `moneyExact`
- * is what the user typed or what a rule states, and is never rounded.
+ * is what the user typed or what a rule states, and is never rounded. The
+ * same distinction holds for `number` and `numberExact`.
  */
 export function textParam(param: TextParam, locale: string): string | number {
   switch (param.format) {
@@ -52,6 +59,10 @@ export function textParam(param: TextParam, locale: string): string | number {
       return formatPercent(param.value, locale)
     case 'number':
       return formatNumber(param.value, locale)
+    case 'numberExact':
+      // formatNumber caps at two decimals; this is the user's own figure, so
+      // it is shown the way the field and the URL hold it.
+      return formatNumberInput(param.value, locale)
     case 'count':
       // i18next needs the raw number to pick the plural form.
       return param.value

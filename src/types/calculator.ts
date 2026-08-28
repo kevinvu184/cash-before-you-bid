@@ -30,6 +30,7 @@ export interface CalculatorInputs {
    * have not asked yet.
    */
   preApprovedLoan: number | null
+  propertiesConsidered: number
 }
 
 export type FlagKind = 'warn' | 'note' | 'ok'
@@ -213,6 +214,21 @@ export interface Readiness {
   financeChecked: boolean
 }
 
+/**
+ * The pre-auction spend, per property and across a whole search. See
+ * src/logic/sunkCost.ts for which rows count and why.
+ */
+export interface SunkCostSummary {
+  /** Pre-auction costs for one property. */
+  perProperty: number
+  /** Properties bid on, after clamping. */
+  properties: number
+  /** perProperty × properties. */
+  expectedTotal: number
+  /** What the auctions you do not win cost: expectedTotal − perProperty. */
+  onPropertiesNotWon: number
+}
+
 export interface CalculationResult {
   appliedDepositPct: number
   flags: Flag[]
@@ -220,4 +236,5 @@ export interface CalculationResult {
   rows: TableRow[]
   totals: CalculationTotals
   readiness: Readiness
+  sunkCost: SunkCostSummary
 }

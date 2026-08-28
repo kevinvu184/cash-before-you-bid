@@ -47,7 +47,9 @@ function fieldElements(root: HTMLElement): Map<FieldId, HTMLElement[]> {
  * those are covered by the id set, not by a value assertion.
  */
 function expectedText(vm: AppViewModel, id: FieldId, locale: string): string | null {
-  const stat = vm.results.stats.find((candidate) => candidate.id === id)
+  const stat = [...vm.results.stats, ...vm.results.sunkCost.stats].find(
+    (candidate) => candidate.id === id,
+  )
   if (stat) return estimateMoney(stat.value, locale)
   const line = vm.results.lines.find((candidate) => candidate.id === id)
   if (line) return estimateRowAmount(line.value, locale)

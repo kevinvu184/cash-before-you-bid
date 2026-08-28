@@ -21,6 +21,7 @@ import {
   ROUTE_OPTIONS,
   SKIN_OPTIONS,
   SOURCES,
+  SUNK_COST_RESEARCH,
 } from '../logic/fieldLabels'
 import type { CalculationTotals, RowCode, TableRow } from '../types/calculator'
 
@@ -45,6 +46,7 @@ function number(
   kind: 'money' | 'number' | 'percent',
   hintKey: string | null = null,
   importance: 'primary' | 'secondary' = 'secondary',
+  keypad: 'decimal' | 'numeric' = 'decimal',
 ): NumberInputField {
   return {
     id,
@@ -53,6 +55,7 @@ function number(
     value,
     kind,
     importance,
+    keypad,
     draft: String(value),
     hintKey,
     onDraftChange: noop,
@@ -75,6 +78,33 @@ function boolean(
     onChange: noop,
   }
 }
+
+const SUNK_STATS: readonly StatField[] = [
+  {
+    id: 'statSunkPerProperty',
+    labelKey: 'sunk.perPropertyLabel',
+    value: 2350,
+    kind: 'money',
+    importance: 'secondary',
+    detail: { key: 'sunk.perPropertySub', params: {} },
+  },
+  {
+    id: 'statSunkSearch',
+    labelKey: 'sunk.searchLabel',
+    value: 9400,
+    kind: 'money',
+    importance: 'primary',
+    detail: {
+      key: 'sunk.searchSub',
+      params: {
+        count: { format: 'count', value: 4 },
+        properties: { format: 'numberExact', value: 4 },
+        perProperty: { format: 'money', value: 2350 },
+        lost: { format: 'money', value: 7050 },
+      },
+    },
+  },
+]
 
 const STATS: readonly StatField[] = [
   {
@@ -380,6 +410,16 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         value: [
           number('conveyancing', 'conv', 'inputs.conveyancing', 1600, 'money'),
           number('buildingAndPest', 'bp', 'inputs.buildingAndPest', 550, 'money'),
+          number(
+            'propertiesConsidered',
+            'bids',
+            'inputs.properties',
+            4,
+            'number',
+            'inputs.propertiesHint',
+            'secondary',
+            'numeric',
+          ),
           number('lenderFees', 'lender', 'inputs.lenderFees', 300, 'money'),
           number('settlementAdjustments', 'adj', 'inputs.settlementAdjustments', 800, 'money'),
           number('buildingInsurance', 'ins', 'inputs.buildingInsurance', 1500, 'money'),
@@ -426,6 +466,24 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       lines: LINES.lines,
       lineGroups: LINES.lineGroups,
       total: LINES.total,
+      sunkCost: {
+        headingKey: 'sunk.heading',
+        stats: SUNK_STATS,
+        framing: {
+          id: 'sunkFraming',
+          labelKey: 'sunk.framing',
+          value: { key: 'sunk.framing', params: {} },
+          kind: 'text',
+          importance: 'secondary',
+        },
+        research: {
+          id: 'sunkResearch',
+          labelKey: 'sunk.researchLink',
+          value: SUNK_COST_RESEARCH,
+          kind: 'text',
+          importance: 'secondary',
+        },
+      },
       estimateNote: {
         id: 'estimateNote',
         labelKey: 'money.disclaimer',

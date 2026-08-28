@@ -78,6 +78,7 @@ describe('serialiseParams', () => {
       capitaliseLmi: true,
       savings: 250_000,
       preApprovedLoan: 9_876_543,
+      propertiesConsidered: 8,
       lang: 'en',
     }
     expect(serialiseParams(state).toString().length).toBeLessThan(300)
@@ -91,7 +92,7 @@ describe('parseParams', () => {
 
   it('reads every param', () => {
     const parsed = parse(
-      'adj=900&bp=600&bufm=6&caplmi=1&conv=1800&dep=12&fhb=0&foreign=1&ins=1600' +
+      'adj=900&bids=4&bp=600&bufm=6&caplmi=1&conv=1800&dep=12&fhb=0&foreign=1&ins=1600' +
         '&lang=en&lender=350&loan=700000&move=4500&newhome=1&otp=50000&ppr=0&price=820000' +
         '&rate=5.9&region=regional&route=lmi&save=95000',
     )
@@ -116,6 +117,7 @@ describe('parseParams', () => {
       capitaliseLmi: true,
       savings: 95_000,
       preApprovedLoan: 700_000,
+      propertiesConsidered: 4,
       lang: 'en',
     })
   })
@@ -150,6 +152,20 @@ describe('parseParams', () => {
     expect(parse('dep=250').depositPct).toBe(100)
     expect(parse('rate=99').interestRatePct).toBe(25)
     expect(parse('bufm=100').bufferMonths).toBe(24)
+    expect(parse('bids=0').propertiesConsidered).toBe(1)
+    expect(parse('bids=-3').propertiesConsidered).toBe(1)
+    expect(parse('bids=9999').propertiesConsidered).toBe(50)
+  })
+
+  it('round-trips the properties-bid-on count and omits the default of one', () => {
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, propertiesConsidered: 1 }).toString()).toBe('')
+    expect(serialiseParams({ ...DEFAULT_APP_STATE, propertiesConsidered: 6 }).toString()).toBe(
+      'bids=6',
+    )
+    expect(parse('bids=6').propertiesConsidered).toBe(6)
+    expect(parse('').propertiesConsidered).toBe(1)
+    expect(parse('bids=abc').propertiesConsidered).toBe(1)
+    expect(parse('bids=').propertiesConsidered).toBe(1)
   })
 
   it('falls back to the default for unknown enum values', () => {
@@ -232,6 +248,7 @@ describe('round-trip', () => {
         capitaliseLmi: true,
         savings: 180_000,
         preApprovedLoan: 640_000,
+        propertiesConsidered: 6,
         lang: 'en',
       },
     ],
