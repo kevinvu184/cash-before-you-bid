@@ -88,6 +88,7 @@
     "htbCitizenship": "Help to Buy yêu cầu quốc tịch Úc.",
     "htbDetails": "Help to Buy: trần thu nhập 103.000 AUD (độc thân) / 165.000 AUD (cặp đôi); 10.000 suất mỗi năm; chỉ qua CBA và Bank Australia (06/2026). Phần vốn của chính phủ là {{share}} và được hoàn trả theo giá thị trường khi bán nhà.",
     "guarantorGap": "Đặt cọc dưới 20% mà không trả LMI thì cần người thân bảo lãnh phần còn thiếu; kết quả hiển thị không gồm LMI.",
+    "fhbResidency": "Miễn hoặc giảm thuế trước bạ cho người mua nhà lần đầu yêu cầu công dân Úc hoặc thường trú nhân — thuế được tính theo mức thông thường.",
     "fhogPriceCap": "Không được nhận First Home Owner Grant: giá cao hơn 750.000 AUD.",
     "genuineSavings": "LVR trên 90%: hầu hết ngân hàng yêu cầu 5% giá nhà là tiền tiết kiệm thực sự đã giữ từ 3 tháng trở lên.",
     "serviceability": "Kiểm tra khả năng trả nợ: ngân hàng sẽ thẩm định ở mức {{assessed}}/tháng với lãi suất {{rate}}. Nếu con số đó vượt khoảng 35–40% thu nhập sau thuế của bạn, khoản vay có thể bị cắt giảm."
