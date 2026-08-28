@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_INPUTS } from '../data/defaults'
-import type { CalculatorInputs } from '../types/calculator'
+import type { CalculatorInputs, SafeMaxBidBinding } from '../types/calculator'
 import { calculate } from './calculate'
 import {
   SAFE_MAX_BID_CEILING,
@@ -27,6 +27,22 @@ function expectCeiling(base: CalculatorInputs, price: number) {
   expect(price % SAFE_MAX_BID_UNIT).toBe(0)
   expect(coveredAt(base, price)).toBe(true)
   expect(coveredAt(base, price + SAFE_MAX_BID_UNIT)).toBe(false)
+}
+
+/**
+ * The pockets short at a price, as the verdict reports them — the same
+ * derivation `safeMaxBid` makes, written out independently so the test is not
+ * asserting the implementation against itself.
+ */
+function bindingAt(base: CalculatorInputs, price: number): SafeMaxBidBinding {
+  const pockets = new Set<string>()
+  for (const verdict of calculate({ ...base, price }).readiness.verdicts) {
+    for (const check of verdict.checks) {
+      if (check.shortfall > 0) pockets.add(check.pocket)
+    }
+  }
+  if (pockets.has('cash')) return pockets.has('loan') ? 'both' : 'cash'
+  return pockets.has('loan') ? 'loan' : 'none'
 }
 
 // A buyer who is not a first home buyer, so the duty brackets are the general
@@ -213,6 +229,45 @@ describe('safeMaxBid', () => {
     expect(result.status).toBe('unbounded')
     expect(result.binding).toBe('none')
     expect(result.price).toBe(SAFE_MAX_BID_CEILING)
+  })
+
+  describe('the lever it names', () => {
+    // The figure is reported in $1,000 units, so the pocket that stops the
+    // bidder is the one that fails at the next bid they could call — not the
+    // one that fails a cent above the exact ceiling, where a second pocket
+    // within the same increment has not started failing yet.
+    it('is the pocket that fails one increment above the answer', () => {
+      const cases = [
+        buyer({ savings: 200_000, preApprovedLoan: 5_000_000 }),
+        buyer({ savings: 5_000_000, preApprovedLoan: 400_000 }),
+        buyer({ savings: 200_000, preApprovedLoan: null }),
+        buyer({ savings: 120_000, preApprovedLoan: 700_000, capitaliseLmi: true }),
+        inputs({ savings: 90_000, preApprovedLoan: 700_000 }),
+      ]
+      for (const base of cases) {
+        const result = safeMaxBid(base)
+        expect(result.binding).toBe(bindingAt(base, result.price + SAFE_MAX_BID_UNIT))
+      }
+    })
+
+    it('names both pockets when neither has an increment of headroom', () => {
+      // A cash ceiling with the pre-approval placed a few hundred dollars
+      // above it: cash alone fails at the exact ceiling, but both fail at the
+      // next callable bid, and saving more cannot reach it while the loan
+      // fails there too.
+      const cashBound = buyer({ savings: 200_000, preApprovedLoan: SAFE_MAX_BID_CEILING })
+      const exact = safeMaxBid(cashBound).exact
+      const preApprovedLoan = Math.ceil(
+        calculate({ ...cashBound, price: exact + 300 }).totals.loan,
+      )
+      const base = { ...cashBound, preApprovedLoan }
+      const result = safeMaxBid(base)
+
+      expect(bindingAt(base, result.exact + 0.01)).toBe('cash')
+      expect(result.binding).toBe('both')
+      // Still a real ceiling: the answer is covered, one increment up is not.
+      expectCeiling(base, result.price)
+    })
   })
 
   it('never exceeds the ceiling the price field itself accepts', () => {

@@ -115,28 +115,35 @@ export function safeMaxBid(inputs: CalculatorInputs): SafeMaxBidResult {
   // iteration cap means it stops whatever the inputs do.
   let low = 0
   let high = SAFE_MAX_BID_CEILING
-  let highReadiness = atCeiling
   let iterations = 0
   while (high - low > TOLERANCE && iterations < SAFE_MAX_BID_MAX_ITERATIONS) {
     iterations += 1
     const mid = low + (high - low) / 2
-    const readiness = readinessAt(mid)
-    if (isCovered(readiness)) {
-      low = mid
-    } else {
-      high = mid
-      highReadiness = readiness
-    }
+    if (isCovered(readinessAt(mid))) low = mid
+    else high = mid
   }
 
   // Round down to a callable figure. `low` is covered and the floor is below
   // it, so the answer is covered too. The floor can land a whole unit low when
   // the true ceiling sits within a tolerance of a multiple — a $700,000 answer
   // solved as $699,999.998 — so the next multiple up is offered back to the
-  // engine: it is only taken if the engine itself says it is covered.
+  // engine: it is only taken if the engine itself says it is covered. It never
+  // lands above the search ceiling, which is known not to be covered and so
+  // cannot be taken.
   const floored = Math.max(0, Math.floor(low / SAFE_MAX_BID_UNIT) * SAFE_MAX_BID_UNIT)
-  const next = floored + SAFE_MAX_BID_UNIT
-  const price = next <= SAFE_MAX_BID_CEILING && isCovered(readinessAt(next)) ? next : floored
+  const atNextUnit = readinessAt(floored + SAFE_MAX_BID_UNIT)
+  const price = isCovered(atNextUnit) ? floored + SAFE_MAX_BID_UNIT : floored
 
-  return { price, exact: low, binding: binding(highReadiness), status: 'bound', iterations }
+  // The lever is named at the granularity the answer is reported at: the
+  // pocket that fails at the next bid a bidder could actually call, one unit
+  // above the figure — not the one that fails a cent above the exact ceiling.
+  // A pocket short by a cent is short by a unit too, so this can only add the
+  // second pocket, and it adds it exactly when the other has less than one
+  // unit of headroom: saying "save more and it rises" there would be false,
+  // because saving more cannot buy the next increment while the loan fails at
+  // it too. The evaluation the rounding just made is the one needed, unless
+  // the rounding took the increment.
+  const failing = price === floored ? atNextUnit : readinessAt(price + SAFE_MAX_BID_UNIT)
+
+  return { price, exact: low, binding: binding(failing), status: 'bound', iterations }
 }
