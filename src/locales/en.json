@@ -102,6 +102,17 @@
     "amount": "$",
     "how": "How it was worked out"
   },
+  "bands": {
+    "preAuction": "Before the auction",
+    "preAuctionNote": "Spent win or lose",
+    "auctionDay": "On auction day",
+    "auctionDayNote": "Due the moment the hammer falls",
+    "atSettlement": "At settlement",
+    "atSettlementNote": "Due weeks later, on the settlement date",
+    "afterSettlement": "After settlement",
+    "afterSettlementNote": "Not needed on the day, but still money you have to have",
+    "subtotal": "Subtotal — {{band}}"
+  },
   "rows": {
     "deposit": "Deposit",
     "stampDuty": "Stamp duty (land transfer duty)",
@@ -141,6 +152,7 @@
     "lmiCharged": "Loan {{loan}} × {{rate}} (LVR {{lvr}}) × 1.10 Victorian insurance duty — indicative",
     "lmiChargedCapitalised": "Loan {{loan}} × {{rate}} (LVR {{lvr}}) × 1.10 Victorian insurance duty — indicative — capitalised into the loan",
     "yourFigure": "Your figure",
+    "conveyancing": "Your figure. Covers both the pre-auction contract review and the settlement work; shown before the auction, because you engage a conveyancer before you bid.",
     "settlementAdjustments": "Rates, water, owners corp apportioned to settlement day",
     "buildingInsurance": "Lender requires cover before settlement",
     "grant": "New home ≤ $750,000, eligible first home buyer; usually applied at settlement",

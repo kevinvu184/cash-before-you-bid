@@ -483,6 +483,50 @@
   border-top: 2px solid var(--color-text);
 }
 
+/* ── timing bands ──────────────────────────────────────────────────────────
+   One tbody per band: a heading naming when the money is due, the lines, then
+   the band's own subtotal. The heading spans the full width rather than taking
+   the label column, so the gloss underneath has the whole line to wrap into on
+   a 360px screen. */
+.lines tr.band-head {
+  display: block;
+  border-bottom: 0;
+}
+
+.lines tr.band-head th {
+  padding: 22px 0 6px;
+  color: var(--color-text);
+}
+
+/* Follows the head rule directly, so it needs no separating space of its own. */
+.lines tbody:first-of-type tr.band-head th {
+  padding-top: 12px;
+}
+
+.band-name {
+  display: block;
+}
+
+.band-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-text-muted);
+}
+
+/* The last line's hairline already closes the band, so the subtotal carries
+   weight instead of another rule. */
+.lines tr.band-subtotal {
+  border-bottom: 0;
+}
+
+.lines tr.band-subtotal td {
+  padding-top: 8px;
+  font-weight: 600;
+}
+
 .lines td {
   padding: 4px 0;
   line-height: 1.5;
@@ -680,6 +724,25 @@ p.small a {
 
   .lines tr.total td {
     border-top: 2px solid var(--color-text);
+  }
+
+  /* Back to real table rows: the band heading spans all three columns and the
+     ink rule under `.lines th` belongs to the column headings only. */
+  .lines tr.band-head {
+    display: table-row;
+  }
+
+  .lines tr.band-head th {
+    padding: 24px 8px 6px 0;
+    border-bottom: 0;
+  }
+
+  .lines tbody:first-of-type tr.band-head th {
+    padding-top: 14px;
+  }
+
+  .lines tr.band-subtotal td {
+    border-bottom: 0;
   }
 
   /* Outranks `.lines td`, so the phone padding has to be undone by name or the

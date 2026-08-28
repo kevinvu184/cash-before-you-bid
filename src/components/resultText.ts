@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next'
 import { APP_CURRENCY } from '../logic/currencyConfig'
 import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../logic/format'
-import type { Flag, RowCode, RowHow } from '../types/calculator'
+import type { Flag, RowCode, RowHow, TimingBand } from '../types/calculator'
 
 // The calculator emits codes and numbers; these maps turn them into text for
 // the active locale. Every key is a literal — no key construction — so a
@@ -87,6 +87,37 @@ export function rowLabel(code: RowCode, t: TFunction): string {
   return t(ROW_LABEL_KEYS[code])
 }
 
+const BAND_LABEL_KEYS: Record<TimingBand, string> = {
+  preAuction: 'bands.preAuction',
+  auctionDay: 'bands.auctionDay',
+  atSettlement: 'bands.atSettlement',
+  afterSettlement: 'bands.afterSettlement',
+}
+
+// The one-line "when is this due" gloss under each band heading.
+const BAND_NOTE_KEYS: Record<TimingBand, string> = {
+  preAuction: 'bands.preAuctionNote',
+  auctionDay: 'bands.auctionDayNote',
+  atSettlement: 'bands.atSettlementNote',
+  afterSettlement: 'bands.afterSettlementNote',
+}
+
+export function bandLabel(band: TimingBand, t: TFunction): string {
+  return t(BAND_LABEL_KEYS[band])
+}
+
+export function bandNote(band: TimingBand, t: TFunction): string {
+  return t(BAND_NOTE_KEYS[band])
+}
+
+/**
+ * Names the band in the subtotal row. The visual grouping is not conveyed to a
+ * screen reader reading cell by cell, so the band has to be in the label.
+ */
+export function bandSubtotalLabel(band: TimingBand, t: TFunction): string {
+  return t('bands.subtotal', { band: bandLabel(band, t) })
+}
+
 export function howText(how: RowHow | null, t: TFunction, locale: string): string {
   if (how === null) return ''
   const p = how.params ?? {}
@@ -156,6 +187,9 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
       break
     case 'yourFigure':
       text = t('how.yourFigure')
+      break
+    case 'conveyancing':
+      text = t('how.conveyancing')
       break
     case 'settlementAdjustments':
       text = t('how.settlementAdjustments')

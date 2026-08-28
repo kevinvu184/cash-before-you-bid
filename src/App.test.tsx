@@ -249,3 +249,93 @@ describe('localisation', () => {
     expect(window.location.search).toBe('?lang=en&price=820000&route=lmi')
   })
 })
+
+describe('timing bands in the line table', () => {
+  // matchMedia reports no match under jsdom, so these run on the phone layout:
+  // two columns, the working behind a per-row disclosure.
+  const renderEnglish = async () => {
+    window.history.replaceState(null, '', '/?lang=en')
+    renderApp()
+    await waitFor(() => expect(screen.getByText('Before the auction')).toBeTruthy())
+  }
+
+  it('groups the rows into the four bands, in the order the purchase runs', async () => {
+    await renderEnglish()
+    const headings = Array.from(document.querySelectorAll('.lines .band-name')).map(
+      (el) => el.textContent,
+    )
+    expect(headings).toEqual([
+      'Before the auction',
+      'On auction day',
+      'At settlement',
+      'After settlement',
+    ])
+    expect(screen.getByText('Spent win or lose')).toBeTruthy()
+  })
+
+  it('puts each band in its own row group, headed and closed by its own subtotal', async () => {
+    await renderEnglish()
+    const bodies = Array.from(document.querySelectorAll('.lines tbody'))
+    // Four bands plus the group holding the grand total.
+    expect(bodies).toHaveLength(5)
+    const auctionDay = bodies[1]
+    expect(auctionDay.querySelector('.band-name')?.textContent).toBe('On auction day')
+    // The deposit is the only auction-day line: 5% of $750,000.
+    expect(auctionDay.querySelector('td.n')?.textContent).toBe(
+      formatMoney(37_500, APP_CURRENCY, 'en'),
+    )
+    expect(auctionDay.querySelector('.band-subtotal td')?.textContent).toBe(
+      'Subtotal — On auction day',
+    )
+    expect(auctionDay.querySelector('.band-subtotal td.n')?.textContent).toBe(
+      formatMoney(37_500, APP_CURRENCY, 'en'),
+    )
+  })
+
+  it('keeps the grand total and drops the flat costs subtotal the bands replace', async () => {
+    await renderEnglish()
+    const { rows, tiles } = calculate(parseParams(new URLSearchParams(window.location.search)))
+    expect(rows.some((row) => row.code === 'costsSubtotal')).toBe(true)
+    expect(screen.queryByText('Purchase costs subtotal')).toBeNull()
+
+    const totalRow = document.querySelector('.lines tr.total')
+    expect(totalRow?.textContent).toContain('Total cash before you bid')
+    expect(totalRow?.querySelector('td.n')?.textContent).toBe(
+      formatMoney(tiles.total.value, APP_CURRENCY, 'en'),
+    )
+  })
+
+  it('bands the conveyancing fee before the auction and says so in the working', async () => {
+    await renderEnglish()
+    const preAuction = document.querySelectorAll('.lines tbody')[0]
+    const conveyancing = screen.getByRole('button', { name: 'Conveyancing incl. disbursements' })
+    expect(preAuction.contains(conveyancing)).toBe(true)
+    expect(document.getElementById('how-conveyancing')?.textContent).toContain(
+      'both the pre-auction contract review and the settlement work',
+    )
+  })
+
+  it('keeps a row expandable inside its band, and open across a recalculation', async () => {
+    await renderEnglish()
+    const disclosure = screen.getByRole('button', { name: 'Stamp duty (land transfer duty)' })
+    const formula = document.getElementById('how-stampDuty')
+
+    // Rendered whether or not it is open, so aria-controls always resolves.
+    expect(disclosure.getAttribute('aria-controls')).toBe('how-stampDuty')
+    expect(formula).toBeTruthy()
+    expect(disclosure.getAttribute('aria-expanded')).toBe('false')
+    expect(formula?.closest('tr')?.className).toBe('formula')
+
+    fireEvent.click(disclosure)
+    expect(disclosure.getAttribute('aria-expanded')).toBe('true')
+    expect(formula?.closest('tr')?.className).toBe('formula shown')
+
+    // A recalculation must not collapse it: the open set is keyed by row code.
+    fireEvent.change(input('price'), { target: { value: '900000' } })
+    const after = screen.getByRole('button', { name: 'Stamp duty (land transfer duty)' })
+    expect(after.getAttribute('aria-expanded')).toBe('true')
+    expect(document.getElementById('how-stampDuty')?.closest('tr')?.className).toBe(
+      'formula shown',
+    )
+  })
+})

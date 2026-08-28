@@ -1,8 +1,16 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '../hooks/useMediaQuery'
-import type { RowCode, TableRow } from '../types/calculator'
-import { estimateRowAmount, howText, rowLabel } from './resultText'
+import { groupRowsByBand } from '../logic/bands'
+import type { RowCode, TableRow, TimingBand } from '../types/calculator'
+import {
+  bandLabel,
+  bandNote,
+  bandSubtotalLabel,
+  estimateRowAmount,
+  howText,
+  rowLabel,
+} from './resultText'
 
 interface LineTableProps {
   rows: TableRow[]
@@ -14,9 +22,15 @@ interface LineTableProps {
  * behind a per-row disclosure instead. Row codes are unique, so they key both
  * the rows and which disclosures are open, which keeps a row open across a
  * recalculation.
+ *
+ * Rows are grouped by when the money is due: one `<tbody>` per timing band,
+ * each headed by its name and closed by its own subtotal, with the grand total
+ * in a final group of its own. The band subtotals supersede the flat
+ * `costsSubtotal` row, which adds across bands and so is not placed in one;
+ * `groupRowsByBand` leaves it out and it is not shown here.
  */
 export function LineTable({ rows }: LineTableProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const wide = useMediaQuery('(min-width: 820px)')
   const [open, setOpen] = useState<ReadonlySet<RowCode>>(() => new Set())
 
@@ -26,6 +40,21 @@ export function LineTable({ rows }: LineTableProps) {
       if (!next.delete(code)) next.add(code)
       return next
     })
+
+  const groups = groupRowsByBand(rows)
+  const total = rows.find((row) => row.code === 'total')
+
+  const renderRow = (row: TableRow) =>
+    wide ? (
+      <WideRow key={row.code} row={row} />
+    ) : (
+      <MobileRow
+        key={row.code}
+        row={row}
+        open={open.has(row.code)}
+        onToggle={() => toggle(row.code)}
+      />
+    )
 
   return (
     <table className="lines">
@@ -42,25 +71,61 @@ export function LineTable({ rows }: LineTableProps) {
           ) : null}
         </tr>
       </thead>
-      <tbody>
-        {rows.map((row) =>
-          wide ? (
-            <tr key={row.code} className={row.emphasis ? 'total' : undefined}>
-              <td>{rowLabel(row.code, t)}</td>
-              <td className="n">{estimateRowAmount(row.amount, i18n.language)}</td>
-              <td className="m">{howText(row.how, t, i18n.language)}</td>
-            </tr>
-          ) : (
-            <MobileRow
-              key={row.code}
-              row={row}
-              open={open.has(row.code)}
-              onToggle={() => toggle(row.code)}
-            />
-          ),
-        )}
-      </tbody>
+      {groups.map((group) => (
+        <tbody key={group.band}>
+          <BandHead band={group.band} wide={wide} />
+          {group.rows.map(renderRow)}
+          <BandSubtotal band={group.band} subtotal={group.subtotal} wide={wide} />
+        </tbody>
+      ))}
+      {total ? <tbody>{renderRow(total)}</tbody> : null}
     </table>
+  )
+}
+
+interface BandHeadProps {
+  band: TimingBand
+  wide: boolean
+}
+
+function BandHead({ band, wide }: BandHeadProps) {
+  const { t } = useTranslation()
+  return (
+    <tr className="band-head">
+      {/* `rowgroup` scope: this heading labels the rows of its own tbody. */}
+      <th scope="rowgroup" colSpan={wide ? 3 : 2}>
+        <span className="band-name">{bandLabel(band, t)}</span>
+        <span className="band-note">{bandNote(band, t)}</span>
+      </th>
+    </tr>
+  )
+}
+
+interface BandSubtotalProps {
+  band: TimingBand
+  subtotal: number
+  wide: boolean
+}
+
+function BandSubtotal({ band, subtotal, wide }: BandSubtotalProps) {
+  const { t, i18n } = useTranslation()
+  return (
+    <tr className="band-subtotal">
+      <td>{bandSubtotalLabel(band, t)}</td>
+      <td className="n">{estimateRowAmount(subtotal, i18n.language)}</td>
+      {wide ? <td className="m" /> : null}
+    </tr>
+  )
+}
+
+function WideRow({ row }: { row: TableRow }) {
+  const { t, i18n } = useTranslation()
+  return (
+    <tr className={row.emphasis ? 'total' : undefined}>
+      <td>{rowLabel(row.code, t)}</td>
+      <td className="n">{estimateRowAmount(row.amount, i18n.language)}</td>
+      <td className="m">{howText(row.how, t, i18n.language)}</td>
+    </tr>
   )
 }
 
