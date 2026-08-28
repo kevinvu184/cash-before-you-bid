@@ -172,17 +172,18 @@ describe('rounded estimates', () => {
     // display must follow the exact total.
     expect(roundForDisplay(total.value, APP_CURRENCY)).not.toBe(sumOfRoundedParts)
     expect(document.getElementById('tTotal')?.textContent).toBe(
-      `~${formatMoney(total.value, APP_CURRENCY, 'vi')}`,
+      formatMoney(total.value, APP_CURRENCY, 'vi'),
     )
   })
 
-  it('renders negative rows with the minus ahead of the approx prefix', () => {
+  it('renders negative rows with a typographic minus and no estimate marker', () => {
     // The First Home Owner Grant row is -10,000 with a new home at the
-    // default price; the sign applies to the whole approximate amount.
+    // default price. Estimates carry no per-figure "~"; the disclaimer says it.
     window.history.replaceState(null, '', '/?newhome=1')
     renderApp()
     const cells = Array.from(document.querySelectorAll('td.n')).map((c) => c.textContent)
-    expect(cells).toContain('\u2212~10.000\u00a0AUD')
+    expect(cells).toContain('\u221210.000\u00a0AUD')
+    expect(cells.some((cell) => cell?.includes('~'))).toBe(false)
   })
 
   it('shows the estimate disclaimer with the currency rounding unit', () => {

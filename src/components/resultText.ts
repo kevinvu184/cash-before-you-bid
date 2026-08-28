@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { APP_CURRENCY } from '../logic/currencyConfig'
-import { formatMoney, formatNumber, formatPercent } from '../logic/format'
+import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../logic/format'
 import type { Flag, RowCode, RowHow } from '../types/calculator'
 
 // The calculator emits codes and numbers; these maps turn them into text for
@@ -8,23 +8,23 @@ import type { Flag, RowCode, RowHow } from '../types/calculator'
 // grep for a key always finds both the JSON entry and its use.
 //
 // Money comes in two flavours. Computed figures are estimates: rounded for
-// display (per-currency unit) and prefixed via the money.approx key. Figures
-// that must read exactly — what the user typed, statutory caps written into
-// the rules — stay unrounded and unprefixed.
+// display (per-currency unit). Figures that must read exactly — what the user
+// typed, statutory caps written into the rules — stay unrounded. Estimates
+// carry no per-figure marker; the EstimateDisclaimer under the results says
+// once, for the whole page, that the computed figures are rounded estimates.
 
-/** A computed figure: rounded to the currency's display unit, "~"-prefixed. */
-export function approxMoney(amount: number, t: TFunction, locale: string): string {
-  return t('money.approx', { amount: formatMoney(amount, APP_CURRENCY, locale) })
+/** A computed figure: rounded to the currency's display unit. */
+export function estimateMoney(amount: number, locale: string): string {
+  return formatMoney(amount, APP_CURRENCY, locale)
 }
 
 /**
- * A table row amount: rounded and "~"-prefixed, with the typographic minus
- * ahead of the prefix ("−~10.000 AUD") — the sign applies to the whole
- * approximate amount, not the other way around.
+ * A table row amount: the same rounded estimate, with the typographic minus
+ * ahead of the digits ("−10.000 AUD"). formatRowAmount owns that sign
+ * convention, so there is only ever one row-formatting path.
  */
-export function approxRowAmount(amount: number, t: TFunction, locale: string): string {
-  const approxAbs = approxMoney(Math.abs(amount), t, locale)
-  return (amount < 0 ? '−' : '') + approxAbs
+export function estimateRowAmount(amount: number, locale: string): string {
+  return formatRowAmount(amount, APP_CURRENCY, locale)
 }
 
 /** An exact figure (user input or statutory constant): never rounded. */
@@ -57,7 +57,7 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
       return t('flags.genuineSavings')
     case 'serviceability':
       return t('flags.serviceability', {
-        assessed: approxMoney(p.assessed, t, locale),
+        assessed: estimateMoney(p.assessed, locale),
         rate: formatPercent(p.ratePct, locale),
       })
   }
@@ -93,25 +93,25 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
   let text: string
   switch (how.code) {
     case 'dutyFhbExempt':
-      text = t('how.dutyFhbExempt', { dutiableValue: approxMoney(p.dutiableValue, t, locale) })
+      text = t('how.dutyFhbExempt', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyFhbConcession':
       text = t('how.dutyFhbConcession', {
-        base: approxMoney(p.base, t, locale),
-        dutiableValue: approxMoney(p.dutiableValue, t, locale),
+        base: estimateMoney(p.base, locale),
+        dutiableValue: estimateMoney(p.dutiableValue, locale),
       })
       break
     case 'dutyFhbAboveCap':
-      text = t('how.dutyFhbAboveCap', { dutiableValue: approxMoney(p.dutiableValue, t, locale) })
+      text = t('how.dutyFhbAboveCap', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyPpr':
-      text = t('how.dutyPpr', { dutiableValue: approxMoney(p.dutiableValue, t, locale) })
+      text = t('how.dutyPpr', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyGeneral':
-      text = t('how.dutyGeneral', { dutiableValue: approxMoney(p.dutiableValue, t, locale) })
+      text = t('how.dutyGeneral', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'foreignDuty':
-      text = t('how.foreignDuty', { dutiableValue: approxMoney(p.dutiableValue, t, locale) })
+      text = t('how.foreignDuty', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'transferFee':
       text = t('how.transferFee', { thousands: formatNumber(p.thousands, locale) })
@@ -142,14 +142,14 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
       break
     case 'lmiCharged':
       text = t('how.lmiCharged', {
-        loan: approxMoney(p.loan, t, locale),
+        loan: estimateMoney(p.loan, locale),
         rate: formatPercent(p.ratePct, locale),
         lvr: formatPercent(p.lvrPct, locale),
       })
       break
     case 'lmiChargedCapitalised':
       text = t('how.lmiChargedCapitalised', {
-        loan: approxMoney(p.loan, t, locale),
+        loan: estimateMoney(p.loan, locale),
         rate: formatPercent(p.ratePct, locale),
         lvr: formatPercent(p.lvrPct, locale),
       })
@@ -176,7 +176,7 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
       text = t('how.costsSubtotal')
       break
     case 'buffer':
-      text = t('how.buffer', { count: p.months, repayment: approxMoney(p.repayment, t, locale) })
+      text = t('how.buffer', { count: p.months, repayment: estimateMoney(p.repayment, locale) })
       break
     case 'noBuffer':
       text = t('how.noBuffer')
@@ -190,7 +190,7 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
     const prefix = t('how.dutyOffThePlan', {
       price: exactMoney(otp.price, locale),
       construction: exactMoney(otp.construction, locale),
-      dutiableValue: approxMoney(otp.dutiableValue, t, locale),
+      dutiableValue: estimateMoney(otp.dutiableValue, locale),
     })
     return `${prefix} ${text}`
   }
