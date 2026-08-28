@@ -214,6 +214,9 @@ describe('rounded estimates', () => {
     renderApp()
     const note = document.querySelector('.estimate-note')
     expect(note?.textContent).toContain('làm tròn đến 100 AUD gần nhất')
+    expect(note?.textContent).toContain(
+      'Số tiền dưới 1.000\u00a0AUD được làm tròn đến 10\u00a0AUD gần nhất',
+    )
     expect(note?.textContent).toContain('không khớp với tổng do làm tròn')
   })
 })
@@ -302,11 +305,18 @@ describe('currency switching', () => {
     await waitFor(() => expect(head()).toBe('₫'))
   })
 
-  it('names the đồng rounding unit in the disclaimer once converting', async () => {
+  it('names the đồng rounding units in the disclaimer once converting', async () => {
     renderApp()
     switchTo('Đồng Việt Nam')
+    // Both the main unit and the finer one used below the threshold are the
+    // đồng's own, straight from the config — never the dollar's converted.
     await waitFor(() =>
-      expect(document.querySelector('.estimate-note')?.textContent).toContain('100.000'),
+      expect(document.querySelector('.estimate-note')?.textContent).toContain(
+        'làm tròn đến 100.000\u00a0₫ gần nhất',
+      ),
+    )
+    expect(document.querySelector('.estimate-note')?.textContent).toContain(
+      'Số tiền dưới 1.000.000\u00a0₫ được làm tròn đến 10.000\u00a0₫ gần nhất',
     )
   })
 

@@ -70,6 +70,7 @@
   "money": {
     "approx": "~{{amount}}",
     "disclaimer": "Các con số là ước tính, được làm tròn đến {{unit}} gần nhất.",
+    "disclaimerSmall": "Số tiền dưới {{threshold}} được làm tròn đến {{smallUnit}} gần nhất.",
     "roundingNote": "Các khoản cộng lại có thể không khớp với tổng do làm tròn."
   },
   "currency": {
