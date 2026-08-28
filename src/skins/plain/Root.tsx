@@ -7,6 +7,8 @@ import type {
   AppViewModel,
   BooleanInputField,
   ChoiceInputField,
+  DisplayViewModel,
+  ExchangeRateField,
   GuidanceField,
   InputsViewModel,
   LineField,
@@ -21,11 +23,16 @@ import type {
   VerdictField,
   SunkCostViewModel,
 } from '../../types/viewModel'
+import { DisplayProvider } from '../shared/DisplayProvider'
+import { useDisplay } from '../shared/display'
 import {
   estimateMoney,
   estimateRowAmount,
   flagText,
   howText,
+  quotedRate,
+  rateDraft,
+  rateStamp,
   ratesAsAtDate,
   refText,
   savedDate,
@@ -200,13 +207,14 @@ function Inputs({ inputs }: { inputs: InputsViewModel }) {
 }
 
 function Stat({ stat }: { stat: StatField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <div data-field={stat.id} data-importance={stat.importance}>
       <dt>{t(stat.labelKey)}</dt>
       <dd>
-        <span className="plain-figure">{estimateMoney(stat.value, i18n.language)}</span>
-        {stat.detail === null ? null : <span>{refText(stat.detail, t, i18n.language)}</span>}
+        <span className="plain-figure">{estimateMoney(stat.value, display)}</span>
+        {stat.detail === null ? null : <span>{refText(stat.detail, t, display)}</span>}
       </dd>
     </div>
   )
@@ -219,22 +227,24 @@ function Stat({ stat }: { stat: StatField }) {
  * inventing one.
  */
 function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxBidField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <section data-field={field.id} data-importance={field.importance}>
       <h2>{t(headingKey)}</h2>
       <h3>{t(field.labelKey)}</h3>
       {field.status === 'bound' ? (
-        <p className="plain-figure">{estimateMoney(field.value, i18n.language)}</p>
+        <p className="plain-figure">{estimateMoney(field.value, display)}</p>
       ) : null}
-      <p>{refText(field.summary, t, i18n.language)}</p>
-      {field.detail === null ? null : <p>{refText(field.detail, t, i18n.language)}</p>}
+      <p>{refText(field.summary, t, display)}</p>
+      {field.detail === null ? null : <p>{refText(field.detail, t, display)}</p>}
     </section>
   )
 }
 
 function Verdict({ verdict }: { verdict: VerdictField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <section data-field={verdict.id} data-importance={verdict.importance}>
       <h3>
@@ -242,11 +252,11 @@ function Verdict({ verdict }: { verdict: VerdictField }) {
         {': '}
         {t(verdict.statusKey)}
       </h3>
-      <p>{refText(verdict.summary, t, i18n.language)}</p>
+      <p>{refText(verdict.summary, t, display)}</p>
       {verdict.details.length > 0 ? (
         <ul>
           {verdict.details.map((detail) => (
-            <li key={detail.key}>{refText(detail, t, i18n.language)}</li>
+            <li key={detail.key}>{refText(detail, t, display)}</li>
           ))}
         </ul>
       ) : null}
@@ -255,7 +265,8 @@ function Verdict({ verdict }: { verdict: VerdictField }) {
 }
 
 function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   const research = sunk.research.value
   return (
     <section>
@@ -266,7 +277,7 @@ function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
         ))}
       </dl>
       <p data-field={sunk.framing.id} data-importance={sunk.framing.importance}>
-        {refText(sunk.framing.value, t, i18n.language)}
+        {refText(sunk.framing.value, t, display)}
       </p>
       <p data-field={sunk.research.id} data-importance={sunk.research.importance}>
         {t(research.beforeKey)}
@@ -278,12 +289,13 @@ function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
 }
 
 function PlainRow({ line }: { line: LineField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <tr data-field={line.id} data-importance={line.importance}>
       <th scope="row">{t(line.labelKey)}</th>
-      <td className="plain-figure">{estimateRowAmount(line.value, i18n.language)}</td>
-      <td>{howText(line.how, t, i18n.language)}</td>
+      <td className="plain-figure">{estimateRowAmount(line.value, display)}</td>
+      <td>{howText(line.how, t, display)}</td>
     </tr>
   )
 }
@@ -311,10 +323,94 @@ function PlainGuidance({ guidance }: { guidance: GuidanceField }) {
   )
 }
 
-function Results({ results }: { results: ResultsViewModel }) {
-  const { t, i18n } = useTranslation()
+/**
+ * The rate the converted figures were produced at, spelled out: what it is,
+ * where it came from, when it was quoted, and a box to replace it with the
+ * rate a bank has actually given the reader.
+ *
+ * No disclosure, as everywhere in this skin — the override box is simply on
+ * the page. It is uncontrolled and starts empty rather than seeded with the
+ * rate in force: an empty box means "leave it alone", and there is no draft to
+ * go stale when a fetched rate arrives behind it.
+ */
+function ExchangeRate({ field }: { field: ExchangeRateField }) {
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const base = t(field.baseSymbolKey)
+  const controlId = field.controlId
+
+  const apply = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    // An unusable figure changes nothing: the core ignores it, and the rate
+    // on screen is still a working one.
+    field.onOverride(String(new FormData(form).get(controlId) ?? ''))
+    form.reset()
+  }
+
+  return (
+    <section data-field={field.id} data-importance={field.importance}>
+      <h3>{t(field.labelKey)}</h3>
+      <p>
+        <span className="plain-figure">
+          {t(field.lineKey, { base, quoted: quotedRate(field.value, display) })}
+        </span>
+        <span>{refText(field.source, t, display)}</span>
+        {field.updatedAt === null ? null : (
+          <span>{rateStamp(field.updatedAt, display.locale)}</span>
+        )}
+      </p>
+      {field.manual ? (
+        <p>
+          <strong>{t(field.actionKeys.manualTag)}</strong>
+          <button type="button" onClick={field.onReset}>
+            {t(field.actionKeys.reset)}
+          </button>
+        </p>
+      ) : null}
+      <form className="plain-field" onSubmit={apply}>
+        <label htmlFor={controlId}>{t(field.actionKeys.overrideLabel, { base })}</label>
+        <input
+          id={controlId}
+          name={controlId}
+          // Text with a decimal keypad, not type="number": a vi reader types
+          // the separators of their own locale, and a number input would
+          // reject them, as every other numeric field here does.
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          defaultValue=""
+          placeholder={rateDraft(field.value, display)}
+        />
+        <button type="submit">{t(field.actionKeys.apply)}</button>
+      </form>
+      <p>
+        {t(field.noteKey, { currency: t(field.symbolKey), provider: field.providerName })}
+      </p>
+    </section>
+  )
+}
+
+function Results({
+  display: displayVm,
+  results,
+}: {
+  display: DisplayViewModel
+  results: ResultsViewModel
+}) {
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <main>
+      {/* The currency the figures below are written in, and the switch for it,
+          before the figures rather than after them — including the bid ceiling
+          right under it. The switch carries the section's name itself, so
+          there is no heading repeating it. */}
+      <section className="plain-currency" aria-label={t(displayVm.currency.labelKey)}>
+        <Choice field={displayVm.currency} />
+        {displayVm.rate === null ? null : <ExchangeRate field={displayVm.rate} />}
+      </section>
+
       <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
 
       <section>
@@ -333,7 +429,7 @@ function Results({ results }: { results: ResultsViewModel }) {
         <ul>
           {results.flags.value.map((flag) => (
             <li key={`${flag.kind}:${flag.code}`}>
-              <strong>{t(KIND_KEYS[flag.kind])}</strong> {flagText(flag, t, i18n.language)}
+              <strong>{t(KIND_KEYS[flag.kind])}</strong> {flagText(flag, t, display)}
             </li>
           ))}
         </ul>
@@ -389,7 +485,7 @@ function Results({ results }: { results: ResultsViewModel }) {
         data-field={results.estimateNote.id}
         data-importance={results.estimateNote.importance}
       >
-        {results.estimateNote.value.map((ref) => refText(ref, t, i18n.language)).join(' ')}
+        {results.estimateNote.value.map((ref) => refText(ref, t, display)).join(' ')}
       </p>
 
       <section>
@@ -410,7 +506,10 @@ function Results({ results }: { results: ResultsViewModel }) {
           {t(results.ratesAsAt.value.beforeKey, {
             // The raw ISO date is the fallback: a date the reader can still
             // act on beats dropping the line that says how current these are.
-            date: ratesAsAtDate(results.ratesAsAt.value.asAt, i18n.language) ??
+            // display.locale is the active language: a date follows the words
+            // around it, not the currency the figures are written in.
+            date:
+              ratesAsAtDate(results.ratesAsAt.value.asAt, display.locale) ??
               results.ratesAsAt.value.asAt,
           })}
           <a href={results.ratesAsAt.value.href}>{t(results.ratesAsAt.value.linkKey)}</a>
@@ -552,34 +651,36 @@ export function Root({ vm }: { vm: AppViewModel }) {
   const notice = vm.chrome.notice
 
   return (
-    <div className="plain-page">
-      {notice ? (
-        <aside role="note" data-field={notice.id} data-importance={notice.importance}>
-          <p>{t(notice.labelKey)}</p>
-          <button type="button" onClick={notice.onDismiss}>
-            {t(notice.dismissLabelKey)}
-          </button>
-        </aside>
-      ) : null}
+    <DisplayProvider settings={vm.display.settings}>
+      <div className="plain-page">
+        {notice ? (
+          <aside role="note" data-field={notice.id} data-importance={notice.importance}>
+            <p>{t(notice.labelKey)}</p>
+            <button type="button" onClick={notice.onDismiss}>
+              {t(notice.dismissLabelKey)}
+            </button>
+          </aside>
+        ) : null}
 
-      <header>
-        <p data-field={vm.chrome.eyebrow.id} data-importance={vm.chrome.eyebrow.importance}>
-          {t(vm.chrome.eyebrow.labelKey)}
-        </p>
-        <h1 data-field={vm.chrome.title.id} data-importance={vm.chrome.title.importance}>
-          {t(vm.chrome.title.labelKey)}
-        </h1>
-        <p data-field={vm.chrome.lede.id} data-importance={vm.chrome.lede.importance}>
-          {t(vm.chrome.lede.labelKey)}
-        </p>
-        <Choice field={vm.controls.language} />
-        <Choice field={vm.controls.colorMode} />
-        <Choice field={vm.controls.skin} />
-      </header>
+        <header>
+          <p data-field={vm.chrome.eyebrow.id} data-importance={vm.chrome.eyebrow.importance}>
+            {t(vm.chrome.eyebrow.labelKey)}
+          </p>
+          <h1 data-field={vm.chrome.title.id} data-importance={vm.chrome.title.importance}>
+            {t(vm.chrome.title.labelKey)}
+          </h1>
+          <p data-field={vm.chrome.lede.id} data-importance={vm.chrome.lede.importance}>
+            {t(vm.chrome.lede.labelKey)}
+          </p>
+          <Choice field={vm.controls.language} />
+          <Choice field={vm.controls.colorMode} />
+          <Choice field={vm.controls.skin} />
+        </header>
 
-      <Inputs inputs={vm.inputs} />
-      <Scenarios scenarios={vm.scenarios} />
-      <Results results={vm.results} />
-    </div>
+        <Inputs inputs={vm.inputs} />
+        <Scenarios scenarios={vm.scenarios} />
+        <Results display={vm.display} results={vm.results} />
+      </div>
+    </DisplayProvider>
   )
 }

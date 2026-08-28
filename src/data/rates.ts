@@ -159,19 +159,31 @@ export function firstHomeConcessionApplies(purchaser: PurchaserStatus): boolean 
 export const FOREIGN_PURCHASER_DUTY_RATE = 0.08
 
 /**
- * Duty from a rate table: the first bracket whose ceiling the value does not
- * exceed. The top bracket has no ceiling, so the search always terminates.
+ * The bracket a value falls in: the first whose ceiling it does not exceed.
+ * The top bracket has no ceiling, so the search always terminates.
+ *
+ * Exported because the explanations quote a band's own figures back to the
+ * reader, and they have to be the figures the duty was actually charged at —
+ * a sentence naming one row while the arithmetic used another is the drift
+ * this config exists to prevent.
  */
-export function dutyFromBrackets(
+export function bracketFor(
   dutiableValue: number,
   brackets: readonly DutyBracket[],
-): number {
+): DutyBracket {
   for (const bracket of brackets) {
-    if (bracket.upTo === null || dutiableValue <= bracket.upTo) {
-      return bracket.base + bracket.rate * (dutiableValue - bracket.over)
-    }
+    if (bracket.upTo === null || dutiableValue <= bracket.upTo) return bracket
   }
   // Unreachable while a table ends in `upTo: null`; a table that does not is a
   // config error, and returning 0 duty would understate the cost.
   throw new Error('Duty rate table has no open-ended top bracket')
+}
+
+/** Duty from a rate table: the applicable bracket's base plus its excess. */
+export function dutyFromBrackets(
+  dutiableValue: number,
+  brackets: readonly DutyBracket[],
+): number {
+  const bracket = bracketFor(dutiableValue, brackets)
+  return bracket.base + bracket.rate * (dutiableValue - bracket.over)
 }
