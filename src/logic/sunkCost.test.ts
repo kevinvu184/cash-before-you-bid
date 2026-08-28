@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import type { RowCode, TableRow } from '../types/calculator'
-import { PRE_AUCTION_ROWS, PROPERTIES_MAX, clampProperties, sunkCost } from './sunkCost'
+import { rowBand } from './bands'
+import { PROPERTIES_MAX, clampProperties, sunkCost } from './sunkCost'
 
-const row = (code: RowCode, amount: number): TableRow => ({ code, amount, how: null, emphasis: false })
+// Rows are banded from the same table `calculate` stamps them from, so these
+// fixtures agree with the engine about which band a code is in rather than
+// asserting against a second, local answer.
+const row = (code: RowCode, amount: number): TableRow => ({
+  code,
+  amount,
+  how: null,
+  emphasis: false,
+  band: rowBand(code),
+})
 
 // Every row the calculator can emit, each with a distinct amount, so a stray
 // inclusion shows up as a wrong total rather than an ambiguous one.
@@ -56,11 +66,26 @@ describe('sunkCost — which rows are pre-auction', () => {
       'total',
     ]
     for (const code of untouched) {
-      expect(PRE_AUCTION_ROWS.has(code)).toBe(false)
+      expect(rowBand(code)).not.toBe('preAuction')
       // Dropping the row entirely changes nothing the multiplier reports.
       const without = ALL_ROWS.filter((r) => r.code !== code)
       expect(sunkCost(without, 6)).toEqual(sunkCost(ALL_ROWS, 6))
     }
+  })
+
+  it('reads the band field rather than the row code', () => {
+    // Membership belongs to `bands.ts`. A row is multiplied because of the
+    // band it carries, so a banded row the multiplier has never heard of is
+    // counted and a pre-auction code stripped of its band is not.
+    const invented: TableRow = {
+      code: 'moving',
+      amount: 900,
+      how: null,
+      emphasis: false,
+      band: 'preAuction',
+    }
+    expect(sunkCost([invented], 1).perProperty).toBe(900)
+    expect(sunkCost([{ ...row('buildingAndPest', 550), band: null }], 1).perProperty).toBe(0)
   })
 
   it('ignores rows the calculator did not emit', () => {

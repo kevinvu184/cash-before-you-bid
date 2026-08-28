@@ -111,7 +111,7 @@
   "sunk": {
     "heading": "Tiền đã chi trước khi đấu giá",
     "perPropertyLabel": "Mỗi căn nhà",
-    "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn",
+    "perPropertySub": "Phí kiểm tra nhà và phí pháp lý chuyển nhượng cho một căn. Phí pháp lý chuyển nhượng của bạn còn gồm cả phần tất toán, khoản chỉ trả một lần — nên con số này hơi cao",
     "searchLabel": "Cho cả quá trình tìm nhà",
     "searchSub_other": "{{properties}} căn × {{perProperty}} — trong đó {{lost}} là cho những căn bạn không mua được",
     "framing": "Đây là khoản tiền mất đi dù bạn thắng hay thua. Tiền đặt cọc, thuế trước bạ, phí nhà nước, LMI và các chi phí tất toán ở trên chỉ phải trả cho căn bạn thực sự mua — còn khoản này thì không.",
@@ -123,6 +123,20 @@
     "line": "Khoản mục",
     "amount": "AUD",
     "how": "Cách tính"
+  },
+  "bands": {
+    "preAuction": "Trước phiên đấu giá",
+    "preAuctionNote": "Đã chi rồi, dù thắng hay thua",
+    "auctionDay": "Ngày đấu giá",
+    "auctionDayNote": "Phải trả ngay khi búa gõ chốt giá",
+    "atSettlement": "Khi tất toán",
+    "atSettlementNote": "Phải trả vài tuần sau, vào ngày tất toán",
+    "afterSettlement": "Sau khi tất toán",
+    "afterSettlementNote": "Không cần trong ngày đấu giá, nhưng vẫn là tiền bạn phải có",
+    "subtotalPreAuction": "Tổng phụ — trước phiên đấu giá",
+    "subtotalAuctionDay": "Tổng phụ — ngày đấu giá",
+    "subtotalAtSettlement": "Tổng phụ — khi tất toán",
+    "subtotalAfterSettlement": "Tổng phụ — sau khi tất toán"
   },
   "rows": {
     "deposit": "Tiền đặt cọc",
@@ -163,6 +177,7 @@
     "lmiCharged": "Khoản vay {{loan}} × {{rate}} (LVR {{lvr}}) × 1,10 thuế bảo hiểm bang Victoria — chỉ mang tính tham khảo",
     "lmiChargedCapitalised": "Khoản vay {{loan}} × {{rate}} (LVR {{lvr}}) × 1,10 thuế bảo hiểm bang Victoria — chỉ mang tính tham khảo — đã cộng vào khoản vay",
     "yourFigure": "Số liệu của bạn",
+    "conveyancing": "Số liệu của bạn: xem xét hợp đồng và công việc khi tất toán, cam kết trước khi trả giá.",
     "settlementAdjustments": "Thuế địa phương, tiền nước, phí quản lý chung cư phân bổ đến ngày tất toán",
     "buildingInsurance": "Ngân hàng yêu cầu có bảo hiểm trước khi tất toán",
     "grant": "Nhà mới ≤ 750.000 AUD, người mua nhà lần đầu đủ điều kiện; thường được trừ khi tất toán",

@@ -1,4 +1,4 @@
-import type { RowCode, SunkCostSummary, TableRow } from '../types/calculator'
+import type { SunkCostSummary, TableRow } from '../types/calculator'
 
 /**
  * Pre-auction costs, multiplied across a property search.
@@ -9,14 +9,18 @@ import type { RowCode, SunkCostSummary, TableRow } from '../types/calculator'
  * deposit, stamp duty, government fees, LMI, settlement adjustments, building
  * insurance, moving, buffer — is paid once, on the property actually bought.
  *
- * Which rows are pre-auction is deliberately one list in one module. Issue #15
- * gives every row a timing band; when that lands, the body of `isPreAuction`
- * becomes `row.band === 'preAuction'` and nothing else here changes.
+ * Which rows are pre-auction is not decided here. #15 gave every row a timing
+ * band, stamped from the one table in `bands.ts`; this module reads that field
+ * and owns nothing about membership. A row added to the pre-auction band there
+ * is multiplied here with no change to this file.
+ *
+ * One consequence, deliberate and stated on screen: `conveyancing` is a single
+ * input covering the contract review *and* the settlement work, and #15 banded
+ * it pre-auction whole. Only the review part is really paid per attempt, so the
+ * whole-search figure reads high. Budgeting high is the safe direction for this
+ * tool, and the per-property copy says which way it errs. Splitting the input
+ * in two is the fix, and it is an input change, not a change here.
  */
-export const PRE_AUCTION_ROWS: ReadonlySet<RowCode> = new Set<RowCode>([
-  'conveyancing',
-  'buildingAndPest',
-])
 
 /** One property is the floor: you cannot buy without bidding at least once. */
 export const PROPERTIES_MIN = 1
@@ -39,7 +43,7 @@ export function clampProperties(properties: number): number {
 }
 
 function isPreAuction(row: TableRow): boolean {
-  return PRE_AUCTION_ROWS.has(row.code)
+  return row.band === 'preAuction'
 }
 
 export function sunkCost(rows: readonly TableRow[], properties: number): SunkCostSummary {

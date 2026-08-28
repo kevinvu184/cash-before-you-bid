@@ -9,6 +9,7 @@ import type {
   RowHow,
   TableRow,
 } from '../types/calculator'
+import { rowBand } from './bands'
 import { clampDepositPct, governmentEquityShare, regionPriceCap } from './deposit'
 import { foreignPurchaserDuty, stampDuty } from './duty'
 import { mortgageRegistrationFee, pexaFees, transferRegistrationFee } from './fees'
@@ -66,7 +67,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
 
   const lines: TableRow[] = []
   const line = (code: RowCode, amount: number, how: RowHow | null) =>
-    lines.push({ code, amount, how, emphasis: false })
+    lines.push({ code, amount, how, emphasis: false, band: rowBand(code) })
 
   const dutyResult = stampDuty({
     price,
@@ -119,7 +120,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   }
   line('lmi', lmiCash, lmiHow)
 
-  line('conveyancing', conveyancing, { code: 'yourFigure' })
+  line('conveyancing', conveyancing, { code: 'conveyancing' })
   line('buildingAndPest', buildingAndPest, { code: 'yourFigure' })
   line('lenderFees', lenderFees, { code: 'yourFigure' })
   line('settlementAdjustments', settlementAdjustments, { code: 'settlementAdjustments' })
@@ -160,7 +161,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
 
   const rows: TableRow[] = []
   const row = (code: RowCode, amount: number, how: RowHow | null, emphasis = false) =>
-    rows.push({ code, amount, how, emphasis })
+    rows.push({ code, amount, how, emphasis, band: rowBand(code) })
   row('deposit', deposit, { code: 'deposit', params: { pct: depositPct, price } })
   rows.push(...lines)
   row('costsSubtotal', costs, { code: 'costsSubtotal' }, true)
