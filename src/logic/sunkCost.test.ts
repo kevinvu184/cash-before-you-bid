@@ -3,9 +3,8 @@ import type { RowCode, TableRow } from '../types/calculator'
 import { rowBand } from './bands'
 import { PROPERTIES_MAX, clampProperties, sunkCost } from './sunkCost'
 
-// Rows are banded from the same table `calculate` stamps them from, so these
-// fixtures agree with the engine about which band a code is in rather than
-// asserting against a second, local answer.
+// Rows carry the band the one band table gives them, so these fixtures cannot
+// disagree with what `calculate` actually stamps.
 const row = (code: RowCode, amount: number): TableRow => ({
   code,
   amount,

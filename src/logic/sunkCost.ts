@@ -9,10 +9,10 @@ import type { SunkCostSummary, TableRow } from '../types/calculator'
  * deposit, stamp duty, government fees, LMI, settlement adjustments, building
  * insurance, moving, buffer — is paid once, on the property actually bought.
  *
- * Which rows are pre-auction is not decided here. #15 gave every row a timing
- * band, stamped from the one table in `bands.ts`; this module reads that field
- * and owns nothing about membership. A row added to the pre-auction band there
- * is multiplied here with no change to this file.
+ * Which rows those are is not decided here: #15 stamps every row with the
+ * timing band it falls in, and `src/logic/bands.ts` is the one table saying
+ * which is which. This module only multiplies what that table already calls
+ * pre-auction, so the two can never drift apart.
  *
  * One consequence, deliberate and stated on screen: `conveyancing` is a single
  * input covering the contract review *and* the settlement work, and #15 banded
