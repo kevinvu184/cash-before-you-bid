@@ -425,6 +425,25 @@
   border-top: 0;
 }
 
+/* ── pre-auction spend ────────────────────────────────────── */
+
+/* Sits under the table as its own section, so the figures above stay the cost
+   of buying this one property. */
+.sunk h3 {
+  margin: 28px 0 0;
+  padding-top: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  /* Room for Vietnamese stacked diacritics (ệ, ổ, ữ). */
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.sunk .stats {
+  margin: 12px 0 12px;
+}
+
 /* ── line table ─────────────────────────────────────────────────────────── */
 
 /* Base is the phone layout: two columns, the working behind a per-row
@@ -550,6 +569,23 @@
 }
 
 /* ── notes and sources ──────────────────────────────────────────────────── */
+
+/* Inline links here sit in a 23px line box, short of the 44px tap target. A
+   transparent overlay lifts the hit area without changing the paragraph's
+   rhythm; a link that already wraps onto two lines is tall enough and the
+   overlay simply sits inside it. */
+.notes a {
+  position: relative;
+}
+
+.notes a::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 44px;
+  translate: 0 -50%;
+}
 
 .notes h3 {
   margin: 32px 0 12px;

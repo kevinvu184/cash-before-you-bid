@@ -4,7 +4,7 @@ import { formatMoney, formatPercent } from '../logic/format'
 import type { CalculationTiles } from '../types/calculator'
 import { estimateMoney } from './resultText'
 
-interface StatProps {
+export interface StatProps {
   id: string
   label: string
   value: string
@@ -12,7 +12,9 @@ interface StatProps {
   emphasis?: boolean
 }
 
-function Stat({ id, label, value, sub, emphasis }: StatProps) {
+// Exported so the pre-auction panel below the table reads as the same kind of
+// list row, rather than inventing a second figure treatment.
+export function Stat({ id, label, value, sub, emphasis }: StatProps) {
   return (
     <div className={emphasis ? 'stat emphasis' : 'stat'}>
       <div className="stat-label">{label}</div>

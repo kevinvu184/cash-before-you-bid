@@ -9,6 +9,7 @@ import { LineTable } from './components/LineTable'
 import { RulesNotes } from './components/RulesNotes'
 import { StatRow } from './components/StatRow'
 import { StickyTotal } from './components/StickyTotal'
+import { SunkCostPanel } from './components/SunkCostPanel'
 import { TranslationNotice } from './components/TranslationNotice'
 import { useCalculator } from './hooks/useCalculator'
 import { useScrolledPast } from './hooks/useScrolledPast'
@@ -63,6 +64,7 @@ function App() {
             <FlagList flags={result.flags} />
             <StatRow tiles={result.tiles} />
             <LineTable rows={result.rows} />
+            <SunkCostPanel sunkCost={result.sunkCost} />
             <EstimateDisclaimer />
             <RulesNotes />
           </main>

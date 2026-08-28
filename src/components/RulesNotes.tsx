@@ -2,6 +2,13 @@ import { useTranslation } from 'react-i18next'
 
 const ROADMAP_URL = 'https://claude.ai/code/artifact/de316b0d-babe-464d-91c1-c5c12d735ed3'
 
+// Victorian Premier's media release, 12 March 2026, announcing seller-funded
+// pre-sale inspections. It is the citable source for the multiple-inspection
+// figures behind the pre-auction multiplier; the research it quotes is the
+// Consumer Policy Research Centre's.
+const INSPECTIONS_RESEARCH_URL =
+  'https://www.premier.vic.gov.au/no-more-hassles-getting-pre-sale-building-inspections'
+
 export function RulesNotes() {
   const { t } = useTranslation()
   return (
@@ -33,6 +40,12 @@ export function RulesNotes() {
         <li>
           <strong>{t('notes.repaymentTerm')}</strong>
           {t('notes.repaymentBody')}
+        </li>
+        <li>
+          <strong>{t('notes.inspectionsTerm')}</strong>
+          {t('notes.inspectionsBody')}
+          <a href={INSPECTIONS_RESEARCH_URL}>{t('notes.inspectionsLink')}</a>
+          {t('notes.inspectionsAfter')}
         </li>
       </ul>
       <p className="small">

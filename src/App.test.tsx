@@ -197,6 +197,44 @@ describe('rounded estimates', () => {
   })
 })
 
+describe('pre-auction spend', () => {
+  it('reads ?bids= into the field and the whole-search figure', () => {
+    window.history.replaceState(null, '', '/?bids=5&lang=en')
+    renderApp()
+    expect(input('bids').value).toBe('5')
+    // 1,600 conveyancing + 550 inspection = 2,150 per property and 10,750
+    // across five, each shown as the page's rounded estimate.
+    expect(document.getElementById('tSunkPer')?.textContent).toBe('A$2,200')
+    expect(document.getElementById('tSunkSearch')?.textContent).toBe('A$10,800')
+  })
+
+  it('offers the numeric keypad for a count of properties', () => {
+    renderApp()
+    expect(input('bids').inputMode).toBe('numeric')
+    expect(input('price').inputMode).toBe('decimal')
+  })
+
+  it('leaves the total cash figure alone when the count changes', () => {
+    vi.useFakeTimers()
+    renderApp()
+    const before = document.getElementById('tTotal')?.textContent
+    fireEvent.change(input('bids'), { target: { value: '9' } })
+    act(() => {
+      vi.advanceTimersByTime(URL_DEBOUNCE_MS)
+    })
+    expect(window.location.search).toBe('?bids=9')
+    expect(document.getElementById('tTotal')?.textContent).toBe(before)
+  })
+
+  it('renders the panel in Vietnamese too', () => {
+    window.history.replaceState(null, '', '/?bids=3')
+    renderApp()
+    const panel = document.querySelector('.sunk')
+    expect(panel?.textContent).toContain('Cho 3 căn nhà')
+    expect(panel?.textContent).toContain('dù bạn thắng hay thua')
+  })
+})
+
 describe('localisation', () => {
   it('renders Vietnamese with ?lang=vi', async () => {
     window.history.replaceState(null, '', '/?lang=vi')

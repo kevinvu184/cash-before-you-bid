@@ -2,14 +2,15 @@ import { DEFAULT_INPUTS } from '../data/defaults'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
+import { PROPERTIES_MAX, PROPERTIES_MIN } from './sunkCost'
 
 // The URL query string is the persistence layer for everything the user can
 // change. Param names reuse the original page's element ids so links stay
 // short and stable. The full table (name, type, allowed values, default) is
 // documented in README.md.
 //
-//   adj bp bufm caplmi conv dep fhb foreign ins lang lender move newhome otp
-//   ppr price rate region route
+//   adj bids bp bufm caplmi conv dep fhb foreign ins lang lender move newhome
+//   otp ppr price rate region route
 //
 // Params equal to their default are omitted; keys are emitted alphabetically
 // so the same state always produces the same URL. Booleans are 1/0.
@@ -89,6 +90,13 @@ export function parseParams(searchParams: URLSearchParams): AppState {
     buildingInsurance: readNumber(searchParams, 'ins', d.buildingInsurance, 0, COST_MAX),
     movingCosts: readNumber(searchParams, 'move', d.movingCosts, 0, COST_MAX),
     bufferMonths: readNumber(searchParams, 'bufm', d.bufferMonths, 0, BUFFER_MONTHS_MAX),
+    propertiesConsidered: readNumber(
+      searchParams,
+      'bids',
+      d.propertiesConsidered,
+      PROPERTIES_MIN,
+      PROPERTIES_MAX,
+    ),
     capitaliseLmi: readBoolean(searchParams, 'caplmi', d.capitaliseLmi),
     lang: readEnum(searchParams, 'lang', LANGS, DEFAULT_LANG),
   }
@@ -108,6 +116,7 @@ export function serialiseParams(state: AppState): URLSearchParams {
     if (value !== fallback) entries.push([name, value])
   }
   num('adj', state.settlementAdjustments, d.settlementAdjustments)
+  num('bids', state.propertiesConsidered, d.propertiesConsidered)
   num('bp', state.buildingAndPest, d.buildingAndPest)
   num('bufm', state.bufferMonths, d.bufferMonths)
   bool('caplmi', state.capitaliseLmi, d.capitaliseLmi)

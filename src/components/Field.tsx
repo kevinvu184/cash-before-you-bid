@@ -7,6 +7,8 @@ interface NumberFieldProps {
   value: number
   onChange: (next: number) => void
   hint?: string
+  /** 'numeric' for whole counts, so the phone offers a digits-only keypad. */
+  inputMode?: 'decimal' | 'numeric'
 }
 
 /**
@@ -15,7 +17,14 @@ interface NumberFieldProps {
  * `1.234,5`. Parsing is locale-lenient (see parseLocaleNumber); state and the
  * URL always hold plain dot-decimal numbers.
  */
-export function NumberField({ id, label, value, onChange, hint }: NumberFieldProps) {
+export function NumberField({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  inputMode = 'decimal',
+}: NumberFieldProps) {
   const { i18n } = useTranslation()
   const { draft, onDraftChange } = useNumericDraft(value, onChange, i18n.language)
   const hintId = hint ? `${id}-hint` : undefined
@@ -30,7 +39,7 @@ export function NumberField({ id, label, value, onChange, hint }: NumberFieldPro
       <input
         id={id}
         type="text"
-        inputMode="decimal"
+        inputMode={inputMode}
         autoComplete="off"
         value={draft}
         aria-describedby={hintId}

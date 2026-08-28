@@ -121,6 +121,14 @@ export function InputsPanel({ inputs, setField, setRoute }: InputsPanelProps) {
           onChange={(next) => setField('buildingAndPest', next)}
         />
         <NumberField
+          id="bids"
+          label={t('inputs.properties')}
+          value={inputs.propertiesConsidered}
+          hint={t('inputs.propertiesHint')}
+          inputMode="numeric"
+          onChange={(next) => setField('propertiesConsidered', next)}
+        />
+        <NumberField
           id="lender"
           label={t('inputs.lenderFees')}
           value={inputs.lenderFees}

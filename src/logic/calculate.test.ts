@@ -261,3 +261,46 @@ describe('calculate — edge behaviours preserved from the original', () => {
     expect(r.tiles.repayment.assessedValue).toBeCloseTo(3003.928740322374, 6)
   })
 })
+
+describe('calculate — pre-auction sunk cost multiplier', () => {
+  it('defaults to one property, so the search total is the per-property figure', () => {
+    const r = calculate(inputs())
+    expect(r.sunkCost).toEqual({
+      perProperty: 2150,
+      properties: 1,
+      expectedTotal: 2150,
+      onPropertiesNotWon: 0,
+    })
+  })
+
+  it('multiplies conveyancing and the inspection across the search', () => {
+    const r = calculate(inputs({ propertiesConsidered: 5 }))
+    expect(r.sunkCost.perProperty).toBe(2150)
+    expect(r.sunkCost.expectedTotal).toBe(10_750)
+    expect(r.sunkCost.onPropertiesNotWon).toBe(8600)
+  })
+
+  it('leaves every other figure in the stack untouched', () => {
+    // The guarantee the ticket asks for: the multiplier cannot reach the
+    // deposit, duty, government fees, LMI, or anything due at settlement.
+    const one = calculate(inputs())
+    const many = calculate(inputs({ propertiesConsidered: 12 }))
+    expect(many.rows).toEqual(one.rows)
+    expect(many.tiles).toEqual(one.tiles)
+    expect(many.totals).toEqual(one.totals)
+    expect(many.flags).toEqual(one.flags)
+    expect(many.totals.totalCash).toBeCloseTo(one.totals.totalCash, 10)
+  })
+
+  it('clamps a cleared or out-of-range count', () => {
+    expect(calculate(inputs({ propertiesConsidered: 0 })).sunkCost.properties).toBe(1)
+    expect(calculate(inputs({ propertiesConsidered: Number.NaN })).sunkCost.properties).toBe(1)
+    expect(calculate(inputs({ propertiesConsidered: 500 })).sunkCost.properties).toBe(50)
+  })
+
+  it('follows the inspection and conveyancing figures the user entered', () => {
+    const r = calculate(inputs({ conveyancing: 2000, buildingAndPest: 600, propertiesConsidered: 3 }))
+    expect(r.sunkCost.perProperty).toBe(2600)
+    expect(r.sunkCost.expectedTotal).toBe(7800)
+  })
+})
