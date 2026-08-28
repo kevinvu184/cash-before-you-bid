@@ -21,6 +21,7 @@
     "label": "Inputs",
     "heading": "01 — Your numbers",
     "price": "Purchase price ($)",
+    "priceSlider": "Adjust the price",
     "route": "Deposit route",
     "deposit": "Your deposit (%)",
     "region": "Where in Victoria",
@@ -63,6 +64,13 @@
     "htb": "The contract sets the deposit you pay on the day, usually 10%. Help to Buy needs at least 2%.",
     "nolmi": "The contract sets the deposit you pay on the day, usually 10%. 20% avoids LMI without a guarantor.",
     "lmi": "The contract sets the deposit you pay on the day, usually 10%. Under 20%, LMI is charged."
+  },
+  "cliffs": {
+    "label": "First home buyer duty thresholds",
+    "exemptionTerm": "Exemption ends.",
+    "exemptionBody": " Up to {{price}} an eligible first home buyer pays no land transfer duty at all. A dollar over, and duty starts.",
+    "concessionTerm": "Concession ends.",
+    "concessionBody": " Between {{from}} and {{price}} the duty is reduced on a sliding scale, so it climbs steeply across the band. Above {{price}} the full duty applies."
   },
   "results": {
     "flagsLabel": "Warnings and notes",

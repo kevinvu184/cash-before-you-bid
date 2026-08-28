@@ -11,6 +11,7 @@ import type {
   InputsViewModel,
   LineField,
   NumberInputField,
+  PriceSliderField,
   ResultsViewModel,
   SafeMaxBidField,
   ScenarioActionKeys,
@@ -23,6 +24,7 @@ import type {
 import {
   estimateMoney,
   estimateRowAmount,
+  exactMoney,
   flagText,
   howText,
   ratesAsAtDate,
@@ -94,6 +96,46 @@ function NumberRow({ field }: { field: NumberInputField }) {
   )
 }
 
+/**
+ * The price slider, spelled out. Same rule as everywhere in this skin: no
+ * ornament, and nothing hidden — so the cliffs are a plain list of thresholds
+ * under the track rather than ticks drawn on it, which says the same thing
+ * without a position to read. The list is absent, not empty, when the rate
+ * config says these thresholds do not apply to this purchaser.
+ */
+function PriceSlider({ field }: { field: PriceSliderField }) {
+  const { t, i18n } = useTranslation()
+  const hasMarkers = field.markers.length > 0
+  const notesId = hasMarkers ? `plain-${field.controlId}-cliffs` : undefined
+
+  return (
+    <div className="plain-field" data-field={field.id} data-importance={field.importance}>
+      <label htmlFor={field.controlId}>{t(field.labelKey)}</label>
+      <input
+        id={field.controlId}
+        type="range"
+        min={field.min}
+        max={field.max}
+        step={field.step}
+        value={field.value}
+        aria-valuetext={exactMoney(field.value, i18n.language)}
+        aria-describedby={notesId}
+        onChange={(event) => field.onChange(Number(event.target.value))}
+      />
+      {hasMarkers ? (
+        <ul id={notesId} aria-label={t(field.markersLabelKey)}>
+          {field.markers.map((marker) => (
+            <li key={marker.id}>
+              <strong>{t(marker.labelKey)}</strong>
+              {refText(marker.description, t, i18n.language)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
 function SelectRow<T extends string>({ field }: { field: ChoiceInputField<T> }) {
   const { t } = useTranslation()
   return (
@@ -145,6 +187,7 @@ function Inputs({ inputs }: { inputs: InputsViewModel }) {
         {t(inputs.heading.labelKey)}
       </h2>
       <NumberRow field={inputs.price} />
+      <PriceSlider field={inputs.priceSlider} />
       <SelectRow field={inputs.route} />
       <NumberRow field={inputs.depositPct} />
       <SelectRow field={inputs.region} />

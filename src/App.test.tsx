@@ -514,3 +514,75 @@ describe('the verdict', () => {
     expect(input('loan').value).toBe('')
   })
 })
+
+describe('the price slider and its duty cliffs', () => {
+  const slider = () => input('price-slider')
+
+  const renderAt = async (query: string) => {
+    window.history.replaceState(null, '', query)
+    await renderApp()
+  }
+
+  it('starts on the same price the number field holds', async () => {
+    await renderAt('/?lang=en&price=620000')
+
+    expect(slider().value).toBe('620000')
+    expect(input('price').value).toBe('620000')
+  })
+
+  it('moves the price, and the field and the duty follow it', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=745000')
+    const underTheCliff = field('lineStampDuty')?.textContent
+
+    // Across the concession ceiling, which is the whole reason the markers
+    // are there: the same two thousand dollars of bid, either side of it.
+    fireEvent.change(slider(), { target: { value: '755000' } })
+
+    expect(input('price').value).toBe('755000')
+    expect(field('lineStampDuty')?.textContent).not.toBe(underTheCliff)
+  })
+
+  it('does not fight a half-typed figure', async () => {
+    await renderAt('/?lang=en&price=620000')
+    // A price on its way to 749,000: the draft is what the user typed, and the
+    // slider tracks the value it currently parses to rather than rewriting it.
+    fireEvent.change(input('price'), { target: { value: '74' } })
+
+    expect(input('price').value).toBe('74')
+    fireEvent.change(input('price'), { target: { value: '749000' } })
+    expect(input('price').value).toBe('749000')
+    expect(slider().value).toBe('749000')
+  })
+
+  it('shows both cliffs to an eligible first home buyer', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=620000')
+    const cliffs = field('priceSlider')?.textContent ?? ''
+
+    expect(cliffs).toContain('Exemption ends.')
+    expect(cliffs).toContain('Concession ends.')
+    expect(cliffs).toContain('A$600,000')
+    expect(cliffs).toContain('A$750,000')
+  })
+
+  it.each([
+    ['a foreign purchaser', '/?lang=en&fhb=1&ppr=1&foreign=1&price=620000'],
+    ['someone who is not a first home buyer', '/?lang=en&fhb=0&ppr=1&price=620000'],
+    ['someone not buying to live in it', '/?lang=en&fhb=1&ppr=0&price=620000'],
+  ])('shows no first home buyer cliffs to %s', async (_case, query) => {
+    await renderAt(query)
+    const cliffs = field('priceSlider')?.textContent ?? ''
+
+    expect(slider()).not.toBeNull()
+    expect(cliffs).not.toContain('Exemption ends.')
+    expect(cliffs).not.toContain('A$600,000')
+  })
+
+  it('takes the cliffs away the moment the purchaser stops being eligible', async () => {
+    await renderAt('/?lang=en&fhb=1&ppr=1&price=620000')
+    expect(field('priceSlider')?.textContent).toContain('Exemption ends.')
+
+    fireEvent.click(input('foreign'))
+
+    expect(field('priceSlider')?.textContent).not.toContain('Exemption ends.')
+  })
+})

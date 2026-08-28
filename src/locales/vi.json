@@ -27,6 +27,7 @@
     "label": "Dữ liệu nhập",
     "heading": "01 — Số liệu của bạn",
     "price": "Giá mua (AUD)",
+    "priceSlider": "Điều chỉnh giá",
     "route": "Hình thức đặt cọc",
     "deposit": "Tiền đặt cọc của bạn (%)",
     "region": "Khu vực tại Victoria",
@@ -69,6 +70,13 @@
     "htb": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Help to Buy yêu cầu tối thiểu 2%.",
     "nolmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Đặt cọc 20% giúp tránh LMI mà không cần người bảo lãnh.",
     "lmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Dưới 20% thì phải trả LMI."
+  },
+  "cliffs": {
+    "label": "Các ngưỡng thuế trước bạ cho người mua nhà lần đầu",
+    "exemptionTerm": "Hết miễn thuế.",
+    "exemptionBody": " Tới {{price}}, người mua nhà lần đầu đủ điều kiện không phải trả đồng thuế trước bạ nào. Chỉ hơn một đô la thôi là bắt đầu phải trả.",
+    "concessionTerm": "Hết giảm thuế.",
+    "concessionBody": " Từ {{from}} đến {{price}}, thuế được giảm theo thang trượt, nên tăng rất nhanh trong khoảng này. Trên {{price}} thì phải trả đủ thuế."
   },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",

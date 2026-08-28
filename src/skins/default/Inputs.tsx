@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type {
   AnyInputField,
@@ -5,7 +6,9 @@ import type {
   ChoiceInputField,
   InputsViewModel,
   NumberInputField,
+  PriceSliderField,
 } from '../../types/viewModel'
+import { exactMoney, refText } from '../shared/text'
 
 /**
  * A text field with a keypad, not `type="number"`: number inputs reject the
@@ -38,6 +41,71 @@ function NumberRow({ field }: { field: NumberInputField }) {
         <span className="field-hint" id={hintId}>
           {t(field.hintKey)}
         </span>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * The price on a track, with the duty cliffs drawn on it.
+ *
+ * Between $749,000 and $751,000 a first home buyer's duty moves by tens of
+ * thousands, and in a bare number field that step is invisible until you
+ * happen to type across it. The ticks put both thresholds where they can be
+ * seen and aimed at; the notes under the track say what changes at each.
+ *
+ * The slider reports whole prices and never touches the number field's draft,
+ * so a half-typed figure is never snapped by it — see `useNumericDraft`.
+ */
+function PriceSlider({ field }: { field: PriceSliderField }) {
+  const { t, i18n } = useTranslation()
+  const hasMarkers = field.markers.length > 0
+  const notesId = hasMarkers ? `${field.controlId}-cliffs` : undefined
+
+  return (
+    <div className="field price-slider" data-field={field.id} data-importance={field.importance}>
+      <label htmlFor={field.controlId}>{t(field.labelKey)}</label>
+      <input
+        id={field.controlId}
+        type="range"
+        min={field.min}
+        max={field.max}
+        step={field.step}
+        value={field.value}
+        // Without this a screen reader reads the raw number; with it, the price
+        // is spoken the way it is written everywhere else on the page.
+        aria-valuetext={exactMoney(field.value, i18n.language)}
+        aria-describedby={notesId}
+        onChange={(event) => field.onChange(Number(event.target.value))}
+      />
+      {/* The ticks are for the eye only: the same thresholds reach a screen
+          reader as the notes below, which are text rather than a position.
+          The rail is inset by half the thumb, so a marker's percentage lands
+          exactly where the thumb's centre does at that price. Each tick drops
+          to its own row — at 360px the two cliffs are $150k apart on a $1.5m
+          track, close enough that side by side their labels would collide. */}
+      {hasMarkers ? (
+        <div className="price-cliff-rail" aria-hidden="true">
+          {field.markers.map((marker, index) => (
+            <span
+              key={marker.id}
+              className="price-cliff"
+              style={{ left: `${marker.positionPct}%`, '--cliff-row': index } as CSSProperties}
+            >
+              {exactMoney(marker.value, i18n.language)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {hasMarkers ? (
+        <ul className="price-cliff-notes" id={notesId} aria-label={t(field.markersLabelKey)}>
+          {field.markers.map((marker) => (
+            <li key={marker.id}>
+              <strong>{t(marker.labelKey)}</strong>
+              {refText(marker.description, t, i18n.language)}
+            </li>
+          ))}
+        </ul>
       ) : null}
     </div>
   )
@@ -105,6 +173,7 @@ export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
       </h2>
 
       <NumberRow field={inputs.price} />
+      <PriceSlider field={inputs.priceSlider} />
       <SelectRow field={inputs.route} />
       <NumberRow field={inputs.depositPct} />
       <SelectRow field={inputs.region} />
