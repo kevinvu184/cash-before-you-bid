@@ -82,6 +82,7 @@
     "nameVnd": "Đồng Việt Nam",
     "rateLine": "1 {{base}} = {{quoted}}",
     "sourceLive": "{{provider}}",
+    "sourceStale": "{{provider}}, không làm mới được",
     "sourceLoading": "đang lấy tỷ giá…",
     "sourceFallback": "tỷ giá tham khảo, ngoại tuyến",
     "sourceManual": "tỷ giá của bạn",

@@ -21,6 +21,12 @@ export type RateStatus =
   | 'loading'
   /** A quote from the provider, live this session or cached from a recent one. */
   | 'live'
+  /**
+   * A provider quote too old to trust as current, whose refresh failed. Still
+   * shown — a real quote from a few hours ago beats the bundled constant,
+   * which only ages further — but the rate line says it could not be renewed.
+   */
+  | 'stale'
   /** The bundled indicative rate, because the network failed or was refused. */
   | 'fallback'
 
@@ -130,7 +136,10 @@ export function useExchangeRate(currency: DisplayCurrency): ExchangeRate {
     return { rate: 1, status: 'base', updatedAt: null }
   }
   if (quote !== null) {
-    return { rate: quote.rate, status: 'live', updatedAt: quote.updatedAt }
+    // A refresh is only attempted for a quote already past RATE_MAX_AGE_MS, so
+    // a failure here means precisely: this quote is stale and could not be
+    // renewed. Keeping it still beats the bundled rate, which is older again.
+    return { rate: quote.rate, status: failed ? 'stale' : 'live', updatedAt: quote.updatedAt }
   }
   return {
     rate: FALLBACK_RATES[currency],

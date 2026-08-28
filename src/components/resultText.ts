@@ -63,7 +63,11 @@ export function approxRowAmount(amount: number, t: TFunction, display: Display):
  * the other estimates — rounded, "~"-prefixed — once converted.
  */
 function exactMoney(amount: number, t: TFunction, display: Display): string {
-  if (display.currency === BASE_CURRENCY) {
+  // Zero is the one figure no rate can make approximate — 0 times any rate is
+  // exactly 0 — so it reads exactly in every currency. Without this the duty
+  // exemption would explain itself as "→ ~0 ₫", marking as an estimate the one
+  // number in the sentence that is certain.
+  if (display.currency === BASE_CURRENCY || amount === 0) {
     return displayMoney(amount, display, { round: false })
   }
   return approxMoney(amount, t, display)

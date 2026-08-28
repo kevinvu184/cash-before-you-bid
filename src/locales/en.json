@@ -76,6 +76,7 @@
     "nameVnd": "Vietnamese đồng",
     "rateLine": "1 {{base}} = {{quoted}}",
     "sourceLive": "{{provider}}",
+    "sourceStale": "{{provider}}, could not refresh",
     "sourceLoading": "fetching rate…",
     "sourceFallback": "indicative rate, offline",
     "sourceManual": "your rate",

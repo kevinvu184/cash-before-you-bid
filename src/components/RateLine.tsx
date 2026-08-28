@@ -77,7 +77,9 @@ export function RateLine({
       ? t('currency.sourceLoading')
       : status === 'fallback'
         ? t('currency.sourceFallback')
-        : t('currency.sourceLive', { provider: RATE_PROVIDER })
+        : status === 'stale'
+          ? t('currency.sourceStale', { provider: RATE_PROVIDER })
+          : t('currency.sourceLive', { provider: RATE_PROVIDER })
 
   return (
     <div className="rateline-block">

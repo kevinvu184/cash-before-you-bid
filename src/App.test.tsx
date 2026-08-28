@@ -346,6 +346,22 @@ describe('currency switching', () => {
     }
   })
 
+  it('writes a zero exactly rather than as an estimate once converting', async () => {
+    // A price under the exemption cap makes the duty explanation end "→ 0".
+    // Zero is the one figure a rate cannot make approximate, so it must not
+    // pick up the "~" the converted thresholds beside it carry.
+    window.history.replaceState(null, '', '/?price=500000')
+    renderApp()
+    switchTo('Đồng Việt Nam')
+    await waitFor(() => expect(document.querySelector('.lines td.n')?.textContent).toContain('₫'))
+    const exemption = [...document.querySelectorAll('.lines td.m')]
+      .map((cell) => cell.textContent ?? '')
+      .find((text) => text.includes('Miễn thuế'))
+    expect(exemption).toBeDefined()
+    expect(exemption).toContain('→ 0\u00a0₫')
+    expect(exemption).not.toContain('~0')
+  })
+
   it('leaves the calculator inputs in Australian dollars', async () => {
     window.history.replaceState(null, '', '/?price=820000')
     renderApp()
