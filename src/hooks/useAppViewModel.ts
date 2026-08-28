@@ -16,6 +16,7 @@ import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
 import { buildLineFields } from '../logic/lineFields'
+import { buildSafeMaxBidField } from '../logic/safeMaxBidField'
 import { buildVerdictFields } from '../logic/verdictFields'
 import {
   type AppViewModel,
@@ -30,6 +31,7 @@ import {
 } from '../types/viewModel'
 import type { UseCalculatorResult } from './useCalculator'
 import { useNumericDraft, useOptionalNumericDraft } from './useNumericDraft'
+import { useSafeMaxBid } from './useSafeMaxBid'
 import { useScenariosViewModel } from './useScenariosViewModel'
 import { useTranslationNotice } from './useTranslationNotice'
 
@@ -419,6 +421,10 @@ export function useAppViewModel(
 
   const lines = buildLineFields(result.rows)
 
+  // The one figure that is a search rather than a single pass of the engine,
+  // and so the one that is memoised; see the hook for what it is keyed on.
+  const bid = useSafeMaxBid(inputs)
+
   return {
     locale: inputs.lang,
     // What is rendering, which is the requested skin unless it failed to load.
@@ -654,6 +660,8 @@ export function useAppViewModel(
       },
       statsHeadingKey: 'results.statsHeading',
       stats: buildStats(result.tiles),
+      safeMaxBidHeadingKey: 'safeMaxBid.heading',
+      safeMaxBid: buildSafeMaxBidField(bid, inputs.savings),
       verdictsHeadingKey: 'results.verdictsHeading',
       verdicts: buildVerdictFields(result.readiness),
       linesHeadingKey: 'results.linesHeading',

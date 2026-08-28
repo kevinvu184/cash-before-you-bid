@@ -222,6 +222,38 @@ export interface Readiness {
 }
 
 /**
+ * Which pocket runs out first at the safe maximum bid — the lever that moves
+ * the number. `both` is the crossing case, where more savings and a bigger
+ * pre-approval would each have to come at once; `none` means nothing in the
+ * figures caps the bid below the search ceiling.
+ */
+export type SafeMaxBidBinding = 'cash' | 'loan' | 'both' | 'none'
+
+/**
+ * `bound` is the ordinary answer. `unaffordable` means even a price of nothing
+ * leaves a check short — the costs that do not move with the price already
+ * exceed the savings — so there is no price to report. `unbounded` means the
+ * search reached the highest price the calculator takes with every check still
+ * covered.
+ */
+export type SafeMaxBidStatus = 'bound' | 'unaffordable' | 'unbounded'
+
+/**
+ * The highest price that clears both verdicts. See src/logic/safeMaxBid.ts for
+ * how it is solved and why it rounds down.
+ */
+export interface SafeMaxBidResult {
+  /** The answer: covered, and a multiple of the bid rounding unit. */
+  price: number
+  /** The same ceiling solved to the cent, before the conservative rounding. */
+  exact: number
+  binding: SafeMaxBidBinding
+  status: SafeMaxBidStatus
+  /** Bisection steps taken; bounded, so a pathological input still returns. */
+  iterations: number
+}
+
+/**
  * The pre-auction spend, per property and across a whole search. See
  * src/logic/sunkCost.ts for which rows count and why.
  */
