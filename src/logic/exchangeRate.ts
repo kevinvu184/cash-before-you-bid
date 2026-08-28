@@ -80,11 +80,18 @@ export function parseQuote(payload: unknown, currency: CurrencyCode): Quote | nu
  * A rate carried to six decimals reads as precision this conversion does not
  * have, and the đồng has no minor unit to spend them on.
  *
- * It lives here rather than in the formatter because two places need to agree
- * on it — the override box seeds its draft with the rate as shown, and the
- * core decides whether applying that draft back changed anything. Rounding in
- * one and comparing in the other let a click on Apply pin an override the
- * reader never typed.
+ * It lives here rather than in the formatter because three places need to
+ * agree on it — the override box seeds its draft with the rate as shown, the
+ * core stores an override at that precision, and the URL codec normalises one
+ * arriving in a link. Rounding in one and not the others lets the page price
+ * figures at a rate it is not showing.
+ *
+ * Whole units assume a rate far above 1, which is true of every display
+ * currency there is: the đồng is ~18,700 to the dollar. A currency near parity
+ * with the base would need decimals to say anything at all, and this rounding
+ * would flatten it — `holds a rate whole units can express` in the tests fails
+ * the day such a currency is added, which is when this has to become
+ * currency-aware.
  */
 export function rateAsShown(rate: number): number {
   return Math.round(rate)

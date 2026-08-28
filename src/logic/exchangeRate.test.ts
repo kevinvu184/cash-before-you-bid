@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { convert, isValidRate, parseQuote, RATE_MAX, RATE_MIN } from './exchangeRate'
+import {
+  convert,
+  FALLBACK_RATES,
+  isValidRate,
+  parseQuote,
+  rateAsShown,
+  RATE_MAX,
+  RATE_MIN,
+} from './exchangeRate'
+import { BASE_CURRENCY, DISPLAY_CURRENCIES } from './currencyConfig'
 
 // A well-formed reply from open.er-api.com, trimmed to the fields that matter.
 const payload = {
@@ -77,5 +86,27 @@ describe('convert', () => {
 
   it('converts negative amounts symmetrically, so a grant stays a credit', () => {
     expect(convert(-10_000, 'VND', 18_700)).toBe(-187_000_000)
+  })
+})
+
+describe('rateAsShown', () => {
+  it('gives the whole units the rate line and the override box both use', () => {
+    expect(rateAsShown(18_707.672741)).toBe(18_708)
+    expect(rateAsShown(20_000)).toBe(20_000)
+  })
+
+  it('holds a rate whole units can express', () => {
+    // Whole units are honest for the đồng, at ~18,700 to the dollar. They
+    // would flatten a currency near parity with the base to a single digit —
+    // so a display currency whose rate is small needs rateAsShown to become
+    // currency-aware before it can be offered, and this is where that is
+    // caught rather than in a reader's converted figures.
+    for (const currency of DISPLAY_CURRENCIES) {
+      if (currency === BASE_CURRENCY) continue
+      expect({ currency, usable: FALLBACK_RATES[currency] >= 1000 }).toEqual({
+        currency,
+        usable: true,
+      })
+    }
   })
 })

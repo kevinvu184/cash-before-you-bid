@@ -342,17 +342,18 @@ export function useAppViewModel(
           noteKey: 'currency.note',
           onOverride: (raw) => {
             const parsed = parseLocaleNumber(raw, locale)
+            // Stored at the precision it is shown at, so the rate the figures
+            // were priced at is the rate on the line above them — a decimal
+            // the reader typed would otherwise be applied but never displayed.
+            const rate = parsed === null ? null : rateAsShown(parsed)
             // An unusable figure changes nothing rather than raising: the rate
             // on screen is still a working one.
-            if (parsed === null || !isValidRate(parsed)) return
-            // Nor does applying the rate already in force. Compared at the
-            // precision it is shown at, because that is what the box was
-            // seeded with: opening the override and pressing Apply without
-            // editing is not an edit, and must not pin a live quote as the
-            // reader's own rate — still less nudge it, which comparing the
-            // whole-unit draft against an unrounded live quote would do.
-            if (rateAsShown(parsed) === rateAsShown(activeRate)) return
-            setManualRate(parsed)
+            if (rate === null || !isValidRate(rate)) return
+            // Nor does applying the rate already in force. Opening the
+            // override and pressing Apply without editing is not an edit, and
+            // must not pin a live quote as the reader's own rate.
+            if (rate === rateAsShown(activeRate)) return
+            setManualRate(rate)
           },
           onReset: () => setManualRate(null),
         }

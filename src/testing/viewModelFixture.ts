@@ -120,7 +120,9 @@ const FIXTURE_DISPLAY: DisplayViewModel = {
       key: 'currency.sourceLive',
       params: { provider: { format: 'raw', value: RATE_PROVIDER } },
     },
-    // Fixed, so the rendered stamp is stable across runs and time zones.
+    // A fixed instant, so it is stable across runs. The rendered string is
+    // not: rateStamp deliberately formats in the reader's own zone, which is
+    // the only one they can check a quote time against.
     updatedAt: Date.UTC(2026, 7, 27, 22),
     manual: false,
     actionKeys: EXCHANGE_RATE_ACTION_KEYS,

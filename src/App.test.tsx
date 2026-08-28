@@ -790,6 +790,26 @@ describe('the exchange rate', () => {
     expect(document.querySelector('.rateline .tag')?.textContent).toBe('THỦ CÔNG')
   })
 
+  it('stores a typed override at the precision it shows it at', async () => {
+    // A vi reader can type a decimal; the rate line has no room for it, so the
+    // figures must not be priced at one the page never shows.
+    await renderApp()
+    switchTo(DONG)
+    await waitFor(() => expect(document.querySelector('.ratebtn')).toBeTruthy())
+
+    fireEvent.click(document.querySelector('.ratebtn') as HTMLButtonElement)
+    fireEvent.change(document.querySelector('.re-row input') as HTMLInputElement, {
+      target: { value: '20000,4' },
+    })
+    fireEvent.submit(document.querySelector('.rateedit') as HTMLFormElement)
+
+    await waitFor(() => expect(window.location.search).toBe('?cur=VND&fx=20000'))
+    const { total: tile } = calculate(parseParams(new URLSearchParams())).tiles
+    expect(total()).toBe(
+      displayMoney(tile.value, { locale: 'vi', currency: 'VND', rate: 20_000 }),
+    )
+  })
+
   it('ignores an unusable override rather than pricing anything at zero', async () => {
     await renderApp()
     switchTo(DONG)

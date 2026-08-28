@@ -4,7 +4,7 @@ import {
   isDisplayCurrency,
   type DisplayCurrency,
 } from './currencyConfig'
-import { isValidRate } from './exchangeRate'
+import { isValidRate, rateAsShown } from './exchangeRate'
 import { DEFAULT_LANG, LANGS, type Lang } from './lang'
 import type { CalculatorInputs, DepositRoute, Region } from '../types/calculator'
 import { clampDepositPct, defaultDepositPctForRoute } from './deposit'
@@ -220,14 +220,22 @@ export const DEFAULT_PRESENTATION: PresentationState = {
 }
 
 /**
- * A typed exchange rate. Out of range is treated as absent, not clamped: an
- * override is a figure the user asserted, and silently swapping it for a
- * boundary would show them figures priced at a rate they never typed.
+ * A typed exchange rate, at the precision the rate line shows it.
+ *
+ * Normalised rather than kept exact: a link carrying `fx=18707.672741` would
+ * otherwise price every figure at a rate the page rounds to 18.708 before
+ * showing it, so the reader could not see what their own numbers were priced
+ * at. Rounding here makes the URL agree with the line — the codec writes the
+ * normalised value straight back, so the link corrects itself.
+ *
+ * Out of range is treated as absent, not clamped: an override is a figure the
+ * user asserted, and silently swapping it for a boundary would show them
+ * figures priced at a rate they never typed.
  */
 function readRate(searchParams: URLSearchParams): number | null {
   const raw = searchParams.get('fx')
   if (raw === null || raw.trim() === '') return null
-  const rate = Number(raw)
+  const rate = rateAsShown(Number(raw))
   return isValidRate(rate) ? rate : null
 }
 

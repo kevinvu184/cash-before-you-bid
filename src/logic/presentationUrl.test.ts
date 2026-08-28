@@ -76,6 +76,15 @@ describe('the display currency and rate', () => {
     expect(parse('cur=nonsense').currency).toBe('AUD')
   })
 
+  it('normalises a rate to the precision the page shows it at', () => {
+    // A link carrying decimals would otherwise price every figure at a rate
+    // the rate line rounds before showing; the codec writes the normalised
+    // value back, so the link comes to agree with what it displays.
+    expect(parse('fx=18707.672741').manualRate).toBe(18_708)
+    const cleaned = serialiseUrlState(parseUrlState(new URLSearchParams('cur=VND&fx=18707.672741')))
+    expect(cleaned.toString()).toBe('cur=VND&fx=18708')
+  })
+
   it('treats an unusable rate as absent rather than clamping it', () => {
     // Clamping would show the reader figures priced at a rate they never
     // typed; dropping it falls back to the fetched one, which is honest.
