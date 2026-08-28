@@ -782,6 +782,7 @@ export function useAppViewModel(
       },
     },
     results: {
+      regionLabelKey: 'results.label',
       flagsRegionLabelKey: 'results.flagsLabel',
       flags: {
         id: 'flags',

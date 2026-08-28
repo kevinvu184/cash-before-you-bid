@@ -12,6 +12,14 @@ import type { ThemeTokens } from '../../types/skin'
  * paper tones, under the 4.5:1 body-text threshold the contrast test enforces.
  * They are darkened by 7% and 3% respectively — the smallest step that clears
  * it on both surfaces.
+ *
+ * `colorControlBorder` was added for the same reason and is the only value
+ * here with no Ledger original. Every input, select and outlined button drew
+ * its resting edge in `colorHairlineStrong`, which is a hairline tone: 1.62:1
+ * on paper in light mode and 1.95:1 in dark, against the 3:1 WCAG 1.4.11 asks
+ * for the boundary of a control. The hairlines keep their tone, because a rule
+ * between two paragraphs is decoration; the control edges get one of their own,
+ * a step lighter than `colorBorderHover` so hover is still a visible change.
  */
 export const light: ThemeTokens = {
   colorBg: '#f7f3e8',
@@ -23,6 +31,7 @@ export const light: ThemeTokens = {
   colorOnInkMuted: '#bbb7ad',
   colorHairline: '#e0d9c6',
   colorHairlineStrong: '#c9c1ab',
+  colorControlBorder: '#878170',
   colorBorderHover: '#7d7666',
   colorAccent: '#9c4a21',
   colorAccentStrong: '#7c3916',
@@ -89,6 +98,7 @@ export const dark: ThemeTokens = {
   colorOnInkMuted: '#585348',
   colorHairline: '#3a3425',
   colorHairlineStrong: '#514a36',
+  colorControlBorder: '#7d7355',
   colorBorderHover: '#9a917c',
   colorAccent: '#cd8a52',
   colorAccentStrong: '#dda06d',

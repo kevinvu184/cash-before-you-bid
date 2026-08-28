@@ -2,13 +2,15 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_LANG, LANGS } from '../logic/lang'
 import { COLOR_MODES, SKIN_IDS } from '../logic/skins'
 import { SKINS } from './registry'
 
-// index.html paints the ground colours before React mounts, from a small table
-// inlined in a <script> — the one place a token value is written twice. This
-// test parses that table out of the real file and holds it to the token
-// objects, so the duplication cannot drift.
+// index.html settles two things before React mounts, from a small script
+// inlined in <head>: the ground colours, and the document language. Between
+// them they are the only place a token value or a locale is written twice.
+// This test parses them out of the real file and holds them to the modules
+// they duplicate, so neither can drift.
 
 const ROOT = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
@@ -44,5 +46,31 @@ describe('pre-paint ground colours', () => {
     expect(fallback).not.toBeNull()
     expect(fallback?.[1]).toBe(SKINS.plain.tokens.light.colorBg)
     expect(fallback?.[2]).toBe(SKINS.plain.tokens.light.colorText)
+  })
+})
+
+describe('pre-paint document language', () => {
+  it('inlines the same locale list as src/logic/lang.ts', () => {
+    const match = html.match(/var LANGS = \[([^\]]*)\]/)
+    expect(match).not.toBeNull()
+    const inlined = (match?.[1] ?? '')
+      .split(',')
+      .map((entry) => entry.trim().replace(/'/g, ''))
+      .filter((entry) => entry !== '')
+    expect(inlined).toEqual([...LANGS])
+  })
+
+  it('inlines the same default as src/logic/lang.ts', () => {
+    expect(html.match(/var DEFAULT_LANG = '([a-z-]+)'/)?.[1]).toBe(DEFAULT_LANG)
+  })
+
+  // The no-JS ground: with the script blocked the attribute in the markup is
+  // the whole answer, so it has to be the default the app would have chosen.
+  it('declares the default language on <html> for the no-script case', () => {
+    expect(html.match(/<html lang="([a-z-]+)"/)?.[1]).toBe(DEFAULT_LANG)
+  })
+
+  it('sets the resolved language on the root element', () => {
+    expect(html).toMatch(/root\.lang = lang/)
   })
 })

@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ResultsAnnouncer } from './a11y/ResultsAnnouncer'
+import { SkipLink } from './a11y/SkipLink'
 import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
@@ -126,7 +128,17 @@ function App() {
     document.documentElement.dataset.cur = currency
   }, [currency])
 
-  return <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+  // Two pieces of accessibility furniture the shell owns rather than the skin.
+  // Both have to exist whichever skin is mounted — and the announcer has to
+  // survive a skin failing to load, which is exactly when a reader most needs
+  // to be told the numbers are still there — so they sit outside the boundary.
+  return (
+    <>
+      <SkipLink />
+      <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+      <ResultsAnnouncer display={vm.display.settings} results={vm.results} />
+    </>
+  )
 }
 
 export default App

@@ -13,6 +13,7 @@ export const TOKEN_CSS_VARS: Readonly<Record<keyof ThemeTokens, string>> = {
   colorOnInkMuted: '--color-on-ink-muted',
   colorHairline: '--color-hairline',
   colorHairlineStrong: '--color-hairline-strong',
+  colorControlBorder: '--color-control-border',
   colorBorderHover: '--color-border-hover',
   colorAccent: '--color-accent',
   colorAccentStrong: '--color-accent-strong',

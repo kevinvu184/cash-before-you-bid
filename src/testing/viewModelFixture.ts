@@ -566,6 +566,7 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
       },
     },
     results: {
+      regionLabelKey: 'results.label',
       flagsRegionLabelKey: 'results.flagsLabel',
       flags: {
         id: 'flags',

@@ -1,5 +1,6 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RESULTS_ANCHOR_ID } from '../../a11y/anchors'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 import type { FlagKind } from '../../types/calculator'
@@ -201,6 +202,10 @@ function LineTable({ results }: { results: ResultsViewModel }) {
 
   return (
     <table className="lines">
+      {/* The design gives this table no visible heading — the band names carry
+          it — so its name is a caption only a screen reader reads. Without one
+          it is announced as "table" and nothing else. */}
+      <caption className="visually-hidden">{t(results.linesHeadingKey)}</caption>
       <thead>
         <tr>
           <th scope="col">{t(results.tableHeadingKeys.line)}</th>
@@ -465,8 +470,18 @@ export function Results({
   display: DisplayViewModel
   results: ResultsViewModel
 }) {
+  const { t } = useTranslation()
   return (
-    <main className="results">
+    // A named region rather than <main>: the inputs are main content too, so
+    // the shell's <main> is above both of them. `tabindex="-1"` is what makes
+    // the skip link actually move focus here rather than only the scroll
+    // position; the global :focus:not(:focus-visible) rule keeps it ringless.
+    <section
+      className="results"
+      id={RESULTS_ANCHOR_ID}
+      tabIndex={-1}
+      aria-label={t(results.regionLabelKey)}
+    >
       {/* The currency heads the results: it says what unit everything below
           is written in, including the bid ceiling right under it. */}
       <CurrencyBar display={display} />
@@ -487,6 +502,6 @@ export function Results({
         ratesAsAt={results.ratesAsAt}
         sources={results.sources}
       />
-    </main>
+    </section>
   )
 }

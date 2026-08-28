@@ -112,7 +112,7 @@
   line-height: var(--line-height-base);
   color: var(--color-text);
   background: none;
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -151,7 +151,7 @@
   line-height: var(--line-height-base);
   color: var(--color-text);
   background: var(--color-bg);
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
 }
 
 [data-skin='plain'] .plain-field span {
@@ -313,7 +313,7 @@
   font-size: var(--font-size-base);
   color: var(--color-text);
   background: none;
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -349,7 +349,7 @@
   line-height: var(--line-height-base);
   color: var(--color-text);
   background: none;
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -390,7 +390,7 @@
   line-height: var(--line-height-base);
   color: var(--color-text);
   background: var(--color-bg);
-  border: var(--border-width) solid var(--color-hairline-strong);
+  border: var(--border-width) solid var(--color-control-border);
 }
 
 [data-skin='plain'] .plain-scenarios .plain-field button {
