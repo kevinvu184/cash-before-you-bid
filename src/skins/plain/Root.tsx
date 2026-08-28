@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RESULTS_ANCHOR_ID } from '../../a11y/anchors'
 import { MAX_NAME_LENGTH } from '../../logic/scenarioStore'
 import type { FlagKind } from '../../types/calculator'
 import type {
@@ -40,6 +41,9 @@ import './skin.css'
  * It is deliberately boring. It is also the fallback when another skin fails
  * to load, which is why it has nothing in it that can fail.
  */
+
+/** Names the line table through the heading above it; see Results below. */
+const LINES_HEADING_ID = 'plain-lines-heading'
 
 const KIND_KEYS: Record<FlagKind, string> = {
   warn: 'flagKinds.warn',
@@ -287,7 +291,14 @@ function PlainGuidance({ guidance }: { guidance: GuidanceField }) {
 function Results({ results }: { results: ResultsViewModel }) {
   const { t, i18n } = useTranslation()
   return (
-    <main>
+    // Named region, not <main>: the inputs are main content too, so the main
+    // landmark is in Root, above both. `tabindex="-1"` is what lets the
+    // shell's skip link put focus here and not merely scroll to it.
+    <section
+      id={RESULTS_ANCHOR_ID}
+      tabIndex={-1}
+      aria-label={t(results.regionLabelKey)}
+    >
       <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
 
       <section>
@@ -322,9 +333,12 @@ function Results({ results }: { results: ResultsViewModel }) {
       </section>
 
       <section>
-        <h2>{t(results.linesHeadingKey)}</h2>
+        {/* The table is named by the heading that already introduces it, so
+            this skin adds no caption of its own — nothing hidden, nothing
+            said twice. */}
+        <h2 id={LINES_HEADING_ID}>{t(results.linesHeadingKey)}</h2>
         <div className="plain-table-scroll">
-          <table className="plain-lines">
+          <table className="plain-lines" aria-labelledby={LINES_HEADING_ID}>
             <thead>
               <tr>
                 <th scope="col">{t(results.tableHeadingKeys.line)}</th>
@@ -395,7 +409,7 @@ function Results({ results }: { results: ResultsViewModel }) {
           {t(results.sources.value.afterKey)}
         </p>
       </section>
-    </main>
+    </section>
   )
 }
 
@@ -550,9 +564,12 @@ export function Root({ vm }: { vm: AppViewModel }) {
         <Choice field={vm.controls.skin} />
       </header>
 
-      <Inputs inputs={vm.inputs} />
-      <Scenarios scenarios={vm.scenarios} />
-      <Results results={vm.results} />
+      {/* The calculator, inputs included — one main landmark over all of it. */}
+      <main>
+        <Inputs inputs={vm.inputs} />
+        <Scenarios scenarios={vm.scenarios} />
+        <Results results={vm.results} />
+      </main>
     </div>
   )
 }

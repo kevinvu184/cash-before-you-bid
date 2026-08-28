@@ -27,12 +27,28 @@ const TEXT_PAIRS: ReadonlyArray<[keyof ThemeTokens, keyof ThemeTokens]> = [
   ['colorError', 'colorSurface'],
   ['colorOnInk', 'colorInk'],
   ['colorOnInkMuted', 'colorInk'],
+  // The selection tint is a background text sits on the moment anyone drags
+  // across a figure, so it is a real text-on-surface pair like any other.
+  ['colorText', 'colorAccentTint'],
+  ['colorTextMuted', 'colorAccentTint'],
 ]
 
-// The focus indicator is a UI component, so 3:1 rather than 4.5:1.
+/**
+ * Non-text contrast, WCAG 1.4.11: 3:1 rather than 4.5:1, for anything that
+ * identifies a control or its state.
+ *
+ * The control edge is here because it is the whole of what says "this is a
+ * field you can type in" — every text input, select and outlined button in
+ * both skins draws its resting border in it. It used to be `colorHairline-
+ * Strong`, a decorative rule tone, which sat at 1.62:1 on the default skin's
+ * paper. The hairline tokens are deliberately *not* in this list: a rule
+ * between two paragraphs identifies no component and is under no threshold.
+ */
 const UI_PAIRS: ReadonlyArray<[keyof ThemeTokens, keyof ThemeTokens]> = [
   ['focusRingColor', 'colorBg'],
   ['focusRingColor', 'colorSurface'],
+  ['colorControlBorder', 'colorBg'],
+  ['colorControlBorder', 'colorSurface'],
 ]
 
 describe.each(SKIN_LIST.map((entry) => entry.id))('skin %s', (skinId) => {

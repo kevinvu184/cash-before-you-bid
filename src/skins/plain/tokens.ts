@@ -8,8 +8,10 @@ import type { ThemeTokens } from '../../types/skin'
  * declare what it is not doing.
  *
  * Greys exist only as hairlines, which are the text colour at reduced opacity
- * flattened against the background (42% and 54%); `colorHairlineStrong` clears
- * 3:1 in both modes so control edges are visible.
+ * flattened against the background (42% and 54%); `colorHairlineStrong` already
+ * clears 3:1 in both modes, so `colorControlBorder` is the same value rather
+ * than a fourth grey. The default skin needs the two apart because its hairline
+ * tone is a paper tint; this one does not.
  */
 export const light: ThemeTokens = {
   colorBg: '#ffffff',
@@ -21,6 +23,7 @@ export const light: ThemeTokens = {
   colorOnInkMuted: '#ffffff',
   colorHairline: '#949494',
   colorHairlineStrong: '#767676',
+  colorControlBorder: '#767676',
   colorBorderHover: '#000000',
   colorAccent: '#0645ad',
   colorAccentStrong: '#0645ad',
@@ -90,6 +93,7 @@ export const dark: ThemeTokens = {
   colorOnInkMuted: '#000000',
   colorHairline: '#6b6b6b',
   colorHairlineStrong: '#949494',
+  colorControlBorder: '#949494',
   colorBorderHover: '#ffffff',
   colorAccent: '#8ab4ff',
   colorAccentStrong: '#8ab4ff',

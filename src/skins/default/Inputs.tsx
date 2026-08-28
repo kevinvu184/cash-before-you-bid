@@ -95,7 +95,10 @@ export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
   const { t } = useTranslation()
 
   return (
-    <aside className="panel" aria-label={t(inputs.regionLabelKey)}>
+    // A named region, not <aside>: these are the calculator's primary content,
+    // and "complementary" would tell a screen reader they are supporting
+    // material it is safe to skip.
+    <section className="panel" aria-label={t(inputs.regionLabelKey)}>
       <h2
         className="section-mark"
         data-field={inputs.heading.id}
@@ -140,6 +143,6 @@ export function InputsPanel({ inputs }: { inputs: InputsViewModel }) {
       >
         {t(inputs.foot.labelKey)}
       </p>
-    </aside>
+    </section>
   )
 }

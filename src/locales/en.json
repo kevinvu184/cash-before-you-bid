@@ -68,7 +68,8 @@
     "flagsLabel": "Warnings and notes",
     "statsHeading": "Summary",
     "verdictsHeading": "Can you cover it?",
-    "linesHeading": "Line by line"
+    "linesHeading": "Line by line",
+    "label": "Results"
   },
   "money": {
     "disclaimer": "Every figure above is an estimate, rounded to the nearest {{unit}}.",
@@ -285,5 +286,10 @@
     "privacy": "Saved scenarios stay in this browser, on this device. Nothing is uploaded and nobody else can see them.",
     "errorUnavailable": "This browser will not let the app store anything, so scenarios cannot be saved here. Everything else still works.",
     "errorFull": "There is no room to save another scenario. Delete one you no longer need."
+  },
+  "a11y": {
+    "skipToResults": "Skip to results",
+    "verdictAnnouncement": "{{label}}: {{status}}.",
+    "resultsAnnouncement": "{{verdicts}} {{totalLabel}}: {{total}}."
   }
 }

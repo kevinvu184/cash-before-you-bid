@@ -27,6 +27,14 @@ export interface ThemeTokens {
   // — structure —
   colorHairline: string
   colorHairlineStrong: string
+  /**
+   * The resting edge of a text input, select or outlined button. Separate from
+   * `colorHairlineStrong`, which draws decorative rules: WCAG 1.4.11 wants 3:1
+   * against the surface behind it for anything that identifies a control, and
+   * a rule between two paragraphs is under no such obligation. The contrast
+   * test holds this one to that threshold and leaves the hairlines alone.
+   */
+  colorControlBorder: string
   colorBorderHover: string
 
   // — the one accent: links, focus, selection —
