@@ -1,6 +1,12 @@
 import type { DepositRoute, Region } from '../types/calculator'
 
-// Rules as at 25 Aug 2026, matching the source page.
+// The fees, caps and scheme thresholds. The duty brackets, the date all of
+// this was last checked against source (`RATES_AS_AT`), and the conservative
+// rounding rule live in `rates.ts` beside this file.
+//
+// Source: Housing Australia, 5% Deposit Scheme property price caps — $950,000
+// for Melbourne and Geelong, $650,000 for the rest of Victoria, from
+// 1 October 2025.
 export const SCHEME_PRICE_CAPS: Record<Region, number> = {
   metro: 950_000,
   regional: 650_000,
@@ -18,7 +24,8 @@ export const LMI_RATE_POINTS: ReadonlyArray<readonly [number, number]> = [
 // 10% Victorian insurance duty on the LMI premium.
 export const LMI_DUTY_MULTIPLIER = 1.1
 
-// Land Services Victoria 2026-27 and PEXA FY27 fees.
+// Land Services Victoria 2026-27 lodgement fees (electronic) and PEXA FY27
+// fees for a single title with financial settlement.
 export const TRANSFER_FEE_BASE = 104.3
 export const TRANSFER_FEE_PER_THOUSAND = 2.34
 export const TRANSFER_FEE_CAP = 3614
