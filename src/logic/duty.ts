@@ -1,23 +1,33 @@
+import {
+  dutyFromBrackets,
+  FHB_CONCESSION_BAND,
+  FHB_CONCESSION_CEILING,
+  FHB_EXEMPTION_CEILING,
+  firstHomeConcessionApplies,
+  FOREIGN_PURCHASER_DUTY_RATE,
+  GENERAL_DUTY_BRACKETS,
+  PPR_CONCESSION_CEILING,
+  PPR_DUTY_BRACKETS,
+} from '../data/rates'
 import type { DutyHowCode, OffThePlanHow } from '../types/calculator'
+
+// The rates themselves live in `data/rates.ts`, versioned and carrying the
+// date they were last checked against the State Revenue Office. This file
+// applies them; it states none of its own.
 
 // Victorian land transfer duty, general rates.
 export function generalDuty(dutiableValue: number): number {
-  if (dutiableValue <= 25_000) return dutiableValue * 0.014
-  if (dutiableValue <= 130_000) return 350 + 0.024 * (dutiableValue - 25_000)
-  if (dutiableValue <= 960_000) return 2870 + 0.06 * (dutiableValue - 130_000)
-  if (dutiableValue <= 2_000_000) return 0.055 * dutiableValue
-  return 110_000 + 0.065 * (dutiableValue - 2_000_000)
+  return dutyFromBrackets(dutiableValue, GENERAL_DUTY_BRACKETS)
 }
 
-// Principal-place-of-residence concession rates, used up to $550k.
+// Principal-place-of-residence concession rates, used up to
+// PPR_CONCESSION_CEILING.
 export function pprDuty(dutiableValue: number): number {
-  if (dutiableValue <= 130_000) return generalDuty(dutiableValue)
-  if (dutiableValue <= 440_000) return 2870 + 0.05 * (dutiableValue - 130_000)
-  return 18_370 + 0.06 * (dutiableValue - 440_000)
+  return dutyFromBrackets(dutiableValue, PPR_DUTY_BRACKETS)
 }
 
 export function foreignPurchaserDuty(dutiableValue: number): number {
-  return dutiableValue * 0.08
+  return dutiableValue * FOREIGN_PURCHASER_DUTY_RATE
 }
 
 export interface StampDutyInput {
@@ -46,30 +56,36 @@ export function stampDuty(input: StampDutyInput): StampDutyResult {
   const { price, firstHomeBuyer, ownerOccupier, foreignPurchaser } = input
   const otp = Math.min(input.offThePlanConstruction, price)
   const dutiableValue = Math.max(0, price - otp)
-  // The first home buyer exemption and concession require at least one
-  // purchaser to be an Australian citizen or permanent resident. A foreign
-  // purchaser falls back to the PPR or general rates — and still pays the
-  // foreign purchaser additional duty on top, which the caller adds.
-  const firstHomeConcessional = firstHomeBuyer && ownerOccupier && !foreignPurchaser
+  // The eligibility rule lives with the thresholds in `data/rates.ts`: the
+  // exemption and concession require at least one purchaser to be an
+  // Australian citizen or permanent resident, and the home to be
+  // owner-occupied. A foreign purchaser falls back to the PPR or general
+  // rates — and still pays the foreign purchaser additional duty on top,
+  // which the caller adds.
+  const firstHomeConcessional = firstHomeConcessionApplies({
+    firstHomeBuyer,
+    ownerOccupier,
+    foreignPurchaser,
+  })
   const base =
-    ownerOccupier && !firstHomeConcessional && dutiableValue <= 550_000
+    ownerOccupier && !firstHomeConcessional && dutiableValue <= PPR_CONCESSION_CEILING
       ? pprDuty(dutiableValue)
       : generalDuty(dutiableValue)
   let duty = base
   let code: DutyHowCode
   let params: Record<string, number> = { dutiableValue }
   if (firstHomeConcessional) {
-    if (dutiableValue <= 600_000) {
+    if (dutiableValue <= FHB_EXEMPTION_CEILING) {
       duty = 0
       code = 'dutyFhbExempt'
-    } else if (dutiableValue <= 750_000) {
-      duty = (base * (dutiableValue - 600_000)) / 150_000
+    } else if (dutiableValue <= FHB_CONCESSION_CEILING) {
+      duty = (base * (dutiableValue - FHB_EXEMPTION_CEILING)) / FHB_CONCESSION_BAND
       code = 'dutyFhbConcession'
       params = { base, dutiableValue }
     } else {
       code = 'dutyFhbAboveCap'
     }
-  } else if (ownerOccupier && dutiableValue <= 550_000) {
+  } else if (ownerOccupier && dutiableValue <= PPR_CONCESSION_CEILING) {
     code = 'dutyPpr'
   } else {
     code = 'dutyGeneral'

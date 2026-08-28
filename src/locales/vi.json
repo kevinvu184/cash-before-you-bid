@@ -250,6 +250,9 @@
     "grantBody": ": 10.000 AUD, nhà mới ≤ 750.000 AUD, người mua nhà lần đầu; thường được chi trả khi tất toán qua ngân hàng, nên ở đây được thể hiện là khoản giảm số tiền mặt bạn cần.",
     "repaymentTerm": "Trả nợ",
     "repaymentBody": ": gốc và lãi trong 30 năm theo lãi suất của bạn; ngân hàng thẩm định ở mức lãi suất của bạn + 3 điểm phần trăm (APRA). Khoản dự phòng = số tháng × tiền trả nợ theo lãi suất của bạn + 1.000 AUD.",
+    "ratesAsAtBefore": "Các mức thuế và phí được cập nhật đến ngày {{date}}. Bạn có thể tự kiểm tra từng con số bằng ",
+    "ratesAsAtLink": "công cụ tính thuế trước bạ của State Revenue Office",
+    "ratesAsAtAfter": ". ",
     "sourcesBefore": "Nguồn và giải thích đầy đủ nằm trong ",
     "sourcesLink": "Victorian First Home Roadmap",
     "sourcesAfter": ". Chỉ là thông tin chung, không phải tư vấn pháp lý, thuế hay tín dụng cho cá nhân bạn."

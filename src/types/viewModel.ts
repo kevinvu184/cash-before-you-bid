@@ -138,6 +138,7 @@ export type ResultsFieldId =
   | 'sunkFraming'
   | 'sunkResearch'
   | 'notes'
+  | 'ratesAsAt'
   | 'sources'
 
 export type ScenarioFieldId =
@@ -229,6 +230,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   sunkFraming: true,
   sunkResearch: true,
   notes: true,
+  ratesAsAt: true,
   sources: true,
   scenariosHeading: true,
   scenarioSave: true,
@@ -521,6 +523,17 @@ export interface SourcesValue {
   href: string
 }
 
+/**
+ * When the rates behind every figure on the page were last checked, and where
+ * to check them again. Same shape as `SourcesValue` plus the date itself:
+ * `beforeKey` carries a `{{date}}` placeholder, and the skin formats `asAt`
+ * for the active locale rather than the core shipping a formatted string.
+ */
+export interface RatesAsAtValue extends SourcesValue {
+  /** ISO-8601 (YYYY-MM-DD), so every locale can render it its own way. */
+  asAt: string
+}
+
 // ── screen view models ───────────────────────────────────────────────────────
 
 export interface ChromeViewModel {
@@ -614,6 +627,8 @@ export interface ResultsViewModel {
   sunkCost: SunkCostViewModel
   notesHeadingKey: string
   notes: Field<readonly NoteEntry[]>
+  /** The date the rates were last verified, beside the SRO calculator link. */
+  ratesAsAt: Field<RatesAsAtValue>
   sources: Field<SourcesValue>
 }
 
