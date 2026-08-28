@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { TRANSFER_FEE_UNIT } from '../data/constants'
 import { mortgageRegistrationFee, pexaFees, transferRegistrationFee } from './fees'
 
 describe('transferRegistrationFee', () => {
@@ -10,6 +11,21 @@ describe('transferRegistrationFee', () => {
 
   it('caps at $3,614', () => {
     expect(transferRegistrationFee(1_600_000)).toBe(3614)
+  })
+
+  it('steps on the unit the explanation quotes', () => {
+    // how.transferFee states the fee "per $1,000" from TRANSFER_FEE_UNIT; the
+    // formula has to count in the same unit, or the sentence would describe a
+    // step the arithmetic does not take.
+    const at = 500_000
+    expect(transferRegistrationFee(at + TRANSFER_FEE_UNIT - 1)).toBe(
+      transferRegistrationFee(at),
+    )
+    // The fee is rounded up, so the step is not exactly the per-thousand rate;
+    // what matters is that it lands on the unit boundary and nowhere else.
+    expect(transferRegistrationFee(at + TRANSFER_FEE_UNIT)).toBeGreaterThan(
+      transferRegistrationFee(at),
+    )
   })
 })
 

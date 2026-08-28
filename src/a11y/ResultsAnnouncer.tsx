@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import type { DisplaySettings } from '../logic/display'
 import { estimateMoney } from '../skins/shared/text'
 import type { ResultsViewModel } from '../types/viewModel'
 import { useSettledAnnouncement } from './useSettledAnnouncement'
@@ -27,16 +28,32 @@ import { useSettledAnnouncement } from './useSettledAnnouncement'
  * advisory update that must not interrupt, and it carries polite/atomic
  * itself. Both are stated anyway, because the combination is what the
  * behaviour depends on and an implicit default is easy to lose in a refactor.
+ *
+ * The display arrives as a prop rather than through `useDisplay()`, because
+ * this is shell furniture and the context is published by a skin's Root, below
+ * it. The locale is added here from i18next, exactly as `useDisplay` does, so
+ * the total is written in the same currency and locale as the figure on screen.
  */
-export function ResultsAnnouncer({ results }: { results: ResultsViewModel }) {
+export function ResultsAnnouncer({
+  display,
+  results,
+}: {
+  display: DisplaySettings
+  results: ResultsViewModel
+}) {
   const { t, i18n } = useTranslation()
   const total = results.stats.find((stat) => stat.id === 'statTotal') ?? results.stats[0]
 
   // Figures and outcomes only, never words: this is what "the results changed"
-  // means, and it must not move when the language does.
+  // means, and it must not move when the language does. The currency is in it
+  // because switching it changes the figure a reader is shown; the rate is
+  // not, because a re-quote that leaves the rounded total where it was has
+  // changed nothing worth interrupting for — and an identical sentence would
+  // not be announced anyway.
   const signature = [
     ...results.verdicts.map((verdict) => `${verdict.id}:${verdict.status}:${verdict.value}`),
     `total:${total ? total.value : ''}`,
+    `currency:${display.currency}`,
   ].join('|')
 
   const text = total
@@ -50,7 +67,7 @@ export function ResultsAnnouncer({ results }: { results: ResultsViewModel }) {
           )
           .join(' '),
         totalLabel: t(total.labelKey),
-        total: estimateMoney(total.value, i18n.language),
+        total: estimateMoney(total.value, { ...display, locale: i18n.language }),
       })
     : ''
 

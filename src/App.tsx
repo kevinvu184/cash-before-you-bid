@@ -1,4 +1,12 @@
-import { Component, Suspense, useEffect, useState, type ErrorInfo, type ReactNode } from 'react'
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { ResultsAnnouncer } from './a11y/ResultsAnnouncer'
 import { SkipLink } from './a11y/SkipLink'
@@ -108,6 +116,18 @@ function App() {
     document.documentElement.dataset.coreInstance = String(instance)
   }, [instance])
 
+  // The display currency is published on the root element, beside data-skin
+  // and data-mode, so a stylesheet can answer it directly: đồng figures run
+  // some two and a half times longer than dollars, and the type and the stat
+  // grid have to give way to them.
+  //
+  // Before paint, not after: this is an attribute a stylesheet reads, so a
+  // passive effect would let one frame through at the dollar sizes.
+  const currency = core.presentation.currency
+  useLayoutEffect(() => {
+    document.documentElement.dataset.cur = currency
+  }, [currency])
+
   // Two pieces of accessibility furniture the shell owns rather than the skin.
   // Both have to exist whichever skin is mounted — and the announcer has to
   // survive a skin failing to load, which is exactly when a reader most needs
@@ -116,7 +136,7 @@ function App() {
     <>
       <SkipLink />
       <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
-      <ResultsAnnouncer results={vm.results} />
+      <ResultsAnnouncer display={vm.display.settings} results={vm.results} />
     </>
   )
 }

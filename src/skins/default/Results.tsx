@@ -5,6 +5,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 import type { FlagKind } from '../../types/calculator'
 import type {
+  DisplayViewModel,
   Field,
   GuidanceField,
   LineField,
@@ -18,6 +19,7 @@ import type {
   TextRef,
   VerdictField,
 } from '../../types/viewModel'
+import { useDisplay } from '../shared/display'
 import {
   estimateMoney,
   estimateRowAmount,
@@ -26,6 +28,7 @@ import {
   ratesAsAtDate,
   refText,
 } from '../shared/text'
+import { CurrencyBar } from './CurrencyBar'
 
 // Ledger has no alert or toast component, so the flags are rule-divided strips
 // with the state carried by a mono label in one of the desaturated semantics.
@@ -42,7 +45,8 @@ function FlagList({
   field: ResultsViewModel['flags']
   regionLabelKey: string
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <div
       className="flags"
@@ -54,7 +58,7 @@ function FlagList({
       {field.value.map((flag) => (
         <p className={`flag ${flag.kind}`} key={`${flag.kind}:${flag.code}`}>
           <span className="flag-label">{t(KIND_KEYS[flag.kind])}</span>
-          <span className="flag-text">{flagText(flag, t, i18n.language)}</span>
+          <span className="flag-text">{flagText(flag, t, display)}</span>
         </p>
       ))}
     </div>
@@ -73,7 +77,8 @@ function FlagList({
  * those this is, so the skin never inspects the figure to find out.
  */
 function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxBidField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <section
       className="max-bid"
@@ -84,11 +89,11 @@ function SafeMaxBid({ headingKey, field }: { headingKey: string; field: SafeMaxB
       <h2 className="section-mark">{t(headingKey)}</h2>
       <p className="max-bid-label">{t(field.labelKey)}</p>
       {field.status === 'bound' ? (
-        <p className="max-bid-figure">{estimateMoney(field.value, i18n.language)}</p>
+        <p className="max-bid-figure">{estimateMoney(field.value, display)}</p>
       ) : null}
-      <p className="max-bid-summary">{refText(field.summary, t, i18n.language)}</p>
+      <p className="max-bid-summary">{refText(field.summary, t, display)}</p>
       {field.detail === null ? null : (
-        <p className="max-bid-detail small">{refText(field.detail, t, i18n.language)}</p>
+        <p className="max-bid-detail small">{refText(field.detail, t, display)}</p>
       )}
     </section>
   )
@@ -109,7 +114,8 @@ function Verdicts({
   headingKey: string
   verdicts: readonly VerdictField[]
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <section className="verdicts">
       <h2 className="section-mark">{t(headingKey)}</h2>
@@ -125,11 +131,11 @@ function Verdicts({
             <span className="verdict-label">{t(verdict.labelKey)}</span>
             <span className="verdict-status">{t(verdict.statusKey)}</span>
           </div>
-          <p className="verdict-summary">{refText(verdict.summary, t, i18n.language)}</p>
+          <p className="verdict-summary">{refText(verdict.summary, t, display)}</p>
           {verdict.details.length > 0 ? (
             <ul className="verdict-details">
               {verdict.details.map((detail) => (
-                <li key={detail.key}>{refText(detail, t, i18n.language)}</li>
+                <li key={detail.key}>{refText(detail, t, display)}</li>
               ))}
             </ul>
           ) : null}
@@ -140,7 +146,8 @@ function Verdicts({
 }
 
 function Stat({ stat }: { stat: StatField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   const emphasis = stat.importance === 'primary'
   return (
     <div
@@ -149,9 +156,9 @@ function Stat({ stat }: { stat: StatField }) {
       data-importance={stat.importance}
     >
       <div className="stat-label">{t(stat.labelKey)}</div>
-      <div className="stat-value">{estimateMoney(stat.value, i18n.language)}</div>
+      <div className="stat-value">{estimateMoney(stat.value, display)}</div>
       <div className="stat-sub">
-        {stat.detail === null ? '' : refText(stat.detail, t, i18n.language)}
+        {stat.detail === null ? '' : refText(stat.detail, t, display)}
       </div>
     </div>
   )
@@ -239,11 +246,12 @@ function LineTable({ results }: { results: ResultsViewModel }) {
  * disclosure that would open on nothing.
  */
 function SubtotalRow({ line, wide }: { line: LineField; wide: boolean }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <tr className="band-subtotal" data-field={line.id} data-importance={line.importance}>
       <td>{t(line.labelKey)}</td>
-      <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
+      <td className="n">{estimateRowAmount(line.value, display)}</td>
       {wide ? <td className="m" /> : null}
     </tr>
   )
@@ -281,7 +289,8 @@ function BandGuidance({ guidance, span }: { guidance: GuidanceField; span: numbe
 }
 
 function WideRow({ line }: { line: LineField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   return (
     <tr
       className={line.emphasis ? 'total' : undefined}
@@ -289,8 +298,8 @@ function WideRow({ line }: { line: LineField }) {
       data-importance={line.importance}
     >
       <td>{t(line.labelKey)}</td>
-      <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
-      <td className="m">{howText(line.how, t, i18n.language)}</td>
+      <td className="n">{estimateRowAmount(line.value, display)}</td>
+      <td className="m">{howText(line.how, t, display)}</td>
     </tr>
   )
 }
@@ -302,8 +311,9 @@ interface MobileRowProps {
 }
 
 function MobileRow({ line, open, onToggle }: MobileRowProps) {
-  const { t, i18n } = useTranslation()
-  const how = howText(line.how, t, i18n.language)
+  const { t } = useTranslation()
+  const display = useDisplay()
+  const how = howText(line.how, t, display)
   const expanded = open && how !== ''
   const className = [line.emphasis ? 'total' : '', expanded ? 'expanded' : '']
     .filter(Boolean)
@@ -331,7 +341,7 @@ function MobileRow({ line, open, onToggle }: MobileRowProps) {
             t(line.labelKey)
           )}
         </td>
-        <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
+        <td className="n">{estimateRowAmount(line.value, display)}</td>
       </tr>
       {/* Always rendered, hidden by CSS when collapsed, so aria-controls always
           resolves. Never `.total`: the ink rule belongs to the row above, and
@@ -353,10 +363,11 @@ function MobileRow({ line, open, onToggle }: MobileRowProps) {
  * marked individually.
  */
 function EstimateNote({ field }: { field: Field<readonly TextRef[]> }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   // Joined in JS so the paragraph is one text node with single spaces, rather
   // than JSX whitespace rules deciding the gaps.
-  const text = field.value.map((ref) => refText(ref, t, i18n.language)).join(' ')
+  const text = field.value.map((ref) => refText(ref, t, display)).join(' ')
   return (
     <p
       className="small estimate-note"
@@ -375,7 +386,8 @@ function EstimateNote({ field }: { field: Field<readonly TextRef[]> }) {
  * auction is won.
  */
 function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   const research = sunk.research.value
   return (
     <section className="sunk">
@@ -390,7 +402,7 @@ function SunkCost({ sunk }: { sunk: SunkCostViewModel }) {
         data-field={sunk.framing.id}
         data-importance={sunk.framing.importance}
       >
-        {refText(sunk.framing.value, t, i18n.language)}
+        {refText(sunk.framing.value, t, display)}
       </p>
       <p
         className="small"
@@ -451,7 +463,13 @@ function RulesNotes({
   )
 }
 
-export function Results({ results }: { results: ResultsViewModel }) {
+export function Results({
+  display,
+  results,
+}: {
+  display: DisplayViewModel
+  results: ResultsViewModel
+}) {
   const { t } = useTranslation()
   return (
     // A named region rather than <main>: the inputs are main content too, so
@@ -464,6 +482,9 @@ export function Results({ results }: { results: ResultsViewModel }) {
       tabIndex={-1}
       aria-label={t(results.regionLabelKey)}
     >
+      {/* The currency heads the results: it says what unit everything below
+          is written in, including the bid ceiling right under it. */}
+      <CurrencyBar display={display} />
       <SafeMaxBid headingKey={results.safeMaxBidHeadingKey} field={results.safeMaxBid} />
       <Verdicts headingKey={results.verdictsHeadingKey} verdicts={results.verdicts} />
       <FlagList field={results.flags} regionLabelKey={results.flagsRegionLabelKey} />

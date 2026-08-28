@@ -1,9 +1,10 @@
 /* Offline for an inspection with no signal.
  *
- * The app is a static SPA: it calculates in the browser, sends nothing, and
- * fetches nothing at runtime. So the whole job here is to keep the shell and
- * its build assets, and the whole risk is stranding someone on a stale bundle
- * after a redeploy. The two rules that follow from that:
+ * The app is a static SPA: it calculates in the browser and sends nothing. Its
+ * one runtime request — the exchange rate, on the first switch to đồng — is
+ * cross-origin and handled below by being left alone. So the whole job here is
+ * to keep the shell and its build assets, and the whole risk is stranding
+ * someone on a stale bundle after a redeploy. The two rules that follow:
  *
  *   - The document is network-first. A redeploy changes index.html — it points
  *     at newly hashed assets — so an online visit always takes the fresh one
@@ -18,13 +19,19 @@
  * cache-first rule picks them up on the first visit and the typography
  * survives offline.
  *
- * One caveat that comes with them, and with everything else in public/ — the
- * icons, the manifest, the favicon. Those URLs are not fingerprinted, so the
- * "a given URL's bytes never change" reasoning above is a promise the build
- * cannot keep for them; it is kept by hand. Replacing any of those files means
- * bumping VERSION below in the same commit, or a returning visitor keeps the
- * old bytes until something else evicts the cache. src/fonts.css says so where
- * it explains how to regenerate the font files.
+ * The one thing still off-origin is the exchange rate, and leaving it alone is
+ * deliberate rather than incidental. Caching it here would be worse than not:
+ * it carries its own 12-hour expiry in localStorage, which a cache-first rule
+ * would silently outlive, and a failed fetch already falls back to a bundled
+ * indicative figure.
+ *
+ * One caveat that comes with the fonts, and with everything else in public/ —
+ * the icons, the manifest, the favicon. Those URLs are not fingerprinted, so
+ * the "a given URL's bytes never change" reasoning above is a promise the
+ * build cannot keep for them; it is kept by hand. Replacing any of those files
+ * means bumping VERSION below in the same commit, or a returning visitor keeps
+ * the old bytes until something else evicts the cache. src/fonts.css says so
+ * where it explains how to regenerate the font files.
  *
  * Scope comes from the registration rather than a hardcoded path, so the
  * GitHub Pages base ('/cash-before-you-bid/') needs no mention here.

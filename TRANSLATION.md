@@ -88,6 +88,20 @@ careful read:
   origin — the sentence says nothing is loaded from anyone else, so a
   translation must not reintroduce a third party into it.
 
+From the display-currency switch (`currency.*`):
+
+- "tỷ giá" for the exchange rate, and "Đổi tỷ giá" for the override that
+  replaces the fetched one with the reader's own — "thay tỷ giá" is the
+  alternative.
+- "THỦ CÔNG" for the MANUAL chip that marks a rate the reader typed. It is a
+  chip, so it has to stay short; "TỰ NHẬP" ("self-entered") is more literal but
+  longer.
+- "tỷ giá tham khảo, ngoại tuyến" for the bundled indicative rate shown when
+  the network fails, and "không làm mới được" for a real quote that has aged
+  past its 12 hours and could not be renewed.
+- "bản quy đổi để xem" for "a display conversion", in the note that tells the
+  reader the fields still want Australian dollars.
+
 From the accessibility copy (`a11y.*`, `results.label`) — three strings, none
 of them on screen for a sighted reader, which is exactly why they are easy to
 get wrong and hard to notice:
