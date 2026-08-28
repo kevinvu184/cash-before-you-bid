@@ -1,6 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import {
+  AMOUNT_HEADER_KEY,
+  CURRENCY_OPTIONS,
+  CURRENCY_SYMBOL_KEY,
   DEPOSIT_HINT_KEY,
+  EXCHANGE_RATE_ACTION_KEYS,
   LANGUAGE_OPTIONS,
   MODE_OPTIONS,
   NOTE_ENTRIES,
@@ -11,7 +15,14 @@ import {
   SOURCES,
   SUNK_COST_RESEARCH,
 } from '../logic/fieldLabels'
-import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
+import {
+  BASE_CURRENCY,
+  CURRENCY_ROUNDING,
+  type DisplayCurrency,
+} from '../logic/currencyConfig'
+import { displaySettings } from '../logic/display'
+import { isValidRate, rateAsShown, RATE_PROVIDER } from '../logic/exchangeRate'
+import { parseLocaleNumber } from '../logic/format'
 import type { ColorMode, SkinId } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles, SunkCostSummary } from '../types/calculator'
@@ -23,6 +34,8 @@ import { buildVerdictFields } from '../logic/verdictFields'
 import {
   type AppViewModel,
   type BooleanInputField,
+  type DisplayViewModel,
+  type ExchangeRateField,
   type FieldId,
   type NumberInputField,
   type StatField,
@@ -32,6 +45,7 @@ import {
   type TextRef,
 } from '../types/viewModel'
 import type { UseCalculatorResult } from './useCalculator'
+import { useExchangeRate, type RateStatus } from './useExchangeRate'
 import { useNumericDraft, useOptionalNumericDraft } from './useNumericDraft'
 import { useSafeMaxBid } from './useSafeMaxBid'
 import { useScenariosViewModel } from './useScenariosViewModel'
@@ -44,6 +58,7 @@ import { useTranslationNotice } from './useTranslationNotice'
 
 const money = (value: number): TextParam => ({ format: 'money', value })
 const moneyExact = (value: number): TextParam => ({ format: 'moneyExact', value })
+const moneyUnit = (value: number): TextParam => ({ format: 'moneyUnit', value })
 const percent = (value: number): TextParam => ({ format: 'percent', value })
 const count = (value: number): TextParam => ({ format: 'count', value })
 
@@ -52,24 +67,44 @@ const count = (value: number): TextParam => ({ format: 'count', value })
  * computed figure is rounded to the currency's display unit, a finer unit
  * applies below the threshold when the currency defines one, and
  * independently rounded parts may not add to the independently rounded total.
- * The units are quoted exactly — they are the rule, not an estimate.
+ * The units are quoted exactly — they are the rule, not an estimate — and in
+ * the display currency's own denomination, never converted from the base
+ * currency's, which is why they are `moneyUnit` rather than `moneyExact`.
  */
-function buildEstimateNote(): readonly TextRef[] {
-  const config = CURRENCY_ROUNDING[APP_CURRENCY]
+function buildEstimateNote(currency: DisplayCurrency): readonly TextRef[] {
+  const config = CURRENCY_ROUNDING[currency]
   const sentences: TextRef[] = [
-    { key: 'money.disclaimer', params: { unit: moneyExact(config.unit) } },
+    { key: 'money.disclaimer', params: { unit: moneyUnit(config.unit) } },
   ]
   if (config.smallThreshold !== undefined && config.smallUnit !== undefined) {
     sentences.push({
       key: 'money.disclaimerSmall',
       params: {
-        threshold: moneyExact(config.smallThreshold),
-        smallUnit: moneyExact(config.smallUnit),
+        threshold: moneyUnit(config.smallThreshold),
+        smallUnit: moneyUnit(config.smallUnit),
       },
     })
   }
   sentences.push({ key: 'money.roundingNote', params: {} })
   return sentences
+}
+
+/** Which of the rate's four provenances the line reports, as a sentence. */
+function rateSource(status: RateStatus, manual: boolean): TextRef {
+  if (manual) return { key: 'currency.sourceManual', params: {} }
+  const provider: TextParam = { format: 'raw', value: RATE_PROVIDER }
+  switch (status) {
+    case 'loading':
+      return { key: 'currency.sourceLoading', params: {} }
+    case 'fallback':
+      return { key: 'currency.sourceFallback', params: {} }
+    case 'stale':
+      return { key: 'currency.sourceStale', params: { provider } }
+    // 'base' never reaches here: the rate field is null under the base
+    // currency, where no rate is doing any work.
+    default:
+      return { key: 'currency.sourceLive', params: { provider } }
+  }
 }
 
 interface NumericSpec {
@@ -265,8 +300,85 @@ export function useAppViewModel(
   effectiveSkin: SkinId,
 ): AppViewModel {
   const { i18n } = useTranslation()
-  const { inputs, presentation, result, setField, setRoute, setLang, setSkin, setMode } = core
+  const {
+    inputs,
+    presentation,
+    result,
+    setField,
+    setRoute,
+    setLang,
+    setSkin,
+    setMode,
+    setCurrency,
+    setManualRate,
+  } = core
   const locale = i18n.language
+
+  // An override stands in for the fetched rate wherever there is one; the
+  // fetch still runs behind it, so Reset has a live rate to fall back to and
+  // the rate line can say what the override is standing in for.
+  const currency = presentation.currency
+  const fetched = useExchangeRate(currency)
+  const activeRate = presentation.manualRate ?? fetched.rate
+  const manual = presentation.manualRate !== null
+
+  const exchangeRate: ExchangeRateField | null =
+    currency === BASE_CURRENCY
+      ? null
+      : {
+          id: 'exchangeRate',
+          controlId: 'fx',
+          labelKey: 'currency.rateLabel',
+          value: activeRate,
+          kind: 'number',
+          importance: 'secondary',
+          lineKey: 'currency.rateLine',
+          baseSymbolKey: CURRENCY_SYMBOL_KEY[BASE_CURRENCY],
+          symbolKey: CURRENCY_SYMBOL_KEY[currency],
+          source: rateSource(fetched.status, manual),
+          // An override and the bundled fallback carry no provider timestamp;
+          // neither does a rate still in flight.
+          updatedAt: manual ? null : fetched.updatedAt,
+          manual,
+          actionKeys: EXCHANGE_RATE_ACTION_KEYS,
+          providerName: RATE_PROVIDER,
+          noteKey: 'currency.note',
+          onOverride: (raw) => {
+            const parsed = parseLocaleNumber(raw, locale)
+            // Stored at the precision it is shown at, so the rate the figures
+            // were priced at is the rate on the line above them — a decimal
+            // the reader typed would otherwise be applied but never displayed.
+            const rate = parsed === null ? null : rateAsShown(parsed)
+            // An unusable figure changes nothing rather than raising: the rate
+            // on screen is still a working one.
+            if (rate === null || !isValidRate(rate)) return
+            // Nor does applying the rate already in force. Opening the
+            // override and pressing Apply without editing is not an edit, and
+            // must not pin a live quote as the reader's own rate.
+            if (rate === rateAsShown(activeRate)) return
+            setManualRate(rate)
+          },
+          onReset: () => setManualRate(null),
+        }
+
+  const display: DisplayViewModel = {
+    settings: displaySettings(currency, activeRate),
+    currency: {
+      id: 'currency',
+      controlId: 'cur',
+      labelKey: 'currency.label',
+      value: currency,
+      kind: 'text',
+      importance: 'secondary',
+      options: CURRENCY_OPTIONS,
+      // Re-picking the active currency would push an identical history entry
+      // and pollute the back button.
+      onChange: (next) => {
+        if (next !== currency) setCurrency(next)
+      },
+    },
+    rate: exchangeRate,
+  }
   const notice = useTranslationNotice(inputs.lang === 'vi')
   const scenarios = useScenariosViewModel(core.currentQuery, core.loadQuery)
 
@@ -429,6 +541,7 @@ export function useAppViewModel(
 
   return {
     locale: inputs.lang,
+    display,
     // What is rendering, which is the requested skin unless it failed to load.
     // The switcher below still shows what the URL asked for.
     skinId: effectiveSkin,
@@ -686,7 +799,9 @@ export function useAppViewModel(
       linesHeadingKey: 'results.linesHeading',
       tableHeadingKeys: {
         line: 'table.line',
-        amount: 'table.amount',
+        // The column is headed by the currency its figures are written in, so
+        // it says what it holds without a word of prose.
+        amount: AMOUNT_HEADER_KEY[currency],
         how: 'table.how',
       },
       lines: lines.lines,
@@ -695,7 +810,7 @@ export function useAppViewModel(
       estimateNote: {
         id: 'estimateNote',
         labelKey: 'money.disclaimer',
-        value: buildEstimateNote(),
+        value: buildEstimateNote(currency),
         kind: 'text',
         importance: 'secondary',
       },

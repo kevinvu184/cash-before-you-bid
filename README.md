@@ -77,11 +77,25 @@ Everything the user can change lives in the query string, so a link reproduces
 the exact view. Params equal to their default are omitted and keys are sorted,
 so the same state always produces the same URL.
 
-| Param  | Values             | Default    | Meaning                            |
-| ------ | ------------------ | ---------- | ---------------------------------- |
-| `skin` | `default`, `plain` | `default`  | Which skin renders the screen      |
-| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS |
-| `lang` | `en`, `vi`         | `vi`       | UI language                        |
+| Param  | Values             | Default    | Meaning                                 |
+| ------ | ------------------ | ---------- | --------------------------------------- |
+| `skin` | `default`, `plain` | `default`  | Which skin renders the screen           |
+| `mode` | `light`, `dark`    | _(absent)_ | Colour mode; absent follows the OS      |
+| `lang` | `en`, `vi`         | `vi`       | UI language                             |
+| `cur`  | `AUD`, `VND`       | `AUD`      | Currency the figures are **written** in |
+| `fx`   | number             | _(absent)_ | A typed rate, used only while `cur=VND`  |
+
+`cur` and `fx` change how the results are written, never what was worked out —
+see [Display currency](#display-currency) below. An unknown `cur` falls back to
+`AUD`; an `fx` outside the sane band (or unparseable) is treated as absent
+rather than clamped, because clamping would price the figures at a rate the
+reader never typed.
+
+`fx` only does anything while `cur=VND`, because the base currency is never
+converted. It survives a switch back to `AUD` rather than being dropped —
+someone checking the dollar figure mid-plan should not have to retype the rate
+their bank quoted them — so a link like `?fx=20000` on its own is valid, shows
+dollars, and applies the rate the moment ₫ is chosen.
 
 The calculator's own params are read and written by `src/logic/urlState.ts`.
 Booleans are `1`/`0`, and a number outside its allowed range is clamped on read.
@@ -121,13 +135,61 @@ or unparseable — means "not yet pre-approved", and the finance check is not ru
 at all; `loan=0` is a figure the user entered, and the check runs and fails on
 it. See `src/logic/verdict.ts`.
 
-**A shared link carries whatever was typed into `save` and `loan`.** Nothing
-leaves the browser — the query string is the whole persistence layer — but a
-link pasted into a chat carries the sender's savings balance with it.
+**A shared link carries whatever was typed into `save` and `loan`.** No figure
+is ever sent anywhere — the query string is the whole persistence layer, and the
+one request the app makes carries none of it (see
+[the one outbound request](#the-one-outbound-request)) — but a link pasted into
+a chat carries the sender's savings balance with it.
 
 An unknown `?skin=` falls back to `plain` — the baseline that always renders —
 and the URL is rewritten with `replace`. An unknown `?mode=` falls back to
 following `prefers-color-scheme`, and the param is dropped.
+
+## Display currency
+
+The results can be read in Australian dollars or Vietnamese đồng. It is a
+**display conversion only**: every amount is entered, stored and calculated in
+AUD at full precision, and the currency changes nothing but how the figures are
+written. Switching to đồng and back reproduces the dollar figures byte for
+byte, because the conversion is skipped entirely for the base currency.
+
+`src/logic/exchangeRate.ts` holds the rate rules and `src/hooks/useExchangeRate.ts`
+fetches them. `src/logic/display.ts` is the formatter's view of "what currency,
+at what rate", and `src/skins/shared/text.ts` is where a key and its numbers
+become a sentence — including the statutory thresholds those sentences quote,
+which come from `src/data/constants.ts` rather than from the locale files. That
+is not tidiness: a threshold left as a literal `$600,000` beside a converted
+amount renders an equation subtracting dollars from đồng.
+`src/skins/currency.test.tsx` fails on any dollar marker left in the money
+surface of a converted page.
+
+Statutory constants read exactly in dollars, and become rounded estimates once
+a rate has been through them — a `$600,000` cap put through an exchange rate is
+no longer exact, and printing it to the đồng would claim a precision the rate
+does not have. Zero is the exception, being the one figure no rate can move.
+
+### The one outbound request
+
+**The rate is fetched from a third party.** `https://open.er-api.com` is
+keyless and CORS-open, and it stamps the quote itself rather than the request.
+Nothing about the reader or their figures is sent — it is a plain `GET` of a
+public rate table, with `referrerPolicy: 'no-referrer'` and `credentials:
+'omit'` stated outright rather than inherited from a browser default — but it
+is still a request to a host other than the one serving the page. Since the
+web fonts moved onto this origin it is **the only one the app makes**:
+
+- **Nothing is fetched in the default view.** Dollars need no conversion, so
+  the request happens on the first switch to đồng and not before.
+- The rate is cached in `localStorage` for 12 hours, inside try/catch, so a
+  returning reader stays off the network and a browser that refuses storage
+  still works.
+- A bundled indicative rate (`FALLBACK_RATES`, sampled 28 Aug 2026) covers a
+  failed or absent network, so figures are never missing. A cached quote that
+  has aged past 12 hours and whose refresh then fails is **kept** rather than
+  discarded — a real quote a few hours old beats a constant compiled into the
+  bundle — but the rate line stops calling it current.
+- The rate line names which of the four states is in force, and the note under
+  it names the provider, so the request is disclosed where it happens.
 
 ## Saved scenarios
 
@@ -157,8 +219,10 @@ figures; they stay in the browser that typed them.
 
 ## Installable and offline
 
-The app is a static SPA with no runtime network dependency, so it works with no
-signal at an inspection once it has been opened online.
+The app is a static SPA, so it works with no signal at an inspection once it has
+been opened online. Its one network call — the exchange rate — is not a
+dependency: the figures are all in AUD until someone asks for đồng, and a
+failed fetch falls back to a bundled indicative rate rather than to nothing.
 
 - `public/manifest.webmanifest` — states every path relatively, because Vite
   does not rewrite URLs inside a manifest and the app is served from
@@ -166,9 +230,11 @@ signal at an inspection once it has been opened online.
 - `public/sw.js` — caches the shell. Navigations are network-first, so a
   redeploy is picked up on the next online visit rather than stranding anyone
   on a stale bundle; fingerprinted build assets are cache-first, because a
-  given URL's bytes never change. Nothing cross-origin is cached, and nothing
-  cross-origin is fetched either — the web fonts are served from this origin,
-  so the typography survives offline too.
+  given URL's bytes never change. Nothing cross-origin is cached — the web
+  fonts are served from this origin, so the typography survives offline too.
+  The one cross-origin fetch the app makes, the exchange rate, is deliberately
+  left alone by the worker; see
+  [the one outbound request](#the-one-outbound-request).
 - It registers in production only (`src/serviceWorker.ts`); in development it
   would serve a cached shell over Vite's module graph.
 

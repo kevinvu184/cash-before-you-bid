@@ -409,3 +409,45 @@
 [data-skin='plain'] .plain-scenarios p[role='status']:empty {
   margin: 0;
 }
+
+/* ── display currency ───────────────────────────────────────────────────── */
+
+/* The switch carries the section's name itself, so there is no heading to draw
+   the rule this section still needs to sit apart from the results below it. */
+[data-skin='plain'] .plain-currency {
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+/* Apply and Reset, which are this section's own: the same bordered 44px
+   control every other button in this skin is. Scoped to the rate line rather
+   than to the section, because the currency switch beside it is a .plain-choice
+   and is already styled as one — two selectors dressing the same buttons would
+   be two to keep in step. */
+[data-skin='plain'] [data-field='exchangeRate'] button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background: none;
+  border: var(--border-width) solid var(--color-hairline-strong);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+[data-skin='plain'] [data-field='exchangeRate'] .plain-field button {
+  margin-top: var(--space-2);
+}
+
+/* The rate, its source and its timestamp read as one sentence; without this
+   the spans would run together. */
+[data-skin='plain'] [data-field='exchangeRate'] p > span + span::before {
+  content: ' · ';
+}
+
+[data-skin='plain'] [data-field='exchangeRate'] p > strong + button {
+  margin-left: var(--space-2);
+}

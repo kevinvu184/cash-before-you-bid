@@ -68,9 +68,9 @@
   "cliffs": {
     "label": "First home buyer duty thresholds",
     "exemptionTerm": "Exemption ends.",
-    "exemptionBody": " Up to {{price}} an eligible first home buyer pays no land transfer duty at all. A dollar over, and duty starts.",
+    "exemptionBody": " Up to {{price}} an eligible first home buyer pays no land transfer duty at all. Past it the exemption is gone and duty phases in, rising far more steeply with price than it does anywhere else.",
     "concessionTerm": "Concession ends.",
-    "concessionBody": " Between {{from}} and {{price}} the duty is reduced on a sliding scale, so it climbs steeply across the band. Above {{price}} the full duty applies."
+    "concessionBody": " Between {{from}} and {{price}} the duty is scaled by how far into the band the price sits, climbing from nothing to the full amount across it. From {{price}} the concession is gone and the full duty applies."
   },
   "privacy": {
     "claim": "Your figures never leave your browser.",
@@ -80,8 +80,8 @@
     "linkBody": " Your figures sit in the address bar so the page can be reloaded and shared, which means anyone you send the link to can read them — your savings and pre-approved loan included — and a chat app or browser sync may keep a copy.",
     "storageTerm": "Saved scenarios stay on this device.",
     "storageBody": " Saving one keeps its numbers in this browser’s own storage, on this device only. They are never uploaded, and deleting one here deletes it everywhere.",
-    "thirdPartyTerm": "Nothing is loaded from anyone else.",
-    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address. There is no third party in a position to see you arrive, and none is added without this statement changing first."
+    "thirdPartyTerm": "One thing is loaded from elsewhere, and only if you ask.",
+    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address, so no one else sees you arrive. The single exception is the exchange rate: switching the display to đồng fetches today's rate from exchangerate-api.com — the request your browser will show is to open.er-api.com — and nothing is fetched before you do. That request carries none of your figures, no cookie, and not even the address of the page you are on. Nothing else is added without this statement changing first."
   },
   "results": {
     "flagsLabel": "Warnings and notes",
@@ -93,6 +93,26 @@
     "disclaimer": "Every figure above is an estimate, rounded to the nearest {{unit}}.",
     "disclaimerSmall": "Amounts under {{threshold}} are rounded to the nearest {{smallUnit}}.",
     "roundingNote": "Parts may not add to the total due to rounding."
+  },
+  "currency": {
+    "label": "Currency",
+    "symbolAud": "$",
+    "symbolVnd": "₫",
+    "nameAud": "Australian dollars",
+    "nameVnd": "Vietnamese đồng",
+    "rateLabel": "Exchange rate",
+    "rateLine": "1 {{base}} = {{quoted}}",
+    "sourceLive": "{{provider}}",
+    "sourceStale": "{{provider}}, could not refresh",
+    "sourceLoading": "fetching rate…",
+    "sourceFallback": "indicative rate, offline",
+    "sourceManual": "your rate",
+    "manualTag": "MANUAL",
+    "reset": "Reset",
+    "overrideLabel": "Override rate: 1 {{base}} =",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "note": "Amounts are entered and calculated in Australian dollars; {{currency}} is a display conversion. The rate is fetched from {{provider}} the first time you switch — none of your figures are sent."
   },
   "flagKinds": {
     "warn": "WARNING",
@@ -106,10 +126,10 @@
     "schemeOwnerOccupier": "The scheme is owner-occupier only — LMI applied instead.",
     "htbCapExceeded": "Price is above the Help to Buy cap of {{cap}} for this region.",
     "htbCitizenship": "Help to Buy requires Australian citizenship.",
-    "htbDetails": "Help to Buy: income caps $103,000 single / $165,000 couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
+    "htbDetails": "Help to Buy: income caps {{single}} single / {{couple}} couple; 10,000 places a year; CBA and Bank Australia only (Jun 2026). Government share is {{share}} and is repaid at market value on sale.",
     "guarantorGap": "Under 20% deposit without LMI needs a family guarantor pledging the gap; shown with no LMI.",
     "fhbResidency": "The first home buyer duty exemption and concession require an Australian citizen or permanent resident — duty charged at the standard rates instead.",
-    "fhogPriceCap": "First Home Owner Grant not available: price above $750,000.",
+    "fhogPriceCap": "First Home Owner Grant not available: price above {{cap}}.",
     "genuineSavings": "LVR above 90%: most lenders want 5% of the price as genuine savings held for 3+ months.",
     "serviceability": "Serviceability check: the lender will test {{assessed}}/month at {{rate}}. If that is more than about 35–40% of your after-tax income, expect the loan to be cut.",
     "financeUnconditional": "An auction contract is unconditional: there is no finance clause and no cooling-off period. A pre-approval is not the loan — if it does not settle you have defaulted on the contract, not merely missed out on the property, and the deposit is at risk.",
@@ -143,7 +163,8 @@
   "table": {
     "line": "Line",
     "amount": "$",
-    "how": "How it was worked out"
+    "how": "How it was worked out",
+    "amountVnd": "₫"
   },
   "bands": {
     "preAuction": "Before the auction",
@@ -220,18 +241,18 @@
     "total": "Total cash before you bid"
   },
   "how": {
-    "dutyFhbExempt": "First home buyer exemption: dutiable value {{dutiableValue}} ≤ $600,000 → $0",
-    "dutyFhbConcession": "General duty {{base}} × ({{dutiableValue}} − $600,000) ÷ $150,000",
-    "dutyFhbAboveCap": "Above $750,000: no first home concession. $2,870 + 6% × ({{dutiableValue}} − $130,000)",
+    "dutyFhbExempt": "First home buyer exemption: dutiable value {{dutiableValue}} ≤ {{cap}} → {{zero}}",
+    "dutyFhbConcession": "General duty {{base}} × ({{dutiableValue}} − {{cap}}) ÷ {{range}}",
+    "dutyFhbAboveCap": "Above {{cap}}: no first home concession. {{bandBase}} + 6% × ({{dutiableValue}} − {{bandThreshold}})",
     "dutyPpr": "PPR concession rate on {{dutiableValue}}",
     "dutyGeneral": "General rate on {{dutiableValue}}",
     "dutyOffThePlan": "Off-the-plan: {{price}} − {{construction}} construction = dutiable {{dutiableValue}}.",
     "foreignDuty": "8% × {{dutiableValue}}",
-    "transferFee": "$104.30 + $2.34 × {{thousands}} (per $1,000), capped $3,614, rounded up",
+    "transferFee": "{{base}} + {{perThousand}} × {{thousands}} (per {{unit}}), capped {{cap}}, rounded up",
     "mortgageFeeLoan": "Land Services Victoria 2026-27",
     "mortgageFeeNoLoan": "No loan",
-    "pexaBoth": "$146.30 transfer + $74.14 mortgage",
-    "pexaTransferOnly": "$146.30 transfer",
+    "pexaBoth": "{{transfer}} transfer + {{mortgage}} mortgage",
+    "pexaTransferOnly": "{{transfer}} transfer",
     "lmiHtb": "Help to Buy: no LMI",
     "lmiScheme": "5% Deposit Scheme: government guarantees 15%, no LMI",
     "lmiLvrUnder80": "LVR {{lvr}} ≤ 80%: no LMI",
@@ -242,11 +263,11 @@
     "conveyancing": "Your figure: contract review and settlement work, committed before you bid.",
     "settlementAdjustments": "Rates, water, owners corp apportioned to settlement day",
     "buildingInsurance": "Lender requires cover before settlement",
-    "grant": "New home ≤ $750,000, eligible first home buyer; usually applied at settlement",
+    "grant": "New home ≤ {{cap}}, eligible first home buyer; usually applied at settlement",
     "deposit": "{{pct}} × {{price}}",
     "costsSubtotal": "Sum of the lines above (excluding deposit)",
-    "buffer_one": "{{count}} month × {{repayment}} + $1,000",
-    "buffer_other": "{{count}} months × {{repayment}} + $1,000",
+    "buffer_one": "{{count}} month × {{repayment}} + {{base}}",
+    "buffer_other": "{{count}} months × {{repayment}} + {{base}}",
     "noBuffer": "No buffer",
     "total": "Deposit + costs + moving + buffer"
   },

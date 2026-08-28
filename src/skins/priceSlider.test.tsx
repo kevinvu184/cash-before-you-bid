@@ -9,7 +9,7 @@ import { viewModelFixture } from '../testing/viewModelFixture'
 import type { SkinModule } from '../types/skin'
 import type { AppViewModel } from '../types/viewModel'
 import { SKINS } from './registry'
-import { exactMoney } from './shared/text'
+import { exactMoney, inputMoney } from './shared/text'
 
 // The price slider, as a reader meets it. Parity proves the field is in the DOM
 // in every skin; this proves it is a real range control bound to the price,
@@ -64,7 +64,19 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('price slider in skin %s', (sk
   it.each(LANGS)('speaks the price as money rather than digits, in %s', async (locale) => {
     const { input } = await renderSkin(skinId, locale)
 
-    expect(input.getAttribute('aria-valuetext')).toBe(exactMoney(820_000, locale))
+    expect(input.getAttribute('aria-valuetext')).toBe(inputMoney(820_000, locale))
+  })
+
+  it('speaks its own value in the currency the price was typed in', async () => {
+    // The fixture is on a converted display, so this is a real distinction:
+    // the results follow the reader's currency, the inputs stay in dollars,
+    // and this control mirrors an input. Speaking a converted figure would
+    // disagree with the price box beside it.
+    const { input, vm } = await renderSkin(skinId, 'vi')
+    const shown = { locale: 'vi', ...vm.display.settings }
+
+    expect(input.getAttribute('aria-valuetext')).toBe(inputMoney(820_000, 'vi'))
+    expect(input.getAttribute('aria-valuetext')).not.toBe(exactMoney(820_000, shown))
   })
 
   it('reports the price it was dragged to, and nothing else', async () => {
@@ -83,9 +95,12 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('price slider in skin %s', (sk
   it.each(LANGS)('says what changes at each cliff, in %s', async (locale) => {
     const { field, vm } = await renderSkin(skinId, locale)
     const text = field.textContent ?? ''
+    // Through the display the skin was handed: a threshold quoted in dollars
+    // beside a converted duty figure would be an equation in two currencies.
+    const shown = { locale, ...vm.display.settings }
 
     for (const marker of vm.inputs.priceSlider.markers) {
-      expect(text).toContain(exactMoney(marker.value, locale))
+      expect(text).toContain(exactMoney(marker.value, shown))
     }
     // A missing translation renders as the key itself.
     expect(text).not.toContain('cliffs.')
@@ -101,7 +116,7 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('price slider in skin %s', (sk
   })
 
   it('shows no cliffs to a purchaser the thresholds do not apply to', async () => {
-    const { field, input } = await renderSkin(skinId, 'en', (vm) => {
+    const { field, input, vm } = await renderSkin(skinId, 'en', (vm) => {
       vm.inputs.priceSlider = buildPriceSliderField(
         vm.inputs.priceSlider.value,
         { firstHomeBuyer: false, ownerOccupier: true, foreignPurchaser: false },
@@ -115,6 +130,8 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('price slider in skin %s', (sk
     expect(input.getAttribute('aria-describedby')).toBeNull()
     // From the config, not a figure written here: this must keep testing the
     // exemption ceiling wherever the config moves it to.
-    expect(field.textContent).not.toContain(exactMoney(FHB_EXEMPTION_CEILING, 'en'))
+    expect(field.textContent).not.toContain(
+      exactMoney(FHB_EXEMPTION_CEILING, { locale: 'en', ...vm.display.settings }),
+    )
   })
 })

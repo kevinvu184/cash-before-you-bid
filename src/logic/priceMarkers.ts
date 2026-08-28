@@ -14,14 +14,16 @@ import { PRICE_MAX } from './urlState'
 import type { PriceMarker, PriceSliderField } from '../types/viewModel'
 
 /**
- * The price slider and the two duty cliffs on its track.
+ * The price slider and the two first home buyer duty thresholds on its track.
  *
- * Victorian first home buyer duty is not a curve; it is a step. Nothing is
- * payable up to the exemption ceiling, a sliding concession runs from there to
- * the concession ceiling, and above it the full duty applies. Between the last
- * dollar under a ceiling and the first dollar over it the total on this page
- * moves by tens of thousands, which is invisible in a bare number field: the
- * user has to happen to type across the threshold to find out it was there.
+ * Nothing is payable up to the exemption ceiling; from there to the concession
+ * ceiling the duty otherwise payable is scaled by how far into the band the
+ * value sits; above it, the full amount. Both thresholds are continuous — the
+ * dollar either side of one differs by cents, not by a step (see `duty.ts`) —
+ * so what the markers point at is the *band*, not a jump: inside it, the whole
+ * duty bill phases in over a narrow range of price, so an extra dollar of bid
+ * costs several times the duty it costs at any other price. That is invisible
+ * in a bare number field, which is what these are for.
  *
  * **Every position on this track is read from `data/rates.ts`.** The two
  * ceilings are the config's own constants, so moving a threshold there moves

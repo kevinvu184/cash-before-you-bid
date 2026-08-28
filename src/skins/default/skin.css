@@ -1497,3 +1497,245 @@
   height: 44px;
   translate: 0 -50%;
 }
+
+/* ── currency bar ───────────────────────────────────────────────────────── */
+
+/* Heads the results with the currency they are written in. Sits above the
+   verdicts so the reader knows what unit they are about to read, not after. */
+[data-skin='default'] .curbar {
+  padding: 0 0 10px;
+  margin: 0 0 4px;
+  border-bottom: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .curbar-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  min-height: 48px;
+}
+
+[data-skin='default'] .ctl-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .curnote {
+  margin: 6px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+/* ── rate line ──────────────────────────────────────────────────────────── */
+
+[data-skin='default'] .rateline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Dotted underline, not solid: it opens an editor rather than navigating, so
+   it should not read as a link. */
+[data-skin='default'] .ratebtn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
+  min-height: 44px;
+  padding: 6px 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  appearance: none;
+}
+
+@media (hover: hover) {
+  [data-skin='default'] .ratebtn:hover {
+    color: var(--color-text);
+  }
+}
+
+[data-skin='default'] .ratebtn-rate {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[data-skin='default'] .rateline .tag {
+  padding: 2px 6px 1px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text);
+  background: none;
+  border: var(--border-width) solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* Text-sized labels ("Reset") would leave a target narrower than a fingertip,
+   so the box is held to 44px in both directions. */
+[data-skin='default'] .linkbtn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 2px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  appearance: none;
+}
+
+/* ── rate override ──────────────────────────────────────────────────────── */
+
+[data-skin='default'] .rateedit {
+  display: grid;
+  gap: 6px;
+  padding: var(--space-2) 0 2px;
+  border-top: var(--border-width) solid var(--color-hairline);
+}
+
+[data-skin='default'] .rateedit > label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .re-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+[data-skin='default'] .re-row input {
+  flex: 1 1 130px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px 8px;
+  font-family: var(--font-mono);
+  /* Never below 16px, or iOS Safari zooms the page when the field is focused. */
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+[data-skin='default'] .re-row input:focus-visible {
+  border-color: var(--color-accent);
+  outline-offset: 0;
+}
+
+[data-skin='default'] .re-row .unit {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+[data-skin='default'] .re-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 14px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: var(--text-transform-label);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  appearance: none;
+}
+
+[data-skin='default'] .re-btn.primary {
+  color: var(--color-bg);
+  background: var(--color-text);
+  border: var(--border-width) solid var(--color-text);
+}
+
+[data-skin='default'] .re-btn.tertiary {
+  padding-right: 2px;
+  padding-left: 2px;
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── đồng figures run ~2.5× longer than dollars ─────────────────────────── */
+
+/* Stepping the money type down a notch keeps the long figures on one line
+   instead of wrapping or overflowing the columns they sit in. Keyed off the
+   attribute the shell writes beside data-skin, not off the switch's own state:
+   the figures are what need the room, and they are on the page whether or not
+   the control is. */
+[data-skin='default'][data-cur='VND'] .sticky-total-value {
+  font-size: var(--font-size-lead);
+}
+
+[data-skin='default'][data-cur='VND'] .stat-value {
+  font-size: var(--font-size-lead);
+}
+
+[data-skin='default'][data-cur='VND'] .stat.emphasis .stat-value {
+  font-size: var(--font-size-stat);
+}
+
+[data-skin='default'][data-cur='VND'] .lines td.n {
+  font-size: var(--font-size-figure);
+}
+
+@media (min-width: 820px) {
+  /* Five đồng figures across leave each one too narrow to stay on its own
+     line; three gives them the width and wraps to a second row. */
+  [data-skin='default'][data-cur='VND'] .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* The fourth tile opens the second row, so it takes no dividing rule. */
+  [data-skin='default'][data-cur='VND'] .stat:nth-child(4) {
+    border-left: 0;
+  }
+
+  [data-skin='default'][data-cur='VND'] .stat-value,
+  [data-skin='default'][data-cur='VND'] .stat.emphasis .stat-value {
+    font-size: var(--font-size-lead);
+  }
+}

@@ -9,7 +9,8 @@ import type {
   PriceSliderField,
   PrivacyField,
 } from '../../types/viewModel'
-import { exactMoney, refText } from '../shared/text'
+import { useDisplay } from '../shared/display'
+import { exactMoney, inputMoney, refText } from '../shared/text'
 
 /**
  * A text field with a keypad, not `type="number"`: number inputs reject the
@@ -59,7 +60,8 @@ function NumberRow({ field }: { field: NumberInputField }) {
  * so a half-typed figure is never snapped by it — see `useNumericDraft`.
  */
 function PriceSlider({ field }: { field: PriceSliderField }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const display = useDisplay()
   const hasMarkers = field.markers.length > 0
   const notesId = hasMarkers ? `${field.controlId}-cliffs` : undefined
 
@@ -73,9 +75,10 @@ function PriceSlider({ field }: { field: PriceSliderField }) {
         max={field.max}
         step={field.step}
         value={field.value}
-        // Without this a screen reader reads the raw number; with it, the price
-        // is spoken the way it is written everywhere else on the page.
-        aria-valuetext={exactMoney(field.value, i18n.language)}
+        // Without this a screen reader reads the raw number. In the base
+        // currency, like the price box this mirrors: the inputs are in dollars
+        // whatever the results are being shown in.
+        aria-valuetext={inputMoney(field.value, display.locale)}
         aria-describedby={notesId}
         onChange={(event) => field.onChange(Number(event.target.value))}
       />
@@ -93,7 +96,7 @@ function PriceSlider({ field }: { field: PriceSliderField }) {
               className="price-cliff"
               style={{ left: `${marker.positionPct}%`, '--cliff-row': index } as CSSProperties}
             >
-              {exactMoney(marker.value, i18n.language)}
+              {exactMoney(marker.value, display)}
             </span>
           ))}
         </div>
@@ -103,7 +106,7 @@ function PriceSlider({ field }: { field: PriceSliderField }) {
           {field.markers.map((marker) => (
             <li key={marker.id}>
               <strong>{t(marker.labelKey)}</strong>
-              {refText(marker.description, t, i18n.language)}
+              {refText(marker.description, t, display)}
             </li>
           ))}
         </ul>

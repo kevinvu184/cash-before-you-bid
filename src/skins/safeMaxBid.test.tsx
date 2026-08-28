@@ -5,6 +5,7 @@ import i18n from '../i18n'
 import { LANGS, type Lang } from '../logic/lang'
 import { SAFE_MAX_BID_CEILING } from '../logic/safeMaxBid'
 import { viewModelFixture, type FixtureOptions } from '../testing/viewModelFixture'
+import type { Display } from '../logic/display'
 import type { SkinModule } from '../types/skin'
 import { SKINS } from './registry'
 import { estimateMoney } from './shared/text'
@@ -26,6 +27,13 @@ afterEach(async () => {
   await i18n.changeLanguage('vi')
 })
 
+// Every figure is written through the display the fixture carries, currency
+// and rate included — a skin that formatted the bid ceiling in dollars under a
+// ₫ page would otherwise pass this suite.
+function displayFor(locale: Lang, options: FixtureOptions = {}): Display {
+  return { locale, ...viewModelFixture({ ...options, locale }).display.settings }
+}
+
 async function renderSkin(id: string, locale: Lang, options: FixtureOptions = {}) {
   await i18n.changeLanguage(locale)
   const module = modules.get(id)
@@ -41,17 +49,18 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('safe maximum bid in skin %s',
   it.each(LANGS)('shows the figure and the sentence that explains it in %s', async (locale) => {
     const field = await renderSkin(skinId, locale)
     const text = field.textContent ?? ''
+    const display = displayFor(locale)
 
-    expect(text).toContain(estimateMoney(690_000, locale))
+    expect(text).toContain(estimateMoney(690_000, display))
     // A missing translation renders as the key itself.
     expect(text).not.toContain('safeMaxBid.')
-    expect(text.length).toBeGreaterThan(estimateMoney(690_000, locale).length)
+    expect(text.length).toBeGreaterThan(estimateMoney(690_000, display).length)
   })
 
   it.each(LANGS)('names the rounding it applied, in %s', async (locale) => {
     const field = await renderSkin(skinId, locale)
     // The unit is quoted exactly, from the constant the search rounds by.
-    expect(field.textContent).toContain(estimateMoney(1000, locale))
+    expect(field.textContent).toContain(estimateMoney(1000, displayFor(locale)))
   })
 
   it('states no price when no price is affordable', async () => {
@@ -60,7 +69,7 @@ describe.each(SKIN_LIST.map((entry) => entry.id))('safe maximum bid in skin %s',
     })
     const text = field.textContent ?? ''
 
-    expect(text).not.toContain(estimateMoney(0, 'en'))
+    expect(text).not.toContain(estimateMoney(0, displayFor('en')))
     expect(text.length).toBeGreaterThan(0)
     expect(text).not.toContain('safeMaxBid.')
   })
