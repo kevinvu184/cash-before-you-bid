@@ -105,7 +105,7 @@
   "sunk": {
     "heading": "Spent before the hammer falls",
     "perPropertyLabel": "Per property",
-    "perPropertySub": "Inspection and conveyancing, paid to go after one property",
+    "perPropertySub": "Inspection and conveyancing, paid to go after one property. Your conveyancing figure also covers settlement work, which you pay for once — so this reads high",
     "searchLabel": "Across your whole search",
     "searchSub_one": "{{properties}} property, so nothing beyond the figure above",
     "searchSub_other": "{{properties}} × {{perProperty}} — {{lost}} of it on the ones you do not win",
