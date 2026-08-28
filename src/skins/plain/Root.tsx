@@ -1,6 +1,5 @@
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import { formatAud, formatRowAmount } from '../../logic/format'
 import type { FlagKind } from '../../types/calculator'
 import type {
   AnyInputField,
@@ -12,7 +11,7 @@ import type {
   ResultsViewModel,
   StatField,
 } from '../../types/viewModel'
-import { flagText, howText, refText } from '../shared/text'
+import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
 import './skin.css'
 
 /**
@@ -160,7 +159,7 @@ function Stat({ stat }: { stat: StatField }) {
     <div data-field={stat.id} data-importance={stat.importance}>
       <dt>{t(stat.labelKey)}</dt>
       <dd>
-        <span className="plain-figure">{formatAud(stat.value, i18n.language)}</span>
+        <span className="plain-figure">{estimateMoney(stat.value, i18n.language)}</span>
         {stat.detail === null ? null : <span>{refText(stat.detail, t, i18n.language)}</span>}
       </dd>
     </div>
@@ -210,7 +209,7 @@ function Results({ results }: { results: ResultsViewModel }) {
               {results.lines.map((line) => (
                 <tr key={line.id} data-field={line.id} data-importance={line.importance}>
                   <th scope="row">{t(line.labelKey)}</th>
-                  <td className="plain-figure">{formatRowAmount(line.value, i18n.language)}</td>
+                  <td className="plain-figure">{estimateRowAmount(line.value, i18n.language)}</td>
                   <td>{howText(line.how, t, i18n.language)}</td>
                 </tr>
               ))}
@@ -218,6 +217,14 @@ function Results({ results }: { results: ResultsViewModel }) {
           </table>
         </div>
       </section>
+
+      <p
+        className="estimate-note"
+        data-field={results.estimateNote.id}
+        data-importance={results.estimateNote.importance}
+      >
+        {results.estimateNote.value.map((ref) => refText(ref, t, i18n.language)).join(' ')}
+      </p>
 
       <section>
         <h2>{t(results.notesHeadingKey)}</h2>

@@ -4,11 +4,11 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import i18n from '../i18n'
 import { LANGS, type Lang } from '../logic/lang'
 import { COLOR_MODES, type ColorMode } from '../logic/skins'
-import { formatAud, formatRowAmount } from '../logic/format'
 import { viewModelFixture } from '../testing/viewModelFixture'
 import type { SkinModule } from '../types/skin'
 import { ALL_FIELD_IDS, type AppViewModel, type FieldId } from '../types/viewModel'
 import { SKINS } from './registry'
+import { estimateMoney, estimateRowAmount } from './shared/text'
 
 // Information parity. Every registered skin, in every mode and both locales,
 // renders the same fixed view model and must put exactly the same set of
@@ -48,9 +48,9 @@ function fieldElements(root: HTMLElement): Map<FieldId, HTMLElement[]> {
  */
 function expectedText(vm: AppViewModel, id: FieldId, locale: string): string | null {
   const stat = vm.results.stats.find((candidate) => candidate.id === id)
-  if (stat) return formatAud(stat.value, locale)
+  if (stat) return estimateMoney(stat.value, locale)
   const line = vm.results.lines.find((candidate) => candidate.id === id)
-  if (line) return formatRowAmount(line.value, locale)
+  if (line) return estimateRowAmount(line.value, locale)
   return null
 }
 

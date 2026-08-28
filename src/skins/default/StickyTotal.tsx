@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { formatAud } from '../../logic/format'
 import type { StatField } from '../../types/viewModel'
+import { estimateMoney } from '../shared/text'
 
 interface StickyTotalProps {
   total: StatField
@@ -19,7 +19,7 @@ export function StickyTotal({ total, shown }: StickyTotalProps) {
   return (
     <div className={shown ? 'sticky-total shown' : 'sticky-total'} aria-hidden="true">
       <span className="sticky-total-label">{t(total.labelKey)}</span>
-      <span className="sticky-total-value">{formatAud(total.value, i18n.language)}</span>
+      <span className="sticky-total-value">{estimateMoney(total.value, i18n.language)}</span>
     </div>
   )
 }

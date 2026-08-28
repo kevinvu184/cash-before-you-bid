@@ -10,6 +10,7 @@ import {
   SKIN_OPTIONS,
   SOURCES,
 } from '../logic/fieldLabels'
+import { APP_CURRENCY, CURRENCY_ROUNDING } from '../logic/currencyConfig'
 import type { ColorMode } from '../logic/skins'
 import type { AppState } from '../logic/urlState'
 import type { CalculationTiles } from '../types/calculator'
@@ -35,7 +36,33 @@ import { useTranslationNotice } from './useTranslationNotice'
 // layout decision.
 
 const money = (value: number): TextParam => ({ format: 'money', value })
+const moneyExact = (value: number): TextParam => ({ format: 'moneyExact', value })
 const percent = (value: number): TextParam => ({ format: 'percent', value })
+
+/**
+ * The estimate disclosure, as sentences rather than a paragraph: every
+ * computed figure is rounded to the currency's display unit, a finer unit
+ * applies below the threshold when the currency defines one, and
+ * independently rounded parts may not add to the independently rounded total.
+ * The units are quoted exactly — they are the rule, not an estimate.
+ */
+function buildEstimateNote(): readonly TextRef[] {
+  const config = CURRENCY_ROUNDING[APP_CURRENCY]
+  const sentences: TextRef[] = [
+    { key: 'money.disclaimer', params: { unit: moneyExact(config.unit) } },
+  ]
+  if (config.smallThreshold !== undefined && config.smallUnit !== undefined) {
+    sentences.push({
+      key: 'money.disclaimerSmall',
+      params: {
+        threshold: moneyExact(config.smallThreshold),
+        smallUnit: moneyExact(config.smallUnit),
+      },
+    })
+  }
+  sentences.push({ key: 'money.roundingNote', params: {} })
+  return sentences
+}
 
 interface NumericSpec {
   id: FieldId
@@ -527,6 +554,13 @@ export function useAppViewModel(core: UseCalculatorResult, resolvedMode: ColorMo
         how: 'table.how',
       },
       lines: buildLines(result),
+      estimateNote: {
+        id: 'estimateNote',
+        labelKey: 'money.disclaimer',
+        value: buildEstimateNote(),
+        kind: 'text',
+        importance: 'secondary',
+      },
       notesHeadingKey: 'notes.heading',
       notes: {
         id: 'notes',

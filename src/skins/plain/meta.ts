@@ -66,6 +66,7 @@ export const meta: SkinMeta = {
     lineBuffer: true,
     lineTotal: true,
     flags: true,
+    estimateNote: true,
     notes: true,
     sources: true,
   },

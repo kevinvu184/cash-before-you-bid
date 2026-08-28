@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
-import { formatAud, formatRowAmount } from '../../logic/format'
+
 import type { FlagKind } from '../../types/calculator'
 import type {
   Field,
@@ -10,8 +10,9 @@ import type {
   ResultsViewModel,
   SourcesValue,
   StatField,
+  TextRef,
 } from '../../types/viewModel'
-import { flagText, howText, refText } from '../shared/text'
+import { estimateMoney, estimateRowAmount, flagText, howText, refText } from '../shared/text'
 
 // Ledger has no alert or toast component, so the flags are rule-divided strips
 // with the state carried by a mono label in one of the desaturated semantics.
@@ -57,7 +58,7 @@ function Stat({ stat }: { stat: StatField }) {
       data-importance={stat.importance}
     >
       <div className="stat-label">{t(stat.labelKey)}</div>
-      <div className="stat-value">{formatAud(stat.value, i18n.language)}</div>
+      <div className="stat-value">{estimateMoney(stat.value, i18n.language)}</div>
       <div className="stat-sub">
         {stat.detail === null ? '' : refText(stat.detail, t, i18n.language)}
       </div>
@@ -109,7 +110,7 @@ function LineTable({ results }: { results: ResultsViewModel }) {
               data-importance={line.importance}
             >
               <td>{t(line.labelKey)}</td>
-              <td className="n">{formatRowAmount(line.value, i18n.language)}</td>
+              <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
               <td className="m">{howText(line.how, t, i18n.language)}</td>
             </tr>
           ) : (
@@ -162,7 +163,7 @@ function MobileRow({ line, open, onToggle }: MobileRowProps) {
             t(line.labelKey)
           )}
         </td>
-        <td className="n">{formatRowAmount(line.value, i18n.language)}</td>
+        <td className="n">{estimateRowAmount(line.value, i18n.language)}</td>
       </tr>
       {/* Always rendered, hidden by CSS when collapsed, so aria-controls always
           resolves. Never `.total`: the ink rule belongs to the row above, and
@@ -175,6 +176,27 @@ function MobileRow({ line, open, onToggle }: MobileRowProps) {
         </tr>
       ) : null}
     </Fragment>
+  )
+}
+
+/**
+ * Sits under the results: the single place that says every computed figure on
+ * the page is a rounded estimate. Because it carries that once, no figure is
+ * marked individually.
+ */
+function EstimateNote({ field }: { field: Field<readonly TextRef[]> }) {
+  const { t, i18n } = useTranslation()
+  // Joined in JS so the paragraph is one text node with single spaces, rather
+  // than JSX whitespace rules deciding the gaps.
+  const text = field.value.map((ref) => refText(ref, t, i18n.language)).join(' ')
+  return (
+    <p
+      className="small estimate-note"
+      data-field={field.id}
+      data-importance={field.importance}
+    >
+      {text}
+    </p>
   )
 }
 
@@ -223,6 +245,7 @@ export function Results({ results }: { results: ResultsViewModel }) {
         ))}
       </div>
       <LineTable results={results} />
+      <EstimateNote field={results.estimateNote} />
       <RulesNotes
         headingKey={results.notesHeadingKey}
         notes={results.notes}

@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
-import { formatAud, formatNumber, formatPercent } from '../../logic/format'
+import { APP_CURRENCY } from '../../logic/currencyConfig'
+import { formatMoney, formatNumber, formatPercent, formatRowAmount } from '../../logic/format'
 import type { Flag, RowHow } from '../../types/calculator'
 import type { TextParam, TextRef } from '../../types/viewModel'
 
@@ -7,15 +8,46 @@ import type { TextParam, TextRef } from '../../types/viewModel'
 // the active locale. Every key is a literal — no key construction — so a
 // grep for a key always finds both the JSON entry and its use.
 //
+// Money comes in two flavours. Computed figures are estimates: rounded for
+// display (per-currency unit). Figures that must read exactly — what the user
+// typed, statutory caps written into the rules — stay unrounded. Estimates
+// carry no per-figure marker; the EstimateDisclaimer under the results says
+// once, for the whole page, that the computed figures are rounded estimates.
+//
 // This module is shared presentation, not core: it is the one place where a
 // key and its numbers become a sentence, so no skin has to own that mapping
 // and no two skins can disagree about it.
 
-/** Formats one interpolation parameter the view model tagged with a format. */
+/** A computed figure: rounded to the currency's display unit. */
+export function estimateMoney(amount: number, locale: string): string {
+  return formatMoney(amount, APP_CURRENCY, locale)
+}
+
+/**
+ * A table row amount: the same rounded estimate, with the typographic minus
+ * ahead of the digits ("−10.000 AUD"). formatRowAmount owns that sign
+ * convention, so there is only ever one row-formatting path.
+ */
+export function estimateRowAmount(amount: number, locale: string): string {
+  return formatRowAmount(amount, APP_CURRENCY, locale)
+}
+
+/** An exact figure (user input or statutory constant): never rounded. */
+export function exactMoney(amount: number, locale: string): string {
+  return formatMoney(amount, APP_CURRENCY, locale, { round: false })
+}
+
+/**
+ * Formats one interpolation parameter the view model tagged with a format.
+ * `money` is a computed figure and reads as a rounded estimate; `moneyExact`
+ * is what the user typed or what a rule states, and is never rounded.
+ */
 export function textParam(param: TextParam, locale: string): string | number {
   switch (param.format) {
     case 'money':
-      return formatAud(param.value, locale)
+      return estimateMoney(param.value, locale)
+    case 'moneyExact':
+      return exactMoney(param.value, locale)
     case 'percent':
       return formatPercent(param.value, locale)
     case 'number':
@@ -43,13 +75,13 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
     case 'schemeNotNeeded':
       return t('flags.schemeNotNeeded')
     case 'schemeCapExceeded':
-      return t('flags.schemeCapExceeded', { cap: formatAud(p.cap, locale) })
+      return t('flags.schemeCapExceeded', { cap: exactMoney(p.cap, locale) })
     case 'schemeResidency':
       return t('flags.schemeResidency')
     case 'schemeOwnerOccupier':
       return t('flags.schemeOwnerOccupier')
     case 'htbCapExceeded':
-      return t('flags.htbCapExceeded', { cap: formatAud(p.cap, locale) })
+      return t('flags.htbCapExceeded', { cap: exactMoney(p.cap, locale) })
     case 'htbCitizenship':
       return t('flags.htbCitizenship')
     case 'htbDetails':
@@ -62,7 +94,7 @@ export function flagText(flag: Flag, t: TFunction, locale: string): string {
       return t('flags.genuineSavings')
     case 'serviceability':
       return t('flags.serviceability', {
-        assessed: formatAud(p.assessed, locale),
+        assessed: estimateMoney(p.assessed, locale),
         rate: formatPercent(p.ratePct, locale),
       })
   }
@@ -74,25 +106,25 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
   let text: string
   switch (how.code) {
     case 'dutyFhbExempt':
-      text = t('how.dutyFhbExempt', { dutiableValue: formatAud(p.dutiableValue, locale) })
+      text = t('how.dutyFhbExempt', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyFhbConcession':
       text = t('how.dutyFhbConcession', {
-        base: formatAud(p.base, locale),
-        dutiableValue: formatAud(p.dutiableValue, locale),
+        base: estimateMoney(p.base, locale),
+        dutiableValue: estimateMoney(p.dutiableValue, locale),
       })
       break
     case 'dutyFhbAboveCap':
-      text = t('how.dutyFhbAboveCap', { dutiableValue: formatAud(p.dutiableValue, locale) })
+      text = t('how.dutyFhbAboveCap', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyPpr':
-      text = t('how.dutyPpr', { dutiableValue: formatAud(p.dutiableValue, locale) })
+      text = t('how.dutyPpr', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'dutyGeneral':
-      text = t('how.dutyGeneral', { dutiableValue: formatAud(p.dutiableValue, locale) })
+      text = t('how.dutyGeneral', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'foreignDuty':
-      text = t('how.foreignDuty', { dutiableValue: formatAud(p.dutiableValue, locale) })
+      text = t('how.foreignDuty', { dutiableValue: estimateMoney(p.dutiableValue, locale) })
       break
     case 'transferFee':
       text = t('how.transferFee', { thousands: formatNumber(p.thousands, locale) })
@@ -123,14 +155,14 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
       break
     case 'lmiCharged':
       text = t('how.lmiCharged', {
-        loan: formatAud(p.loan, locale),
+        loan: estimateMoney(p.loan, locale),
         rate: formatPercent(p.ratePct, locale),
         lvr: formatPercent(p.lvrPct, locale),
       })
       break
     case 'lmiChargedCapitalised':
       text = t('how.lmiChargedCapitalised', {
-        loan: formatAud(p.loan, locale),
+        loan: estimateMoney(p.loan, locale),
         rate: formatPercent(p.ratePct, locale),
         lvr: formatPercent(p.lvrPct, locale),
       })
@@ -150,14 +182,14 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
     case 'deposit':
       text = t('how.deposit', {
         pct: formatPercent(p.pct, locale),
-        price: formatAud(p.price, locale),
+        price: exactMoney(p.price, locale),
       })
       break
     case 'costsSubtotal':
       text = t('how.costsSubtotal')
       break
     case 'buffer':
-      text = t('how.buffer', { count: p.months, repayment: formatAud(p.repayment, locale) })
+      text = t('how.buffer', { count: p.months, repayment: estimateMoney(p.repayment, locale) })
       break
     case 'noBuffer':
       text = t('how.noBuffer')
@@ -169,9 +201,9 @@ export function howText(how: RowHow | null, t: TFunction, locale: string): strin
   if (how.offThePlan) {
     const otp = how.offThePlan
     const prefix = t('how.dutyOffThePlan', {
-      price: formatAud(otp.price, locale),
-      construction: formatAud(otp.construction, locale),
-      dutiableValue: formatAud(otp.dutiableValue, locale),
+      price: exactMoney(otp.price, locale),
+      construction: exactMoney(otp.construction, locale),
+      dutiableValue: estimateMoney(otp.dutiableValue, locale),
     })
     return `${prefix} ${text}`
   }

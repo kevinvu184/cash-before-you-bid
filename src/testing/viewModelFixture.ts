@@ -101,7 +101,7 @@ const STATS: readonly StatField[] = [
       key: 'stats.depositSub',
       params: {
         pct: { format: 'percent', value: 5 },
-        price: { format: 'money', value: 820_000 },
+        price: { format: 'moneyExact', value: 820_000 },
       },
     },
   },
@@ -365,6 +365,23 @@ export function viewModelFixture(options: FixtureOptions = {}): AppViewModel {
         how: 'table.how',
       },
       lines: LINES,
+      estimateNote: {
+        id: 'estimateNote',
+        labelKey: 'money.disclaimer',
+        kind: 'text',
+        importance: 'secondary',
+        value: [
+          { key: 'money.disclaimer', params: { unit: { format: 'moneyExact', value: 100 } } },
+          {
+            key: 'money.disclaimerSmall',
+            params: {
+              threshold: { format: 'moneyExact', value: 1000 },
+              smallUnit: { format: 'moneyExact', value: 10 },
+            },
+          },
+          { key: 'money.roundingNote', params: {} },
+        ],
+      },
       notesHeadingKey: 'notes.heading',
       notes: {
         id: 'notes',

@@ -34,7 +34,9 @@ export interface TextRef {
 }
 
 export type TextParam =
-  | { format: 'money' | 'percent' | 'number' | 'count'; value: number }
+  // `money` is a computed figure, shown as a rounded estimate; `moneyExact` is
+  // what the user typed or what a rule states, and is never rounded.
+  | { format: 'money' | 'moneyExact' | 'percent' | 'number' | 'count'; value: number }
   | { format: 'raw'; value: string }
 
 // ── field ids ────────────────────────────────────────────────────────────────
@@ -92,7 +94,7 @@ export type LineFieldId =
   | 'lineBuffer'
   | 'lineTotal'
 
-export type ResultsFieldId = 'flags' | 'notes' | 'sources'
+export type ResultsFieldId = 'flags' | 'estimateNote' | 'notes' | 'sources'
 
 export type FieldId = ChromeFieldId | InputFieldId | StatFieldId | LineFieldId | ResultsFieldId
 
@@ -153,6 +155,7 @@ const FIELD_IDS: Readonly<Record<FieldId, true>> = {
   lineBuffer: true,
   lineTotal: true,
   flags: true,
+  estimateNote: true,
   notes: true,
   sources: true,
 }
@@ -319,6 +322,8 @@ export interface ResultsViewModel {
   linesHeadingKey: string
   tableHeadingKeys: TableHeadingKeys
   lines: readonly LineField[]
+  /** The one disclosure that every computed figure above is a rounded estimate. */
+  estimateNote: Field<readonly TextRef[]>
   notesHeadingKey: string
   notes: Field<readonly NoteEntry[]>
   sources: Field<SourcesValue>

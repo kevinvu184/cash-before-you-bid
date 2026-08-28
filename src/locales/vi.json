@@ -69,6 +69,11 @@
     "statsHeading": "Tóm tắt",
     "linesHeading": "Chi tiết từng dòng"
   },
+  "money": {
+    "disclaimer": "Mọi con số ở trên đều là ước tính, được làm tròn đến {{unit}} gần nhất.",
+    "disclaimerSmall": "Số tiền dưới {{threshold}} được làm tròn đến {{smallUnit}} gần nhất.",
+    "roundingNote": "Các khoản cộng lại có thể không khớp với tổng do làm tròn."
+  },
   "flagKinds": {
     "warn": "CẢNH BÁO",
     "note": "GHI CHÚ",

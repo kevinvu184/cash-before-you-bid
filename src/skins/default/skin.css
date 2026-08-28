@@ -661,6 +661,12 @@
   color: var(--color-text-muted);
 }
 
+/* The one page-level statement that the computed figures are rounded
+   estimates; it sits between the table and the notes. */
+[data-skin='default'] .estimate-note {
+  margin: 12px 0 0;
+}
+
 /* Inline prose link: the padding/negative-margin pair grows the tap target to
    44px without moving the text in the line box. */
 [data-skin='default'] p.small a {

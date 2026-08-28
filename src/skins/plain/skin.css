@@ -244,6 +244,10 @@
   font-weight: var(--font-weight-strong);
 }
 
+[data-skin='plain'] .estimate-note {
+  margin: 0 0 var(--space-4);
+}
+
 /* ── notice ─────────────────────────────────────────────────────────────── */
 
 [data-skin='plain'] aside[role='note'] {
