@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { SITE_ORIGIN } from './logic/site'
 import { SKINS } from './skins/registry'
 
 // The web fonts are first-party now: src/fonts.css declares the faces and
@@ -97,7 +98,15 @@ describe('index.html', () => {
     // Both halves of the reason this app self-hosts: an external stylesheet is
     // a render-blocking round trip on mobile data, and a request to another
     // origin is the reader's IP address leaving the page.
-    const external = [...html.matchAll(/\b(?:href|src)="(https?:)?\/\/[^"]+"/g)].map(([m]) => m)
+    //
+    // The canonical and hreflang links are absolute because their
+    // specifications require it, and every one of them points at this app's
+    // own deployed origin: a browser fetches neither, and a crawler that
+    // follows one arrives back here. So what is forbidden is another origin,
+    // not an absolute URL.
+    const external = [...html.matchAll(/\b(?:href|src)="(https?:)?\/\/[^"]+"/g)]
+      .map(([match]) => match)
+      .filter((attribute) => !attribute.includes(`"${SITE_ORIGIN}/`))
     expect(external).toEqual([])
     expect(html).not.toMatch(/fonts\.(googleapis|gstatic)\.com/)
     expect(html).not.toMatch(/rel="(?:preconnect|dns-prefetch)"/)

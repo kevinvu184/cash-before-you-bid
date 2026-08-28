@@ -103,14 +103,94 @@
       type="font/woff2"
       crossorigin
     />
-    <meta
-      name="description"
-      content="Know your numbers before the auction starts: stamp duty, deposit, fees, and total upfront cash for your property purchase."
-    />
-    <title>Cash Before You Bid</title>
+    <!--
+      Everything below is per-locale, and it is generated: src/prerender/head.ts
+      is the one statement of it, and scripts/prerender.mjs replaces this whole
+      block in each document it writes. What is checked in here is that same
+      generator's output for the default locale, so `npm run dev` and a build
+      that somehow skipped the prerender both serve something coherent rather
+      than nothing. src/prerender/head.test.ts regenerates it and fails if the
+      two have drifted.
+
+      Do not hand-edit between the markers. Change head.ts; the build prints
+      the regenerated block when this copy has fallen behind it.
+    -->
+    <!-- prerender:head:start -->
+    <title>Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid</title>
+    <meta name="description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <link rel="canonical" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <link rel="alternate" hreflang="en" href="https://kevinvu184.github.io/cash-before-you-bid/en/" />
+    <link rel="alternate" hreflang="vi" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <link rel="alternate" hreflang="x-default" href="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cash Before You Bid" />
+    <meta property="og:url" content="https://kevinvu184.github.io/cash-before-you-bid/" />
+    <meta property="og:title" content="Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid" />
+    <meta property="og:description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <meta property="og:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale:alternate" content="en_AU" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria — Cash Before You Bid" />
+    <meta name="twitter:description" content="Nắm rõ các con số trước phiên đấu giá: thuế trước bạ, tiền đặt cọc, các loại phí và tổng số tiền mặt cần chuẩn bị khi mua nhà." />
+    <meta name="twitter:image" content="https://kevinvu184.github.io/cash-before-you-bid/icons/icon-512.png" />
+    <!-- prerender:head:end -->
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      The prerendered shell inside #root is one locale, on the default skin, in
+      the default state (src/prerender/Shell.tsx). It is right for the URL that
+      asked for this document and wrong for any other, so this decides which it
+      is and drops it when it is wrong — here, immediately after the shell is
+      parsed and before the browser paints, rather than in <head> where #root
+      does not exist yet.
+
+      Dropping it costs nothing that was not already the case: an empty #root
+      is exactly what this page shipped before the prerender existed.
+
+      data-doc-lang is written by scripts/prerender.mjs. It is absent in
+      development and there is no shell there either, so this returns at once.
+    -->
+    <script>
+      ;(function () {
+        var root = document.documentElement
+        var docLang = root.getAttribute('data-doc-lang')
+        if (docLang === null) return
+        try {
+          var params = new URLSearchParams(window.location.search)
+          var lang = params.get('lang')
+          if (lang !== 'en' && lang !== 'vi') {
+            // No ?lang= at all: the directory this document was served from is
+            // the request. The app reads the query string and nothing else, so
+            // a non-default locale has to be said there before the module
+            // bundle reads it.
+            if (docLang !== 'vi') {
+              params.set('lang', docLang)
+              window.history.replaceState(
+                window.history.state,
+                '',
+                window.location.pathname + '?' + params.toString() + window.location.hash,
+              )
+            }
+            lang = docLang
+          }
+          // The shell is one language, one skin, and the default figures. A
+          // URL that asks for any of the three differently gets the blank
+          // start it always got rather than a flash of the wrong page.
+          var stale = lang !== docLang || (params.get('skin') || 'default') !== 'default'
+          params.forEach(function (_value, key) {
+            if (key !== 'lang' && key !== 'skin' && key !== 'mode') stale = true
+          })
+          if (stale) document.getElementById('root').replaceChildren()
+        } catch (error) {
+          // The shell stays put; React replaces it on mount either way.
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

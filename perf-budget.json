@@ -21,6 +21,13 @@
       "allowEmpty": true,
       "maxGzipBytes": 51200,
       "why": "Whatever index.html preloads with as=\"font\", read out of the built HTML so this cannot drift from it. These bytes are on the critical path ahead of the bundle. woff2 is already compressed, so the gzip figure is close to the raw one. allowEmpty because preloading nothing is a real choice, not a broken selector: this measures zero and passes instead of failing the build."
+    },
+    {
+      "name": "HTML",
+      "select": "extension",
+      "extension": ".html",
+      "maxGzipBytes": 20480,
+      "why": "Not a CLAUDE.md number. The build prerenders one document per locale (scripts/prerender.mjs), which put the masthead and the inputs shell into the served HTML — bytes that are now on the critical path ahead of everything else and are the LCP for a cold visit. 20KB gzipped across both documents is roughly twice what they cost today, so it catches a prerender that has quietly grown to the whole page without blocking ordinary copy changes."
     }
   ]
 }
