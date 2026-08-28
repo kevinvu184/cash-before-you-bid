@@ -64,6 +64,17 @@
     "nolmi": "The contract sets the deposit you pay on the day, usually 10%. 20% avoids LMI without a guarantor.",
     "lmi": "The contract sets the deposit you pay on the day, usually 10%. Under 20%, LMI is charged."
   },
+  "privacy": {
+    "claim": "Your figures never leave your browser.",
+    "localTerm": "The sums run here.",
+    "localBody": " The whole calculation happens on this device, inside this page. There is no account, no sign-up, no tracking, no analytics and no lead capture — nothing you type is sent to us, to a broker, or to anyone else.",
+    "linkTerm": "A link you share carries your numbers.",
+    "linkBody": " Your figures sit in the address bar so the page can be reloaded and shared, which means anyone you send the link to can read them — your savings and pre-approved loan included — and a chat app or browser sync may keep a copy.",
+    "storageTerm": "Saved scenarios stay on this device.",
+    "storageBody": " Saving one keeps its numbers in this browser’s own storage, on this device only. They are never uploaded, and deleting one here deletes it everywhere.",
+    "thirdPartyTerm": "Nothing is loaded from anyone else.",
+    "thirdPartyBody": " Every file this page needs — its code, its styling, even its fonts — is served from this site's own address. There is no third party in a position to see you arrive, and none is added without this statement changing first."
+  },
   "results": {
     "flagsLabel": "Warnings and notes",
     "statsHeading": "Summary",

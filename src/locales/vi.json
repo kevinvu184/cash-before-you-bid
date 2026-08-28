@@ -70,6 +70,17 @@
     "nolmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Đặt cọc 20% giúp tránh LMI mà không cần người bảo lãnh.",
     "lmi": "Hợp đồng quy định khoản đặt cọc bạn trả trong ngày, thường là 10%. Dưới 20% thì phải trả LMI."
   },
+  "privacy": {
+    "claim": "Các con số của bạn không bao giờ rời khỏi trình duyệt.",
+    "localTerm": "Phép tính chạy ngay tại đây.",
+    "localBody": " Toàn bộ phép tính diễn ra trên thiết bị này, ngay trong trang này. Không có tài khoản, không đăng ký, không theo dõi, không phân tích hành vi và không thu thập thông tin khách hàng tiềm năng — những gì bạn nhập không được gửi cho chúng tôi, cho bên môi giới hay cho bất kỳ ai.",
+    "linkTerm": "Đường liên kết bạn chia sẻ có mang theo các con số.",
+    "linkBody": " Các con số của bạn nằm trong thanh địa chỉ để trang có thể tải lại và chia sẻ được, nghĩa là ai nhận được đường liên kết cũng đọc được chúng — kể cả tiền tiết kiệm và khoản vay đã được duyệt trước — và ứng dụng nhắn tin hoặc tính năng đồng bộ của trình duyệt có thể giữ lại một bản sao.",
+    "storageTerm": "Phương án đã lưu nằm lại trên thiết bị này.",
+    "storageBody": " Khi bạn lưu một phương án, các con số của nó được giữ trong bộ nhớ riêng của trình duyệt này, chỉ trên thiết bị này. Chúng không bao giờ được tải lên, và xoá ở đây là xoá hẳn.",
+    "thirdPartyTerm": "Không tải bất cứ thứ gì từ bên ngoài.",
+    "thirdPartyBody": " Mọi tệp trang này cần — mã nguồn, phần định dạng hiển thị, kể cả phông chữ — đều được phục vụ từ chính địa chỉ của trang. Không có bên thứ ba nào ở vị trí nhìn thấy bạn ghé thăm, và sẽ không có bên nào được thêm vào mà lời cam kết này không được sửa trước."
+  },
   "results": {
     "flagsLabel": "Cảnh báo và ghi chú",
     "statsHeading": "Tóm tắt",

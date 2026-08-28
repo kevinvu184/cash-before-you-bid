@@ -36,6 +36,7 @@ export const meta: SkinMeta = {
     interestRatePct: true,
     savings: true,
     preApprovedLoan: true,
+    inputsPrivacy: true,
     assumptions: true,
     conveyancing: true,
     buildingAndPest: true,
