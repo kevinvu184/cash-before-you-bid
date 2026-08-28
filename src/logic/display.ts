@@ -4,7 +4,7 @@
 // threading them separately through the result text made every signature
 // three parameters longer.
 
-import type { DisplayCurrency } from './currencyConfig'
+import { BASE_CURRENCY, type DisplayCurrency } from './currencyConfig'
 import { convert } from './exchangeRate'
 import { formatMoney, formatRowAmount, type FormatMoneyOptions } from './format'
 
@@ -21,6 +21,22 @@ export interface DisplaySettings {
 
 export interface Display extends DisplaySettings {
   locale: string
+}
+
+/**
+ * The display to write figures with, with the one invariant `DisplaySettings`
+ * can state but not enforce: the base currency is always at a rate of 1.
+ *
+ * Nothing converts a base-currency amount — `convert` returns it whatever the
+ * rate says — so a rate other than 1 there is a number with no meaning left
+ * sitting in the contract. An override rides in the URL and survives a switch
+ * back to dollars, so `?fx=20000` with dollars showing would otherwise hand
+ * every reader of `useDisplay()` a display claiming 20,000 dollars per dollar.
+ * Harmless to the arithmetic today, and exactly the kind of thing the next
+ * person to read `rate` would be entitled to believe.
+ */
+export function displaySettings(currency: DisplayCurrency, rate: number): DisplaySettings {
+  return { currency, rate: currency === BASE_CURRENCY ? 1 : rate }
 }
 
 /**

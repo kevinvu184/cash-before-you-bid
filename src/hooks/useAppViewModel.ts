@@ -20,6 +20,7 @@ import {
   CURRENCY_ROUNDING,
   type DisplayCurrency,
 } from '../logic/currencyConfig'
+import { displaySettings } from '../logic/display'
 import { isValidRate, rateAsShown, RATE_PROVIDER } from '../logic/exchangeRate'
 import { parseLocaleNumber } from '../logic/format'
 import type { ColorMode, SkinId } from '../logic/skins'
@@ -360,7 +361,7 @@ export function useAppViewModel(
         }
 
   const display: DisplayViewModel = {
-    settings: { currency, rate: activeRate },
+    settings: displaySettings(currency, activeRate),
     currency: {
       id: 'currency',
       controlId: 'cur',

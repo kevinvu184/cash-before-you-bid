@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { displayMoney, displayRowAmount, displayUnit, type Display } from './display'
+import {
+  displayMoney,
+  displayRowAmount,
+  displaySettings,
+  displayUnit,
+  type Display,
+} from './display'
 
 const aud: Display = { locale: 'vi', currency: 'AUD', rate: 1 }
 const vnd: Display = { locale: 'vi', currency: 'VND', rate: 18_700 }
@@ -56,5 +62,21 @@ describe('displayUnit', () => {
 
   it('keeps every digit, so a rate is quoted as typed', () => {
     expect(displayUnit(18_708, vnd)).toBe('18.708\u00a0₫')
+  })
+})
+
+describe('displaySettings', () => {
+  it('carries the rate through for a currency that needs converting', () => {
+    expect(displaySettings('VND', 18_700)).toEqual({ currency: 'VND', rate: 18_700 })
+  })
+
+  it('holds the base currency at 1, whatever rate is in force', () => {
+    // An override rides in the URL and survives a switch back to dollars, so
+    // `?fx=20000` with dollars showing would otherwise hand every reader of
+    // the display a rate of 20,000 dollars per dollar. Nothing converts a
+    // base-currency amount, so it changes no figure — it is the contract that
+    // would be wrong, for whoever reads `rate` next.
+    expect(displaySettings('AUD', 20_000)).toEqual({ currency: 'AUD', rate: 1 })
+    expect(displaySettings('AUD', 1)).toEqual({ currency: 'AUD', rate: 1 })
   })
 })
