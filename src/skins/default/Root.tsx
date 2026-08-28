@@ -73,12 +73,18 @@ export function Root({ vm }: { vm: AppViewModel }) {
           </p>
         </header>
 
-        <Scenarios scenarios={vm.scenarios} />
+        {/* Everything below the masthead is the calculator, inputs included,
+            so the main landmark covers both columns rather than the results
+            alone. It carries no class: it is a semantic wrapper, and the
+            layout is still .page's padding and .columns' grid. */}
+        <main>
+          <Scenarios scenarios={vm.scenarios} />
 
-        <div className="columns">
-          <InputsPanel inputs={vm.inputs} />
-          <Results display={vm.display} results={vm.results} />
-        </div>
+          <div className="columns">
+            <InputsPanel inputs={vm.inputs} />
+            <Results display={vm.display} results={vm.results} />
+          </div>
+        </main>
       </div>
     </DisplayProvider>
   )

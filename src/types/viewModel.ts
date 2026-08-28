@@ -804,6 +804,8 @@ export interface SunkCostViewModel {
 }
 
 export interface ResultsViewModel {
+  /** aria-label for the results landmark as a whole. */
+  regionLabelKey: string
   /** aria-label for the flags region. */
   flagsRegionLabelKey: string
   flags: Field<readonly Flag[]>

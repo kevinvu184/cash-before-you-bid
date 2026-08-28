@@ -93,7 +93,8 @@
     "flagsLabel": "Cảnh báo và ghi chú",
     "statsHeading": "Tóm tắt",
     "verdictsHeading": "Bạn có đủ tiền không?",
-    "linesHeading": "Chi tiết từng dòng"
+    "linesHeading": "Chi tiết từng dòng",
+    "label": "Kết quả"
   },
   "money": {
     "disclaimer": "Mọi con số ở trên đều là ước tính, được làm tròn đến {{unit}} gần nhất.",
@@ -333,5 +334,10 @@
     "privacy": "Phương án đã lưu nằm trong trình duyệt này, trên thiết bị này. Không có gì được tải lên và không ai khác xem được.",
     "errorUnavailable": "Trình duyệt này không cho phép ứng dụng lưu dữ liệu, nên không thể lưu phương án ở đây. Mọi chức năng khác vẫn hoạt động.",
     "errorFull": "Không còn chỗ để lưu thêm phương án. Hãy xoá một phương án bạn không cần nữa."
+  },
+  "a11y": {
+    "skipToResults": "Chuyển đến kết quả",
+    "verdictAnnouncement": "{{label}}: {{status}}.",
+    "resultsAnnouncement": "{{verdicts}} {{totalLabel}}: {{total}}."
   }
 }

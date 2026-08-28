@@ -125,6 +125,10 @@ function PrintDocument({ vm }: { vm: AppViewModel }) {
 
       {/* The full line table follows, and takes whatever room is left. */}
       <table className="print-lines">
+        {/* Names the table, for the same reason the skins caption theirs —
+            and on paper it earns its keep visibly, as the heading that says
+            what the rows below the caveats are. */}
+        <caption className="print-lines-caption">{t(results.linesHeadingKey)}</caption>
         <thead>
           <tr>
             <th scope="col">{t(results.tableHeadingKeys.line)}</th>

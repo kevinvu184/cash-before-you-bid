@@ -88,6 +88,24 @@ describe('every skin stylesheet', () => {
   it.each(sheets)('%s gives interactive controls a 44px minimum', (_id, css) => {
     expect(css).toContain('44px')
   })
+
+  /**
+   * The focus ring lives in index.css and every skin inherits it. A skin may
+   * add to it — the default skin also changes a border colour — but it may not
+   * take it away: both places that did drew a 1px accent border instead, and on
+   * a control filled with ink that border sat at 2.26:1, under the 3:1 WCAG
+   * 1.4.11 asks of a focus indicator. There is no way to check "and replaced it
+   * with something that passes" from a stylesheet, so the rule is simply that
+   * a skin does not remove it.
+   */
+  it.each(sheets)('%s never cancels the shared focus ring', (id, css) => {
+    const offenders = css
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}')
+      .filter((block) => block.includes(':focus') && /outline:\s*(none|0)\b/.test(block))
+      .map((block) => `${id}: ${block.split('{')[0].trim()}`)
+    expect(offenders).toEqual([])
+  })
 })
 
 describe('index.html', () => {

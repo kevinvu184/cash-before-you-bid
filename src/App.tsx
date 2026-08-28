@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ResultsAnnouncer } from './a11y/ResultsAnnouncer'
+import { SkipLink } from './a11y/SkipLink'
 import { useAppViewModel } from './hooks/useAppViewModel'
 import { useCalculator } from './hooks/useCalculator'
 import { useColorMode } from './hooks/useColorMode'
@@ -127,14 +129,23 @@ function App() {
     document.documentElement.dataset.cur = currency
   }, [currency])
 
+  // Two pieces of accessibility furniture the shell owns rather than the skin.
+  // Both have to exist whichever skin is mounted — and the announcer has to
+  // survive a skin failing to load, which is exactly when a reader most needs
+  // to be told the numbers are still there — so they sit outside the boundary.
+  //
+  // Both are still live-page furniture, so both sit inside .app-screen: a skip
+  // link and a live region have nothing to say on paper.
   return (
     <>
       {/* display: contents, so the wrapper changes no layout on screen; it
           exists so print.css can take the whole live page off the paper with
           one rule rather than a list of things to hide that goes stale — the
-          currency bar this branch merged in included. */}
+          currency bar and the skip link this branch merged in included. */}
       <div className="app-screen">
+        <SkipLink />
         <SkinRoot vm={vm} onFailure={() => setFailedSkin(requested)} />
+        <ResultsAnnouncer display={vm.display.settings} results={vm.results} />
       </div>
       {/* Skin-independent by design: the printed one-pager is the same sheet
           whichever skin is on screen, including the fallback. */}

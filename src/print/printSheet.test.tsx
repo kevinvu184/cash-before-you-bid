@@ -218,6 +218,14 @@ describe('the full line table', () => {
     )
   })
 
+  it('names the table, as the a11y structure audit requires of every table', async () => {
+    const { sheet, vm } = await renderSheet('en')
+
+    expect(sheet.querySelector('.print-lines caption')?.textContent).toBe(
+      i18n.t(vm.results.linesHeadingKey),
+    )
+  })
+
   it('prints the auction-day payment guidance, disclosed rather than folded away', async () => {
     const { sheet, vm } = await renderSheet('en')
     const guidance = vm.results.lineGroups.find((group) => group.guidance !== null)?.guidance

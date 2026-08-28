@@ -37,8 +37,21 @@
         color: var(--color-text);
       }
     </style>
+    <!--
+      The document language, resolved before the body paints. <html lang> below
+      is the no-JS ground and matches DEFAULT_LANG, so under ?lang=en the page
+      declared Vietnamese until the effect in App.tsx ran — long enough for a
+      screen reader to pick a voice and start reading the masthead in the wrong
+      language. Resolved here from the same param the app reads, alongside the
+      skin and mode, so all three are settled in one pass.
+
+      src/skins/preloadedGround.test.ts holds LANGS and DEFAULT_LANG here to
+      src/logic/lang.ts, the same way it holds the colour table to the tokens.
+    -->
     <script>
       ;(function () {
+        var LANGS = ['en', 'vi']
+        var DEFAULT_LANG = 'vi'
         var GROUND = {
           default: {
             light: ['#f7f3e8', '#201c15'],
@@ -63,8 +76,11 @@
               : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
                 ? 'dark'
                 : 'light'
+          var rawLang = params.get('lang')
+          var lang = LANGS.indexOf(rawLang) === -1 ? DEFAULT_LANG : rawLang
           var ground = GROUND[skin][mode]
           var root = document.documentElement
+          root.lang = lang
           root.dataset.skin = skin
           root.dataset.mode = mode
           root.style.setProperty('color-scheme', mode)
