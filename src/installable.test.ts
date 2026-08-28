@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_LANG, LANGS } from './logic/lang'
+import { LOCALE_PATH } from './logic/site'
 
 // The installable shell. GitHub Pages serves this app from a sub-path
 // (vite.config.ts sets base: '/cash-before-you-bid/'), and Vite does not
@@ -118,5 +120,40 @@ describe('the service worker', () => {
 
   it('drops caches from an earlier version on activate', () => {
     expect(code).toMatch(/keys\.filter\(\(key\) => key !== CACHE\)/)
+  })
+
+  // A worker that answers every navigation with the root document undoes the
+  // prerender: a reader on a non-default locale's URL is served the default
+  // locale's HTML, from the cache, indefinitely. public/ is copied verbatim
+  // and cannot import src/, so the list of locale directories is restated in
+  // sw.js — and held here to the one in src/logic/site.ts.
+  it('knows every locale directory the build writes a document into', () => {
+    const listed = /const LOCALE_SHELLS = \[([^\]]*)\]/.exec(code)
+    expect(listed).not.toBeNull()
+    const paths = [...(listed?.[1] ?? '').matchAll(/'([^']+)'/g)].map(([, path]) => path)
+    const expected = LANGS.filter((lang) => lang !== DEFAULT_LANG).map(
+      (lang) => `./${LOCALE_PATH[lang]}`,
+    )
+    expect(paths.sort()).toEqual(expected.sort())
+  })
+
+  // Which document each URL gets is behaviour, and it is asserted as
+  // behaviour in src/serviceWorkerRouting.test.ts, which runs this file. All
+  // that is left here is that navigations are routed at all rather than being
+  // answered with the root shell unconditionally, as they were.
+  it('routes a navigation through shellFor rather than assuming the root', () => {
+    expect(code).toMatch(/networkFirst\(shellFor\(url\)\)/)
+    expect(code).toMatch(/function shellFor\(url\)/)
+  })
+
+  it('precaches every locale’s document, so either launches offline', () => {
+    expect(code).toMatch(/const PRECACHE = \[\.\.\.SHELLS,/)
+  })
+
+  // Nothing in public/ is fingerprinted, so a changed byte there is only
+  // picked up when the cache name changes. sw.js changing is the clearest
+  // case of all: the old worker is what is running.
+  it('carries a version to bump when a file under public/ changes', () => {
+    expect(code).toMatch(/const VERSION = 'v\d+'/)
   })
 })

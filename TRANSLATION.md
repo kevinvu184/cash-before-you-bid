@@ -69,6 +69,13 @@ From the price slider's duty cliffs (`cliffs.*`, `inputs.priceSlider`):
 - "thang trượt" for the sliding scale the concession is charged on.
 - "Điều chỉnh giá" as the label on the slider itself.
 
+From the page title (`app.pageTitle`), which is not shown on screen — it is
+the browser tab, the bookmark, and the line a search result is titled with:
+
+- "Công cụ tính thuế trước bạ và tiền đặt cọc tại Victoria" — the words a
+  Vietnamese-Australian buyer would actually type into a search box are what
+  matter here, more than a faithful rendering of the English.
+
 From the safe maximum bid (`safeMaxBid.*`):
 
 - "Mức trả giá tối đa an toàn" for the safe maximum bid itself — the headline
