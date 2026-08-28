@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { DisplaySettings } from '../logic/display'
+import { displayAmount, type DisplaySettings } from '../logic/display'
 import { estimateMoney } from '../skins/shared/text'
 import type { ResultsViewModel } from '../types/viewModel'
 import { useSettledAnnouncement } from './useSettledAnnouncement'
@@ -45,14 +45,19 @@ export function ResultsAnnouncer({
   const total = results.stats.find((stat) => stat.id === 'statTotal') ?? results.stats[0]
 
   // Figures and outcomes only, never words: this is what "the results changed"
-  // means, and it must not move when the language does. The currency is in it
-  // because switching it changes the figure a reader is shown; the rate is
-  // not, because a re-quote that leaves the rounded total where it was has
-  // changed nothing worth interrupting for — and an identical sentence would
-  // not be announced anyway.
+  // means, and it must not move when the language does.
+  //
+  // The total goes in as the figure the reader is *shown* — converted and
+  // rounded — not the base-currency amount behind it. Those come apart
+  // whenever the exchange rate moves: a fresh quote arriving after a switch
+  // to đồng, or an override the reader applies, changes the number on screen
+  // while the amount it was converted from sits still. Keyed on the amount,
+  // the region said nothing about either. Keyed on the shown figure, a rate
+  // change that moves it announces and one that rounds to the same figure
+  // does not, which is the behaviour the rounding is for.
   const signature = [
     ...results.verdicts.map((verdict) => `${verdict.id}:${verdict.status}:${verdict.value}`),
-    `total:${total ? total.value : ''}`,
+    `total:${total ? displayAmount(total.value, display) : ''}`,
     `currency:${display.currency}`,
   ].join('|')
 

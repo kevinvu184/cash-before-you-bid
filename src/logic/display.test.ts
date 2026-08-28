@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  displayAmount,
   displayMoney,
   displayRowAmount,
   displaySettings,
@@ -63,6 +64,30 @@ describe('displayUnit', () => {
   it('keeps every digit, so a rate is quoted as typed', () => {
     expect(displayUnit(18_708, vnd)).toBe('18.708\u00a0₫')
   })
+})
+
+describe('displayAmount', () => {
+  it('leaves a base-currency amount alone but for the display rounding', () => {
+    expect(displayAmount(750_123, aud)).toBe(750_100)
+  })
+
+  it('converts and rounds the way displayMoney does', () => {
+    expect(displayAmount(1000, vnd)).toBe(18_700_000)
+  })
+
+  // The contract the live region depends on: this is the number displayMoney
+  // prints, so the two cannot drift into disagreeing about when the figure a
+  // reader is shown has changed.
+  it.each([0, 1, 999, 1000, 12_345, 750_123, -4321])(
+    'agrees with what displayMoney prints for %d',
+    (amount) => {
+      for (const display of [aud, vnd]) {
+        expect(displayMoney(amount, display)).toBe(
+          displayUnit(displayAmount(amount, display), display),
+        )
+      }
+    },
+  )
 })
 
 describe('displaySettings', () => {

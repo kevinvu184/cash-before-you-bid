@@ -7,6 +7,7 @@
 import { BASE_CURRENCY, type DisplayCurrency } from './currencyConfig'
 import { convert } from './exchangeRate'
 import { formatMoney, formatRowAmount, type FormatMoneyOptions } from './format'
+import { roundForDisplay } from './rounding'
 
 /**
  * The half of a display the core decides: what the reader asked to see, and
@@ -56,6 +57,21 @@ export function displayMoney(
     display.locale,
     opts,
   )
+}
+
+/**
+ * The figure `displayMoney` prints, as a number: converted to the display
+ * currency and rounded to its unit, with no locale applied.
+ *
+ * It exists for the one caller that has to know when the figure a reader is
+ * *shown* changes, rather than what it says — the results live region, which
+ * must announce a rate change that moves the total and stay silent on a
+ * language change, which cannot move it. Keying that off the base-currency
+ * amount misses the first: a fresh quote or an applied override moves the
+ * figure on screen without touching the amount behind it.
+ */
+export function displayAmount(amount: number, display: DisplaySettings): number {
+  return roundForDisplay(convert(amount, display.currency, display.rate), display.currency)
 }
 
 /** As displayMoney, with the typographic minus ahead of a negative amount. */

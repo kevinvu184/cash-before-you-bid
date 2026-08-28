@@ -3,7 +3,8 @@ import { act, cleanup, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import i18n from '../i18n'
 import { BASE_CURRENCY } from '../logic/currencyConfig'
-import { displaySettings } from '../logic/display'
+import { displayAmount, displaySettings } from '../logic/display'
+import { estimateMoney } from '../skins/shared/text'
 import { viewModelFixture } from '../testing/viewModelFixture'
 import type { ResultsViewModel, VerdictField } from '../types/viewModel'
 import { ResultsAnnouncer } from './ResultsAnnouncer'
@@ -87,7 +88,10 @@ describe('the results announcer', () => {
     const results = base().results
     const { rerender } = render(<ResultsAnnouncer display={DISPLAY} results={results} />)
     // Three edits inside one settle window: a keystroke every 300ms, which is
-    // what typing a price looks like.
+    // what typing a price looks like. The totals are a display unit apart, so
+    // each one is a real change to the figure on screen and genuinely restarts
+    // the debounce — steps too small to survive the rounding would collapse
+    // into one edit and the test would pass without exercising anything.
     for (const amount of [1, 2, 3]) {
       rerender(
         <ResultsAnnouncer
@@ -95,7 +99,7 @@ describe('the results announcer', () => {
           results={{
             ...flipped(results),
             stats: results.stats.map((stat) =>
-              stat.id === 'statTotal' ? { ...stat, value: 100_000 + amount } : stat,
+              stat.id === 'statTotal' ? { ...stat, value: amount * 25_000 } : stat,
             ),
           }}
         />,
@@ -148,6 +152,46 @@ describe('the results announcer', () => {
     expect(spoken).toContain(i18n.t('stats.totalLabel'))
     // Converted, not the dollar figure read out under a different symbol.
     expect(spoken).not.toContain(String(base().results.stats[0].value))
+  })
+
+  // The rate moves on its own: the quote fetched after a switch to đồng
+  // replaces the bundled fallback, and an override replaces either. None of
+  // that touches the base-currency amount, so a signature keyed on the amount
+  // let the figure on screen change in silence.
+  it('announces when the exchange rate moves the figure on screen', async () => {
+    const results = base().results
+    const vnd = displaySettings('VND', 18_700)
+    const { rerender } = render(<ResultsAnnouncer display={vnd} results={results} />)
+    rerender(
+      <ResultsAnnouncer display={displaySettings('VND', 25_000)} results={results} />,
+    )
+    await settle()
+
+    const spoken = region().textContent ?? ''
+    expect(spoken).not.toBe('')
+    expect(spoken).toContain(
+      estimateMoney(results.stats[0].value, { ...displaySettings('VND', 25_000), locale: 'en' }),
+    )
+  })
+
+  // The other half of the same rule, and the reason it is the *rounded* figure
+  // that goes in: a re-quote too small to move the đồng's own display unit has
+  // not changed what the reader would act on.
+  it('stays silent when a new rate rounds to the same figure', async () => {
+    const results = base().results
+    const rate = 18_700
+    const nudged = rate + 0.0001
+    const settings = displaySettings('VND', rate)
+    expect(displayAmount(results.stats[0].value, displaySettings('VND', nudged))).toBe(
+      displayAmount(results.stats[0].value, settings),
+    )
+
+    const { rerender } = render(<ResultsAnnouncer display={settings} results={results} />)
+    rerender(
+      <ResultsAnnouncer display={displaySettings('VND', nudged)} results={results} />,
+    )
+    await settle(SETTLE_MS * 2)
+    expect(region().textContent).toBe('')
   })
 
   it('is polite and atomic, so the whole sentence is read and nothing is cut off', () => {
