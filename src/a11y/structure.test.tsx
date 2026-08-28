@@ -142,6 +142,21 @@ describe.each(cases)('the %s skin in %s', (skin, locale) => {
     expect(controls.filter((control) => accessibleName(control) === '')).toEqual([])
   })
 
+  // A slider's value is read out as the raw number unless something says
+  // otherwise, and "750000" is not "$750,000" — the figure it stands for has
+  // to be spelled out in the units the page is written in.
+  it('gives every slider a name and a spoken value', async () => {
+    const body = await renderApp(skin, locale)
+    const sliders = [...body.querySelectorAll<HTMLInputElement>('input[type="range"]')]
+    expect(sliders.length).toBeGreaterThan(0)
+    for (const slider of sliders) {
+      expect(accessibleName(slider)).not.toBe('')
+      expect(slider.getAttribute('aria-valuetext')).toBeTruthy()
+      // Formatted, not the raw value read back under another name.
+      expect(slider.getAttribute('aria-valuetext')).not.toBe(slider.value)
+    }
+  })
+
   it('names every table', async () => {
     const body = await renderApp(skin, locale)
     const tables = [...body.querySelectorAll('table')]
